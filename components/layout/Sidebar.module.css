@@ -131,3 +131,34 @@
         display: none;
     }
 }
+.navSubItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    padding-left: calc(var(--space-md) + 24px + var(--space-sm));
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    text-decoration: none;
+    transition: all 200ms ease;
+    cursor: pointer;
+    margin-top: calc(-1 * var(--space-xs));
+}
+
+.navSubItem:hover {
+    color: var(--color-text);
+    background: var(--color-elevated);
+}
+
+.activeSub {
+    color: var(--color-primary);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+@media (max-width: 768px) {
+    .navSubItem {
+        display: none;
+    }
+}

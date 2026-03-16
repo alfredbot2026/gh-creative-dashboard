@@ -18,6 +18,8 @@ import {
     Rocket,
     Settings,
     MessageSquare,
+    Download,
+    Sparkles
 } from 'lucide-react'
 import styles from './Sidebar.module.css'
 
@@ -28,7 +30,14 @@ const navItems = [
     { href: '/ads', label: 'Ad Performance', icon: BarChart3 },
     { href: '/youtube', label: 'YouTube', icon: Youtube },
     { href: '/research', label: 'Research Hub', icon: Lightbulb },
-    { href: '/knowledge', label: 'Knowledge Base', icon: BookOpen },
+    { 
+        href: '/knowledge', 
+        label: 'Knowledge Base', 
+        icon: BookOpen,
+        subItems: [
+            { href: '/knowledge/extract', label: 'Extract Knowledge', icon: Sparkles }
+        ]
+    },
     { href: '/upload', label: 'Upload', icon: Upload },
     { href: '/chat', label: 'AI Chat', icon: MessageSquare },
     { href: '/settings', label: 'Settings', icon: Settings },
@@ -52,17 +61,33 @@ export default function Sidebar() {
                     const isActive =
                         item.href === '/'
                             ? pathname === '/'
-                            : pathname.startsWith(item.href)
+                            : pathname === item.href || (pathname.startsWith(item.href) && !item.subItems?.some(sub => pathname.startsWith(sub.href)))
 
                     return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-                        >
-                            <item.icon size={20} />
-                            <span className={styles.navLabel}>{item.label}</span>
-                        </Link>
+                        <div key={item.href} style={{ display: 'flex', flexDirection: 'column' }}>
+                            <Link
+                                href={item.href}
+                                className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+                            >
+                                <item.icon size={20} />
+                                <span className={styles.navLabel}>{item.label}</span>
+                            </Link>
+
+                            {/* Render subItems if any */}
+                            {item.subItems && item.subItems.map((subItem) => {
+                                const isSubActive = pathname.startsWith(subItem.href)
+                                return (
+                                    <Link
+                                        key={subItem.href}
+                                        href={subItem.href}
+                                        className={`${styles.navSubItem} ${isSubActive ? styles.activeSub : ''}`}
+                                    >
+                                        <subItem.icon size={16} />
+                                        <span className={styles.navLabel}>{subItem.label}</span>
+                                    </Link>
+                                )
+                            })}
+                        </div>
                     )
                 })}
             </nav>
