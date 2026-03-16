@@ -6,6 +6,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import DOMPurify from 'isomorphic-dompurify'
 import PageHeader from '@/components/ui/PageHeader'
 import ChannelAnalytics from '@/components/youtube/ChannelAnalytics'
 import {
@@ -21,7 +22,7 @@ import styles from './page.module.css'
  * No external deps needed.
  */
 function renderMarkdown(md: string): string {
-    return md
+    const html = md
         // Headers (## → h3, ### → h4)
         .replace(/^### (.+)$/gm, '<h4>$1</h4>')
         .replace(/^## (.+)$/gm, '<h3>$1</h3>')
@@ -39,6 +40,8 @@ function renderMarkdown(md: string): string {
         // Line breaks
         .replace(/\n\n/g, '<br/><br/>')
         .replace(/\n/g, '<br/>')
+
+    return DOMPurify.sanitize(html)
 }
 
 /* -- Type definitions -- */
