@@ -1,0 +1,273 @@
+/**
+ * Add Knowledge Entry Modal Styles
+ */
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--space-md);
+}
+
+.modal {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: zoomIn 200ms ease-out;
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 10;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.iconBox {
+    width: 40px;
+    height: 40px;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--color-primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+}
+
+.closeBtn:hover {
+    background: var(--color-elevated);
+    color: var(--color-text);
+}
+
+/* -- Form -- */
+.form {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.errorBanner {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formGroup label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.formGroup input, 
+.formGroup select, 
+.formGroup textarea {
+    padding: 10px 14px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-family: inherit;
+}
+
+.formGroup input:focus, 
+.formGroup select:focus, 
+.formGroup textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.formGroup textarea {
+    resize: vertical;
+}
+
+.laneOptions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.laneBtn {
+    padding: 6px 14px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 200ms ease;
+    text-transform: capitalize;
+}
+
+.activeLane {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.checkboxGroup {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.checkboxGroup input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    color: var(--color-text-muted);
+}
+
+.tooltipText {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--color-text);
+    color: var(--color-surface);
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.4;
+    pointer-events: none;
+}
+
+.tooltip:hover .tooltipText {
+    visibility: visible;
+    opacity: 1;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+}
+
+.cancelBtn {
+    padding: 10px 20px;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.submitBtn {
+    padding: 10px 24px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+    .formRow {
+        grid-template-columns: 1fr;
+    }
+}
