@@ -172,15 +172,16 @@ export default function KnowledgePage() {
       <PageHeader
         title="Knowledge Base"
         subtitle="Structured research backing every generated content piece"
-      >
-        <button 
-          className={styles.addBtn}
-          onClick={() => setShowAddModal(true)}
-        >
-          <Plus size={18} />
-          <span>Add Entry</span>
-        </button>
-      </PageHeader>
+        action={
+          <button 
+            className={styles.addBtn}
+            onClick={() => setShowAddModal(true)}
+          >
+            <Plus size={18} />
+            <span>Add Entry</span>
+          </button>
+        }
+      />
 
       {/* Stats Bar */}
       {stats && (
