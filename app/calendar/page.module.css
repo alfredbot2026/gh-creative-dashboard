@@ -1,0 +1,346 @@
+/**
+ * Content Calendar Styles
+ * Two-week grid with color-coded content cards and navigation.
+ */
+
+/* -- Week navigation -- */
+.weekNav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.navButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.navButton:hover {
+    background: var(--color-elevated);
+    color: var(--color-text);
+}
+
+.todayButton {
+    padding: 4px 12px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.todayButton:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* -- Week label row -- */
+.weekLabel {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    padding: var(--space-sm) var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.weekGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--space-lg);
+}
+
+.dayColumn {
+    background: var(--color-surface);
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.today {
+    background: var(--color-elevated);
+}
+
+.dayHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.dayName {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dayNumber {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.todayNumber {
+    background: var(--color-primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.dayItems {
+    padding: var(--space-sm);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+/* -- Content cards -- */
+.contentCard {
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--color-border);
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+
+.contentCard:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Color coding by content type */
+.typeReel {
+    border-left-color: var(--color-reel);
+}
+
+.typeYoutube {
+    border-left-color: var(--color-youtube);
+}
+
+.typeAd {
+    border-left-color: var(--color-ad);
+}
+
+.cardTitle {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+.cardMeta {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.cardHook {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+    margin-top: var(--space-xs);
+}
+
+/* -- Legend -- */
+.legend {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+.legendDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: var(--space-sm);
+}
+
+.dotReel {
+    background: var(--color-reel);
+}
+
+.dotYoutube {
+    background: var(--color-youtube);
+}
+
+.dotAd {
+    background: var(--color-ad);
+}
+
+/* -- Summary -- */
+.summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+.emptyDay {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-lg) 0;
+    opacity: 0.3;
+}
+
+/* -- Header actions row -- */
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.addButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+
+.addButton:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Generate Week button — gradient accent */
+.generateButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+
+.generateButton:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.generateButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* -- Day header right section -- */
+.dayHeaderRight {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dayAddButton {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: all 200ms ease;
+}
+
+.dayColumn:hover .dayAddButton {
+    opacity: 1;
+}
+
+.dayAddButton:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* -- Delete button on cards -- */
+.deleteButton {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 2px;
+    opacity: 0;
+    transition: all 200ms ease;
+}
+
+.contentCard:hover .deleteButton {
+    opacity: 1;
+}
+
+.deleteButton:hover {
+    color: var(--color-danger);
+}
+
+/* ===========================
+   Responsive — stack on mobile
+   =========================== */
+@media (max-width: 1024px) {
+    .weekGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .weekGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .dayColumn {
+        min-height: auto;
+    }
+}

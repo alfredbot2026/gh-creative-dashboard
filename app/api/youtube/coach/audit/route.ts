@@ -1,0 +1,138 @@
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { GoogleGenAI } from '@google/genai'
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+
+export async function POST() {
+    try {
+        const supabase = await createClient()
+
+        // 1. Get stored tokens to identify the user
+        const { data: tokenRow, error: tokenErr } = await supabase
+            .from('youtube_tokens')
+            .select('*')
+            .limit(1)
+            .single()
+        
+        if (tokenErr || !tokenRow) {
+            return NextResponse.json({ error: 'Unauthorized or YouTube not connected' }, { status: 401 })
+        }
+
+        let accessToken = tokenRow.access_token
+
+        // Refresh token if expired
+        const isExpired = new Date(tokenRow.expires_at) <= new Date()
+        if (isExpired) {
+            try {
+                const res = await fetch('https://oauth2.googleapis.com/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        client_id: process.env.YOUTUBE_CLIENT_ID!,
+                        client_secret: process.env.YOUTUBE_CLIENT_SECRET!,
+                        refresh_token: tokenRow.refresh_token,
+                        grant_type: 'refresh_token',
+                    }),
+                })
+
+                if (res.ok) {
+                    const data = await res.json()
+                    accessToken = data.access_token
+                    await supabase
+                        .from('youtube_tokens')
+                        .update({
+                            access_token: data.access_token,
+                            expires_at: new Date(Date.now() + data.expires_in * 1000).toISOString(),
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', tokenRow.id)
+                } else {
+                    return NextResponse.json({ error: 'Token expired. Please reconnect your YouTube account.' }, { status: 401 })
+                }
+            } catch {
+                return NextResponse.json({ error: 'Failed to refresh token' }, { status: 500 })
+            }
+        }
+
+        // 2. Fetch last 90 days of analytics from YouTube directly
+        const threeMonthsAgo = new Date()
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
+        const endDate = new Date().toISOString().split('T')[0]
+        const startDate = threeMonthsAgo.toISOString().split('T')[0]
+
+        const analyticsUrl = `https://youtubeanalytics.googleapis.com/v2/reports?` +
+            `ids=channel==MINE&` +
+            `startDate=${startDate}&endDate=${endDate}&` +
+            `metrics=views,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost,estimatedRevenue,estimatedAdRevenue,cpm&` +
+            `dimensions=day&` +
+            `sort=-day`
+
+        const analyticsRes = await fetch(analyticsUrl, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        })
+
+        if (!analyticsRes.ok) {
+            const errBody = await analyticsRes.text()
+            console.error('[YouTube Coach Audit Error]', errBody)
+            return NextResponse.json({ error: 'Failed to fetch analytics from YouTube API' }, { status: 500 })
+        }
+
+        const analyticsData = await analyticsRes.json()
+
+        if (!analyticsData || !analyticsData.rows || analyticsData.rows.length === 0) {
+            return NextResponse.json({ error: 'No analytics data found.' }, { status: 404 })
+        }
+
+        // 3. Prepare data for Gemini
+        const formattedData = analyticsData.rows.map((row: any[]) => ({
+            date: row[0],
+            views: row[1],
+            watchTimeMin: row[2],
+            avgDuration: row[3],
+            subsGained: row[4],
+            subsLost: row[5],
+            revenue: row[6],
+            adRevenue: row[7],
+            cpm: row[8]
+        }))
+
+        const prompt = `
+You are an expert YouTube Channel Strategist and Auditor. 
+Analyze the following daily performance data for the last ${formattedData.length} days of my channel.
+Provide a comprehensive, data-driven audit in Markdown format.
+Include:
+1. Overall Performance Trend (Summary)
+2. Strengths & Working Formats (What's going right)
+3. Areas for Improvement (What's lacking)
+4. Actionable Next Steps (3 clear recommendations)
+
+Here is the data (JSON format):
+${JSON.stringify(formattedData)}
+`
+
+        // 4. Call Gemini 3.1 Pro Preview
+        const response = await ai.models.generateContent({
+            model: 'gemini-3.1-pro-preview',
+            contents: prompt,
+            config: {
+                temperature: 0.7,
+            }
+        })
+
+        if (!response.text) {
+            throw new Error('No text generated by Gemini')
+        }
+
+        // Note: Skipped storing into youtube_audits since there is no user_id available.
+
+        return NextResponse.json({ audit: response.text })
+
+    } catch (error: unknown) {
+        console.error('Channel Audit Error:', error)
+        return NextResponse.json(
+            { error: (error as Error)?.message || 'An unexpected error occurred during the audit' },
+            { status: 500 }
+        )
+    }
+}

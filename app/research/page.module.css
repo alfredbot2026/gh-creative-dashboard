@@ -1,0 +1,395 @@
+/**
+ * Research Hub Styles
+ */
+
+/* -- Query Section (interactive research) -- */
+.querySection {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.queryHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-md);
+}
+
+.queryForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+/* Notebook dropdown */
+.selectWrapper {
+    position: relative;
+}
+
+.notebookSelect {
+    width: 100%;
+    padding: 10px 36px 10px 12px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.8125rem;
+    appearance: none;
+    cursor: pointer;
+}
+
+.notebookSelect:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.selectIcon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
+/* Query input row */
+.queryInputRow {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.queryInput {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.8125rem;
+}
+
+.queryInput:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.queryInput::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+}
+
+.queryButton {
+    padding: 10px 16px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: opacity 200ms;
+    display: flex;
+    align-items: center;
+}
+
+.queryButton:hover {
+    opacity: 0.9;
+}
+
+.queryButton:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Query result */
+.queryResult {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-elevated);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--color-primary);
+}
+
+.resultText {
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    margin: 0 0 var(--space-sm) 0;
+}
+
+.resultActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+}
+
+.savedMsg {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.saveButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(52, 199, 89, 0.15);
+    color: var(--color-success);
+    border: 1px solid rgba(52, 199, 89, 0.3);
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 200ms;
+}
+
+.saveButton:hover {
+    background: rgba(52, 199, 89, 0.25);
+}
+
+.saveButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.backendWarning {
+    margin-top: var(--space-md);
+    font-size: 0.75rem;
+    color: var(--color-warning, #f59e0b);
+}
+
+.backendWarning code {
+    background: var(--color-elevated);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.6875rem;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* -- Filters -- */
+.filters {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+    flex-wrap: wrap;
+}
+
+.filterPill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+
+.filterPill:hover {
+    border-color: var(--color-primary);
+    color: var(--color-text);
+}
+
+.activeFilter {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.filterCount {
+    font-size: 0.6875rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1px 6px;
+    border-radius: 9999px;
+}
+
+/* -- Insights grid -- */
+.insightsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.insightCard {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    transition: all 200ms ease;
+}
+
+.insightCard:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.06);
+}
+
+.cardTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.topicTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-cta);
+}
+
+.date {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+}
+
+/* Right side of card header — date + delete button */
+.cardTopRight {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+/* Delete insight button — subtle, appears on hover */
+.deleteInsight {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    transition: all 150ms ease;
+}
+
+.insightCard:hover .deleteInsight {
+    opacity: 1;
+}
+
+.deleteInsight:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.insightTitle {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+}
+
+.insightContent {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: var(--space-md);
+}
+
+.source {
+    font-size: 0.75rem;
+    color: var(--color-primary);
+    display: block;
+    margin-bottom: var(--space-md);
+}
+
+/* -- Takeaways -- */
+.takeaways {
+    padding: var(--space-md);
+    background: rgba(249, 115, 22, 0.05);
+    border-left: 3px solid var(--color-cta);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    margin-bottom: var(--space-md);
+}
+
+.takeawaysLabel {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-cta);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: var(--space-sm);
+}
+
+.takeawaysList {
+    list-style: none;
+    padding: 0;
+}
+
+.takeawaysList li {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    padding: 4px 0;
+    padding-left: var(--space-md);
+    position: relative;
+}
+
+.takeawaysList li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--color-cta);
+}
+
+/* -- Tags -- */
+.tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-size: 0.6875rem;
+    padding: 2px 8px;
+    background: var(--color-elevated);
+    color: var(--color-text-muted);
+    border-radius: 4px;
+}
+
+/* -- Empty state -- */
+.emptyState {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    text-align: center;
+    color: var(--color-text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+/* ===========================
+   Responsive
+   =========================== */
+@media (max-width: 1024px) {
+    .insightsGrid {
+        grid-template-columns: 1fr;
+    }
+}

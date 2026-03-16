@@ -1,0 +1,270 @@
+/**
+ * ScriptDetail Modal Styles
+ * P2P Ad Script format: Scene Brief table + Script timeline table.
+ */
+
+/* -- Overlay and modal -- */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: var(--space-lg);
+}
+
+.modal {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    max-width: 800px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* -- Header -- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+}
+
+.meta {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--color-primary);
+}
+
+.format {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.headerButtons {
+    display: flex;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.editButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.editButton:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.closeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 150ms ease;
+}
+
+.closeButton:hover {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+/* -- Body -- */
+.body {
+    padding: var(--space-xl);
+    overflow-y: auto;
+}
+
+.section {
+    margin-bottom: var(--space-xl);
+}
+
+.sectionTitle {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+/* -- Hook text -- */
+.hookText {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--color-cta);
+    padding: var(--space-md);
+    background: rgba(59, 130, 246, 0.05);
+    border-left: 3px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+}
+
+/* -- Scene Brief table -- */
+.briefTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.briefTable td {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    vertical-align: top;
+}
+
+.briefLabel {
+    width: 140px;
+    font-weight: 600;
+    color: var(--color-text);
+    background: var(--color-surface);
+    white-space: nowrap;
+}
+
+/* -- Script timeline table -- */
+.scriptTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.scriptTable th {
+    padding: var(--space-sm) var(--space-md);
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+}
+
+.scriptTable td {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    vertical-align: top;
+    line-height: 1.5;
+}
+
+.timeCell {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--color-primary);
+    width: 70px;
+}
+
+.saysCell {
+    font-style: italic;
+    color: var(--color-text);
+}
+
+.overlayCell {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8125rem;
+    letter-spacing: 0.03em;
+}
+
+/* -- CTA section -- */
+.ctaText {
+    padding: var(--space-md);
+    background: rgba(16, 185, 129, 0.08);
+    border-left: 3px solid var(--color-success);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+/* -- Reasoning & notes -- */
+.reasoning {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+.notes {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* -- Research refs list -- */
+.refsList {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.refsList li {
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    color: var(--color-text-muted);
+}
+
+/* -- Empty script state -- */
+.emptyScript {
+    text-align: center;
+    padding: var(--space-xxl) var(--space-xl);
+    color: var(--color-text-muted);
+}
+
+.emptyScript p {
+    margin-top: var(--space-sm);
+}
+
+.emptyHint {
+    font-size: 0.8125rem;
+    opacity: 0.6;
+}

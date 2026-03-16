@@ -1,0 +1,355 @@
+/**
+ * Channel Analytics Component Styles
+ * Metrics grid, revenue cards, top videos, connect flow.
+ */
+
+/* -- Loading & Connect states -- */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xxl);
+    color: var(--color-text-muted);
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.connectSection {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-xxl);
+}
+
+.connectCard {
+    text-align: center;
+    padding: var(--space-xl) var(--space-xxl);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    max-width: 400px;
+}
+
+.connectCard h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+}
+
+.connectCard p {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.errorText {
+    color: #ef4444;
+    font-size: 0.8125rem;
+    margin-bottom: var(--space-md);
+}
+
+.connectButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 150ms ease;
+}
+
+.connectButton:hover {
+    opacity: 0.9;
+}
+
+/* -- Analytics layout -- */
+.analyticsLayout {
+    padding-top: var(--space-md);
+}
+
+.channelHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.channelAvatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.channelMeta {
+    flex: 1;
+}
+
+.channelName {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.channelQuickStats {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.channelQuickStats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* -- Period label -- */
+.periodLabel {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+/* -- Metrics grid -- */
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+.metricCard {
+    padding: var(--space-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color 200ms ease;
+}
+
+.metricCard:hover {
+    border-color: var(--color-primary);
+}
+
+/* Revenue card — highlighted */
+.revenueCard {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.04);
+}
+
+.revenueCard:hover {
+    border-color: #10b981;
+}
+
+.metricIcon {
+    display: flex;
+    align-items: center;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.metricValue {
+    font-size: 1.375rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.metricLabel {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metricSub {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 2px;
+    opacity: 0.7;
+}
+
+/* -- Top videos section -- */
+.topVideosSection {
+    margin-top: var(--space-md);
+}
+
+/* Error banner — surfaces analytics API errors */
+.errorBanner {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    font-size: 0.8125rem;
+    color: var(--color-text);
+}
+
+.errorBanner strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.errorBanner p {
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+}
+
+.errorBanner details {
+    margin-top: var(--space-xs);
+}
+
+.errorBanner summary {
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+}
+
+.errorBanner code {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.6875rem;
+    background: var(--color-bg);
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    max-height: 100px;
+    word-break: break-all;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.topVideosList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.topVideoRow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color 150ms ease;
+}
+
+.topVideoRow:hover {
+    border-color: var(--color-primary);
+}
+
+.videoRank {
+    font-size: 0.8125rem;
+    font-weight: 800;
+    color: var(--color-text-muted);
+    min-width: 28px;
+}
+
+.topVideoThumb {
+    width: 80px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.topVideoInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.topVideoTitle {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.topVideoTitle:hover {
+    color: var(--color-primary);
+}
+
+.topVideoMetrics {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+.topVideoMetrics span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* -- No analytics fallback -- */
+.noAnalytics {
+    text-align: center;
+    padding: var(--space-xxl);
+    color: var(--color-text-muted);
+}
+
+.noAnalyticsHint {
+    font-size: 0.8125rem;
+    opacity: 0.6;
+    margin-top: var(--space-sm);
+}
+
+/* -- Responsive -- */
+@media (max-width: 768px) {
+    .metricsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .channelQuickStats {
+        flex-wrap: wrap;
+    }
+
+    .topVideoThumb {
+        display: none;
+    }
+}

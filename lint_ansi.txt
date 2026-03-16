@@ -1,0 +1,32 @@
+
+D:\Users\Rob Guevarra\Documents\Coding Projects\GH Creative Dashboard\app\api\youtube\coach\audit\route.ts
+   7:28  warning  'req' is defined but never used           @typescript-eslint/no-unused-vars
+  88:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Users\Rob Guevarra\Documents\Coding Projects\GH Creative Dashboard\app\api\youtube\coach\autopsy\route.ts
+  64:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Users\Rob Guevarra\Documents\Coding Projects\GH Creative Dashboard\app\api\youtube\coach\script\route.ts
+  66:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Users\Rob Guevarra\Documents\Coding Projects\GH Creative Dashboard\app\api\youtube\coach\thumbnail\route.ts
+  82:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Users\Rob Guevarra\Documents\Coding Projects\GH Creative Dashboard\app\youtube\page.tsx
+  159:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  183:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  207:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  242:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  568:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  633:41  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  691:60  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  737:45  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+D:\Users\Rob Guevarra\Documents\Coding Projects\GH Creative Dashboard\components\youtube\ChannelAnalytics.tsx
+   12:5   warning  'TrendingUp' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  164:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  255:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  287:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 17 problems (8 errors, 9 warnings)
+

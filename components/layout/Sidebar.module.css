@@ -1,0 +1,133 @@
+/**
+ * Sidebar Styles — Fixed left nav
+ * Dark surface background with glow-based active indicator.
+ */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-md);
+    z-index: 100;
+    overflow-y: auto;
+}
+
+/* -- Brand area -- */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+.brandIcon {
+    color: var(--color-cta);
+}
+
+.brandText {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+}
+
+/* -- Navigation -- */
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    flex: 1;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 200ms ease;
+    cursor: pointer;
+}
+
+.navItem:hover {
+    color: var(--color-text);
+    background: var(--color-elevated);
+}
+
+/* Active nav item — blue left border + subtle blue bg */
+.active {
+    color: var(--color-primary);
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 3px solid var(--color-primary);
+    padding-left: calc(var(--space-md) - 3px);
+}
+
+.navLabel {
+    white-space: nowrap;
+}
+
+/* -- Footer -- */
+.footer {
+    padding: var(--space-md) var(--space-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.footerText {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+}
+
+/* ===========================
+   Mobile: hide sidebar, show top bar
+   =========================== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        padding: var(--space-sm) var(--space-md);
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .brand {
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .nav {
+        flex-direction: row;
+        flex: 1;
+        justify-content: flex-end;
+        gap: var(--space-xs);
+        overflow-x: auto;
+    }
+
+    .navLabel {
+        display: none;
+    }
+
+    .active {
+        border-left: none;
+        border-bottom: 2px solid var(--color-primary);
+        padding-left: var(--space-md);
+    }
+
+    .footer {
+        display: none;
+    }
+}
