@@ -52,14 +52,20 @@ Queried all 8 relevant notebooks on 2026-03-16. Key findings:
 - 2026-03-16: Claude Code "Marketing Superpowers" pattern (from @shannholmberg) — skill files as foundation, no context bleed between subagents, approval-as-training-signal, brand-voice scoring rubric. Patterns incorporated into pipeline design.
 
 ## Active Work
-- **TASK-001** — KB schema + migration SQL + TypeScript types → dispatched to Blackwidow
-- **TASK-002** — KB CRUD API routes + server actions → queued (depends on TASK-001)
-- **TASK-003** — Knowledge Base UI page → queued (depends on TASK-001 + 002)
+- **TASK-001** through **TASK-004** — Knowledge Base foundation and Extraction Pipeline → Complete. (Phase 0a)
+
+## KB Seeding Progress
+- 8 hook_library entries inserted from Personal Brand Launch notebook
+- Extraction script created (`/tmp/extract_all.py`) for all 7 notebooks × categories
+- NLM auth expires frequently during batch runs — auto-retry with re-auth added
+- Supabase tables live: `knowledge_entries` + `generation_provenance`
 
 ## Blockers
-- None
+- E2E Extraction blocked: NLM auth expired. User intervention required (`nlm login` needed).
+- NLM auth flaky during batch extraction (auto-retry helps but not 100%)
+- **TASK-006 security gate:** P0 security issues flagged (see `qa/SECURITY-SCAN-2026-03-16.md`) — must resolve XSS surface + add RLS/policies + protect eval endpoints before proceeding.
 
-## Next action
-- Blackwidow completes TASK-001 → TASK-002 → TASK-003 (sequential, same branch)
-- After TASK-003: Bruce QA pass on the knowledge base foundation
-- Then: TASK-004+ for extraction pipeline (Phase 0b)
+## Next Tasks
+- **TASK-005** (Phase 0c) — Brand identity + voice rubric + settings UI → ready, queued for Blackwidow
+- **TASK-006** (Phase 0.5) — Eval harness + quality gate + scorer → blocked on TASK-005
+- After 0.5: Phase 1 (short-form script generation)
