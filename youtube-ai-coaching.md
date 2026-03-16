@@ -16,4 +16,4 @@ Implement 4 Gemini-powered "YouTube Guru" features designed to provide actionabl
 ## Done When
 - [ ] Grace can run a full channel audit and get specific content format directions.
 - [ ] Individual videos can be "autopsied" to find out exactly where the hook failed or succeeded.
-- [ ] Grace can test pre-production scripts and thumbnails before filming to predict CTR.
+- [ ] Grace can test pre-production scripts and thumbnails before filming to predict CTR!
