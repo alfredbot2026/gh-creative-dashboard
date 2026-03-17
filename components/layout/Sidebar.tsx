@@ -19,7 +19,8 @@ import {
     Settings,
     MessageSquare,
     Download,
-    Sparkles
+    Sparkles,
+    TestTube
 } from 'lucide-react'
 import styles from './Sidebar.module.css'
 
@@ -38,6 +39,7 @@ const navItems = [
             { href: '/knowledge/extract', label: 'Extract Knowledge', icon: Sparkles }
         ]
     },
+    { href: '/eval', label: 'Eval', icon: TestTube },
     { href: '/upload', label: 'Upload', icon: Upload },
     { href: '/chat', label: 'AI Chat', icon: MessageSquare },
     { href: '/settings', label: 'Settings', icon: Settings },
