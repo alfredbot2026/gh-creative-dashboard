@@ -23,16 +23,16 @@ export async function generateShortFormScript(
   // 3. Build prompt
   const prompt = buildShortFormPrompt(request, kbEntries, brand)
 
-  // 4. Call LLM with JSON mode
-  // Using systemPrompt and userPrompt as expected by generateJSON
-  const result = await generateJSON<Omit<ShortFormScript, 'content_type' | 'lane' | 'knowledge_entries_used'>>(
-    prompt,
-    'Please generate the short-form script as JSON based on the instructions above.'
+  // 4. Call Gemini with JSON mode
+  // Note: generateJSON handles stripping markdown fences and parsing
+  const { data: rawScript } = await generateJSON<Omit<ShortFormScript, 'content_type' | 'lane' | 'knowledge_entries_used'>>(
+    "You are a helpful content strategist that outputs JSON.",
+    prompt
   )
 
-  // 5. Parse response
+  // 5. Build final script object
   const script: ShortFormScript = {
-    ...result.data,
+    ...rawScript,
     content_type: 'short-form-script',
     lane: 'short-form',
     knowledge_entries_used: kbEntries.map(e => e.id),
@@ -52,8 +52,8 @@ export async function generateShortFormScript(
       passed_gate: gateResult.passed,
       feedback: gateResult.feedback,
     }
-  } catch {
-    // Eval module not yet available — skip quality gate
+  } catch (err) {
+    console.warn('Quality gate check failed or module not available:', err)
   }
 
   return {
