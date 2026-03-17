@@ -39,6 +39,14 @@ const navItems = [
             { href: '/knowledge/extract', label: 'Extract Knowledge', icon: Sparkles }
         ]
     },
+    {
+        href: '/create',
+        label: 'Create',
+        icon: Sparkles,
+        subItems: [
+            { href: '/create/short-form', label: 'Short-form Scripts', icon: Rocket }
+        ]
+    },
     { href: '/eval', label: 'Eval', icon: TestTube },
     { href: '/upload', label: 'Upload', icon: Upload },
     { href: '/chat', label: 'AI Chat', icon: MessageSquare },
