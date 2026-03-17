@@ -61,11 +61,15 @@ Queried all 8 relevant notebooks on 2026-03-16. Key findings:
 - Supabase tables live: `knowledge_entries` + `generation_provenance`
 
 ## Blockers
-- E2E Extraction blocked: NLM auth expired. User intervention required (`nlm login` needed).
-- NLM auth flaky during batch extraction (auto-retry helps but not 100%)
 - **TASK-006 security gate:** P0 security issues flagged (see `qa/SECURITY-SCAN-2026-03-16.md`) — must resolve XSS surface + add RLS/policies + protect eval endpoints before proceeding.
+- ~~NLM auth expired~~ — resolved (growth team confirmed working 2026-03-17)
 
-## Next Tasks
-- **TASK-005** (Phase 0c) — Brand identity + voice rubric + settings UI → ready, queued for Blackwidow
-- **TASK-006** (Phase 0.5) — Eval harness + quality gate + scorer → blocked on TASK-005
-- After 0.5: Phase 1 (short-form script generation)
+## Task Pipeline
+- **TASK-005** (Phase 0c) — Brand identity ✅ QA PASS
+- **TASK-005b** (Hotfix) — XSS fix 🔄 In progress (Blackwidow)
+- **TASK-006** (Phase 0.5) — Eval harness + quality gate → blocked on 005b
+- **TASK-007** (Phase 1a) — Short-form generation API → spec written, blocked on 006
+- **TASK-008** (Phase 1b) — Short-form creation UI → spec written, blocked on 007
+- **TASK-009** (Phase 1d) — Short-form performance tracking → spec written, blocked on 008
+
+**Last updated:** 2026-03-17 08:08
