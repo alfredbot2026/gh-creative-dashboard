@@ -5,7 +5,7 @@
  */
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
     LayoutDashboard,
@@ -18,10 +18,11 @@ import {
     Rocket,
     Settings,
     MessageSquare,
-    Download,
     Sparkles,
-    TestTube
+    TestTube,
+    LogOut
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import styles from './Sidebar.module.css'
 
 /* -- Navigation items with routes and icons -- */
@@ -63,6 +64,14 @@ const navItems = [
 
 export default function Sidebar() {
     const pathname = usePathname()
+    const router = useRouter()
+    const supabase = createClient()
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        router.push('/login')
+        router.refresh()
+    }
 
     return (
         <aside className={styles.sidebar}>
@@ -110,9 +119,12 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            {/* Footer with subtle branding */}
+            {/* Footer with logout action */}
             <div className={styles.footer}>
-                <span className={styles.footerText}>GH Creative</span>
+                <button onClick={handleLogout} className={styles.logoutButton}>
+                    <LogOut size={20} />
+                    <span>Logout</span>
+                </button>
             </div>
         </aside>
     )

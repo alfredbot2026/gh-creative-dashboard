@@ -23,3 +23,29 @@
 - `scripts/` — Seed scripts and utilities (e.g., `seed-eval-dataset.ts`)
 
 *(For more details, see `.agent/ARCHITECTURE.md` if it exists)*
+## Database Tables (Updated TASK-012)
+
+### `content_items` (migration 006)
+Stores generated scripts and content items for calendar scheduling.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID PK | Auto-generated |
+| tenant_id | UUID | Currently set to user.id (no tenant model yet) |
+| user_id | UUID → auth.users | Owner |
+| title | TEXT | Script/content title |
+| content_type | TEXT | e.g., 'short-form' |
+| platform | TEXT | e.g., 'instagram-reels', 'tiktok' |
+| script_data | JSONB | Full generated script object |
+| status | TEXT | 'draft', 'scheduled', 'published' |
+| scheduled_date | TIMESTAMPTZ | Calendar date |
+| published_at | TIMESTAMPTZ | When published |
+| created_at / updated_at | TIMESTAMPTZ | Auto-managed |
+
+RLS enabled. Policy: `USING (true)` (to be tightened to `user_id = auth.uid()` post-data-migration).
+
+### Routes Added/Verified
+- `POST /api/create/short-form` — Generates script + inserts into content_items
+- `GET/POST /api/eval/score` — Eval scorer
+- `GET /analytics/short-form` — Short-form analytics
+- `GET /calendar` — Calendar view

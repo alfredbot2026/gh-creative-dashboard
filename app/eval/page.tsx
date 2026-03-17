@@ -52,8 +52,10 @@ export default function EvalPage() {
                 {/* Scorer Tester */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <TestTube size={20} className={styles.icon} />
-                        <h2>Test Scorer</h2>
+                        <div className={styles.titleWrapper}>
+                            <TestTube size={20} className={styles.icon} />
+                            <h2>Test Scorer</h2>
+                        </div>
                     </div>
                     
                     <div className={styles.formGroup}>
@@ -144,7 +146,9 @@ export default function EvalPage() {
                 {/* Eval Dataset List Placeholder */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <h2>Eval Dataset</h2>
+                        <div className={styles.titleWrapper}>
+                            <h2>Eval Dataset</h2>
+                        </div>
                         <button className={styles.iconButton}><Plus size={16} /> Add</button>
                     </div>
                     <p className={styles.emptyState}>

@@ -44,6 +44,13 @@
     gap: 0.5rem;
 }
 
+/* Title wrapper for icon + text grouping */
+.titleWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .icon {
     color: var(--primary-color);
 }

@@ -17,11 +17,13 @@ export async function addScriptToCalendar(
     .from('content_items')
     .insert({
       title: script.title,
+      tenant_id: user.id,
+      user_id: user.id,
       content_type: 'short-form',
+      platform: script.lane || 'short-form',
       script_data: script as any, // Cast to any to bypass strict JSONB type check if necessary
       status: 'draft',
       scheduled_date: scheduledDate || null,
-      created_by: user.id,
     })
     .select()
     .single()

@@ -51,6 +51,21 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
+  /* -- Aliases for component compatibility -- */
+  --bg-surface: var(--color-surface);
+  --bg-elevated: var(--color-elevated);
+  --border-color: var(--color-border);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-text-muted);
+  --primary-color: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --bg-input: var(--color-elevated);
+  --bg-element: var(--color-elevated);
+  --bg-hover: #374151;
+  --error-color: var(--color-danger);
+  --error-rgb: 239, 68, 68;
+  --primary-rgb: 59, 130, 246;
+
   /* -- Sidebar -- */
   --sidebar-width: 240px;
   --sidebar-collapsed: 64px;
