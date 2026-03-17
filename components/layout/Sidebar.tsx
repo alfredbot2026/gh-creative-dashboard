@@ -29,6 +29,14 @@ const navItems = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/calendar', label: 'Calendar', icon: Calendar },
     { href: '/ads', label: 'Ad Performance', icon: BarChart3 },
+    {
+        href: '/analytics',
+        label: 'Analytics',
+        icon: BarChart3,
+        subItems: [
+            { href: '/analytics/short-form', label: 'Short-form Performance', icon: BarChart3 }
+        ]
+    },
     { href: '/youtube', label: 'YouTube', icon: Youtube },
     { href: '/research', label: 'Research Hub', icon: Lightbulb },
     { 
