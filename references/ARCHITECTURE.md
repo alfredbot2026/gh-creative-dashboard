@@ -48,7 +48,15 @@ Stores generated scripts and content items for calendar scheduling.
 | published_at | TIMESTAMPTZ | When published |
 | created_at / updated_at | TIMESTAMPTZ | Auto-managed |
 
-RLS enabled. Policy: `USING (true)` (to be tightened to `user_id = auth.uid()` post-data-migration).
+RLS enabled. Policy: least-privilege CRUD `USING (user_id = auth.uid())` (tightened in migration 008).
+
+### `brand_style_guide`
+Stores brand-level styling and generation rules.
+- RLS enabled. Policy: `SELECT` for authenticated users. Writes restricted to `service_role` (enforced via missing INSERT/UPDATE/DELETE policies for authenticated users).
+
+### `storage.objects` (`ad-creatives` bucket)
+Stores generated static images and creative assets.
+- RLS enabled. Policy: least-privilege CRUD restricting users to manage only their own objects based on `owner_id = auth.uid()::text`.
 
 ### `ad_performance`
 Stores analytics data from Meta Ads and links back to the generated content.
@@ -57,7 +65,15 @@ Stores analytics data from Meta Ads and links back to the generated content.
 ### Routes Added/Verified
 - `POST /api/create/short-form` — Generates script + inserts into content_items
 - `POST /api/create/ad` — (Phase 2a) Generates ad copy variants
-- `POST /api/create/image` — (Phase 2a) Generates static image creatives
+- `POST /api/create/image` — (Phase 2a, TASK-016) Generates static image creatives via Gemini Nano Banana Pro; uploads to Supabase Storage `ad-creatives` bucket
 - `GET/POST /api/eval/score` — Eval scorer
 - `GET /analytics/short-form` — Short-form analytics
 - `GET /calendar` — Calendar view
+
+### Phase 2a: Ad Copy Generation
+- **`lib/create/ad-types.ts`:** Type definitions for ad objective, formats, and API structures.
+- **`lib/create/kb-retriever.ts`:** Modified to include `getAdGenerationContext` for retrieving ad frameworks and hooks from the KB.
+- **`lib/create/ad-generator.ts`:** Core orchestration for ad copy. Loads brand style guide, framework definitions, retrieves KB entries, and calls LLM to generate 3-5 variants using different frameworks.
+- **`lib/create/image-types.ts`:** (TASK-016) Type definitions for `ImageStyle`, `AspectRatio`, `ImageGenerationRequest`, `ImageGenerationResponse`.
+- **`lib/create/image-generator.ts`:** (TASK-016) Loads brand style guide, builds brand-prefixed prompt, downloads optional reference images from storage, shells out to nano-banana-pro via `uv run` (execFile), uploads output PNG to `ad-creatives` bucket, returns public URL.
+- **`app/api/create/ad/route.ts`:** API endpoint for ad copy generation. Validates requests, invokes the generator, and persists variants to the `content_items` table.

@@ -7,7 +7,7 @@
 
 ## Phase 0 — Knowledge Architecture (Foundation)
 **Goal:** Build the structured knowledge base that everything else depends on.
-**Status:** `NOT_STARTED`
+**Status:** `COMPLETE` ✅ (TASK-001 through TASK-005)
 
 ### 0a. Knowledge base schema + API
 - Design and migrate `knowledge_entries` table (replaces flat `research_insights` for generation)
@@ -47,7 +47,7 @@
 
 ## Phase 0.5 — Eval Harness + Quality Baseline
 **Goal:** Before generating at scale, establish how we measure "good."
-**Status:** `NOT_STARTED`
+**Status:** `COMPLETE` ✅ (TASK-006, TASK-013 hotfix)
 **Depends on:** Phase 0
 
 ### 0.5a. Eval dataset
@@ -74,7 +74,7 @@
 
 ## Phase 1 — Short-form Script Generation
 **Goal:** Generate research-backed, ready-to-shoot short-form scripts.
-**Status:** `NOT_STARTED`
+**Status:** `COMPLETE` ✅ (TASK-007 through TASK-012, live-verified 2026-03-18)
 **Depends on:** Phase 0, Phase 0.5
 
 ### 1a. Script generation API
@@ -106,8 +106,10 @@
 
 ## Phase 2 — Ad Content Engine
 **Goal:** Generate ad copy + visual creatives (static + carousel) with brand consistency.
-**Status:** `NOT_STARTED`
-**Depends on:** Phase 0 (knowledge base), Phase 0c (brand identity)
+**Status:** `IN_PROGRESS` 🔄
+**Depends on:** Phase 0 ✅, Phase 0c ✅
+**Split:** Phase 2a (copy + static images + UI) now, Phase 2b (carousel + learning loop) after 2a proves out.
+**Note:** Gemini Nano Banana 2 (Feb 2026) supports 5-character consistency + 14 reference images — face/brand consistency is now viable via API.
 
 ### 2a. Ad copy generation API
 - `/api/create/ad` — generate ad copy variants

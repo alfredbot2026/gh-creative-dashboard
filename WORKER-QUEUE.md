@@ -15,3 +15,7 @@
 ## TASK-012
 - **Status**: WAITING_FOR_QA
 - **Result File**: `BUILD-REPORT-TASK-012.md`
+
+## TASK-018
+- **Status**: WAITING_FOR_QA
+- **Result File**: `BUILD-REPORT-TASK-018.md`
