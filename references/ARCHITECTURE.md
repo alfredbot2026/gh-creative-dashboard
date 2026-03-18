@@ -11,7 +11,7 @@
 ## Core Modules
 1. **Knowledge Base (`/knowledge`):** Structured database of frameworks, hooks, insights extracted from NotebookLM. Replaces flat insights.
 2. **Eval Harness (`/eval`):** Gold standard dataset management and brand voice scorer (auto-eval against the brand style guide).
-3. **Generation Pipeline:** Pulls from KB → generates scripts/copy (Phase 1-3). Includes `lib/create/` for LLM prompt generation, context retrieval (`kb-retriever`), and structured output for platforms (Instagram Reels, TikTok, YouTube Shorts).
+3. **Generation Pipeline:** Pulls from KB → generates scripts/copy (Phase 1-3). Includes `lib/create/` for LLM prompt generation, context retrieval (`kb-retriever`), and structured output for platforms (Instagram Reels, TikTok, YouTube Shorts). **Phase 2a uses [Ad Frameworks](AD-FRAMEWORKS.md) for generating ad copy.**
 4. **Analytics (`/youtube`, `/analytics/short-form`, etc.):** Syncs performance data from Meta Ads / YouTube, and tracks short-form performance (`shortform_performance` table).
 
 ## File Organization
@@ -24,6 +24,12 @@
 
 *(For more details, see `.agent/ARCHITECTURE.md` if it exists)*
 ## Database Tables (Updated TASK-012)
+
+### `ad_performance` (migration 007)
+Added link from ad performance rows to generated content items.
+
+- `content_item_id` UUID → `content_items(id)`
+- Index: `idx_ad_performance_content_item`
 
 ### `content_items` (migration 006)
 Stores generated scripts and content items for calendar scheduling.
@@ -44,8 +50,14 @@ Stores generated scripts and content items for calendar scheduling.
 
 RLS enabled. Policy: `USING (true)` (to be tightened to `user_id = auth.uid()` post-data-migration).
 
+### `ad_performance`
+Stores analytics data from Meta Ads and links back to the generated content.
+- Now includes `content_item_id` (FK to `content_items(id)`) to trace performance back to the originally generated variant.
+
 ### Routes Added/Verified
 - `POST /api/create/short-form` — Generates script + inserts into content_items
+- `POST /api/create/ad` — (Phase 2a) Generates ad copy variants
+- `POST /api/create/image` — (Phase 2a) Generates static image creatives
 - `GET/POST /api/eval/score` — Eval scorer
 - `GET /analytics/short-form` — Short-form analytics
 - `GET /calendar` — Calendar view
