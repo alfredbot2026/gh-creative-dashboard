@@ -1,5 +1,5 @@
 export type AdObjective = 'conversions' | 'awareness' | 'traffic'
-export type AdFormat = 'static' | 'video_script'
+export type AdFormat = 'static' | 'video_script' | 'carousel'
 export type AdPlatform = 'facebook' | 'instagram'
 export type AdFramework = 'PAS' | 'AIDA' | 'before_after' | 'social_proof' | 'urgency' | 'FAB'
 
@@ -31,5 +31,6 @@ export interface AdGenerationResponse {
     model: string
     kb_entries_loaded: number
     brand_guide_version: string
+    kb_tier_used?: string
   }
 }

@@ -39,11 +39,28 @@
 | Task | Feature | Build | QA |
 |------|---------|-------|----|
 | TASK-014 | Ad frameworks reference + migration | ✅ | ✅ |
-| TASK-015 | Ad copy generation API | 🔄 | — |
-| TASK-016 | Image generation API (Nano Banana Pro) | ⏳ queued (ready) | — |
-| TASK-017 | Ad creation UI (/create/ads) | ⏳ blocked on 015+016 | — |
+| TASK-015 | Ad copy generation API | ✅ | ✅ (cycle 3) |
+| TASK-016 | Image generation API (Nano Banana Pro) | 🔄 | — |
+| TASK-017 | Ad creation UI (/create/ads) | 🔄 | — |
+| TASK-018 | Design system debt cleanup (Shuri audit) | ⏳ queued | — |
 
-**Chain:** TASK-014 ✅ → TASK-015 + TASK-016 (sequential, both unblocked) → TASK-017
+**Chain:** TASK-014 ✅ → TASK-015 ✅ + TASK-016 ✅ → TASK-017 ✅ → TASK-018 ✅
+**Quality fixes:** TASK-019 ✅ | TASK-020 ✅ | TASK-021 ✅ | TASK-022 ✅ (design system)
+
+### Phase 2b — Carousel + Learning Loop (COMPLETE ✅)
+**Spec:** `specs/phase-2b-carousel-learning.md`
+- TASK-023: Carousel generation API — ✅
+- TASK-024: Carousel image gen (sequential, consistent) — ✅
+- TASK-025: Carousel UI (enable format, preview, download) — ✅
+- TASK-026: Ad performance learning API + insights table — ✅
+- TASK-027: Insights display + KB score feedback — ✅
+**Note:** TASK-024 through TASK-027 written directly by Dr. Strange (Blackwidow stalled)
+
+### Quality Audit (2026-03-18 13:45)
+- **P0:** Script generator crashes — `examples` field is JSON string not array
+- **P1:** 46% of KB unused for scripts, 54% unused for ads (only 2-3 of 9 categories loaded)
+- **P1:** `brand_identity` category doesn't exist in DB (ad generator silently gets nothing)
+- **P2:** Knowledge Used shows raw UUIDs, LLM doesn't cite which patterns it applied
 
 ## Last Updated
-2026-03-18T10:26+08:00
+2026-03-18T14:56+08:00

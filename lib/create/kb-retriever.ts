@@ -10,7 +10,7 @@ export async function getGenerationContext(
   lane: 'short-form' | 'ads' | 'youtube',
   categories: string[],
   limit: number = 15
-): Promise<KnowledgeEntry[]> {
+): Promise<{ entries: KnowledgeEntry[], tier: 'approved' | 'candidate' }> {
   const supabase = await createClient()
 
   // 1. Always get mandatory first-read entries (brand identity)
@@ -41,29 +41,51 @@ export async function getGenerationContext(
     .order('effectiveness_score', { ascending: false })
     .limit(limit)
 
-  const entries = (entriesApproved && entriesApproved.length > 0)
-    ? entriesApproved
-    : (await supabase
-        .from('knowledge_entries')
-        .select('*')
-        .in('category', categories)
-        .contains('lanes', [lane])
-        .eq('review_status', 'candidate')
-        .order('effectiveness_score', { ascending: false })
-        .limit(limit)
-      ).data
+  let tier: 'approved' | 'candidate' = 'approved'
+  let entries = entriesApproved
+  
+  if (!entriesApproved || entriesApproved.length === 0) {
+    tier = 'candidate'
+    const { data } = await supabase
+      .from('knowledge_entries')
+      .select('*')
+      .in('category', categories)
+      .contains('lanes', [lane])
+      .eq('review_status', 'candidate')
+      .order('effectiveness_score', { ascending: false })
+      .limit(limit)
+    entries = data
+  }
 
-  // Deduplicate (mandatory entries might overlap)
+  // Deduplicate (mandatory entries might overlap) and enforce category diversity
+  const MAX_PER_CATEGORY = 5
   const seen = new Set<string>()
   const result: KnowledgeEntry[] = []
+  const categoryCount: Record<string, number> = {}
+
   for (const entry of [...(mandatory || []), ...(entries || [])]) {
     if (!seen.has(entry.id)) {
-      seen.add(entry.id)
-      result.push(entry)
+      const cat = entry.category
+      
+      // Always include mandatory first-read regardless of category count limits
+      if (entry.is_mandatory_first_read) {
+        seen.add(entry.id)
+        result.push(entry)
+        continue
+      }
+      
+      categoryCount[cat] = (categoryCount[cat] || 0) + 1
+      if (categoryCount[cat] <= MAX_PER_CATEGORY) {
+        seen.add(entry.id)
+        result.push(entry)
+      }
+      
+      if (result.length >= limit) break
     }
   }
 
-  return result
+
+  return { entries: result, tier }
 }
 
 /**
@@ -82,11 +104,21 @@ export async function getBrandContext(): Promise<Record<string, unknown> | null>
 /**
  * Retrieve KB entries specifically for Ad Copy Generation.
  */
-export async function getAdGenerationContext(limit: number = 15): Promise<KnowledgeEntry[]> {
-  // Categories must match the `knowledge_entries.category` CHECK constraint (see migration 001)
+export async function getAdGenerationContext(limit: number = 25): Promise<{ entries: KnowledgeEntry[], tier: 'approved' | 'candidate' }> {
   return getGenerationContext(
     'ads',
-    ['ad_creative', 'hook_library', 'cro_patterns', 'brand_identity'],
+    ['ad_creative', 'hook_library', 'cro_patterns', 'content_funnel', 'virality_science', 'platform_intelligence'],
+    limit
+  )
+}
+
+/**
+ * Retrieve KB entries specifically for Short-Form Script Generation.
+ */
+export async function getShortFormGenerationContext(limit: number = 25): Promise<{ entries: KnowledgeEntry[], tier: 'approved' | 'candidate' }> {
+  return getGenerationContext(
+    'short-form',
+    ['hook_library', 'scripting_framework', 'virality_science', 'content_funnel', 'platform_intelligence'],
     limit
   )
 }

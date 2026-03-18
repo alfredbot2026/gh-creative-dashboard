@@ -1,116 +1,13 @@
-.layout {
-  display: grid;
-  grid-template-columns: 320px 1fr 300px;
-  gap: 24px;
-  align-items: start;
-}
+/**
+ * Short-form Script Generator — page-specific styles.
+ * Shared 3-panel layout classes live in app/create/layout.module.css.
+ * All colors reference CSS vars from globals.css.
+ */
 
-@media (max-width: 1200px) {
-  .layout {
-    grid-template-columns: 300px 1fr;
-  }
-}
+/* ── Script Preview ──────────────────────────────────────── */
 
-@media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
-}
-
-.panelTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-top: 0;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text);
-}
-
-.formGroup {
-  margin-bottom: 16px;
-}
-
-.label {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 6px;
-  color: var(--text);
-}
-
-.input, .select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--background);
-  color: var(--text);
-  font-size: 0.95rem;
-}
-
-.input:focus, .select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-light, rgba(59, 130, 246, 0.2));
-}
-
-.sliderContainer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.slider {
-  flex: 1;
-}
-
-.sliderValue {
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  width: 40px;
-  text-align: right;
-}
-
-.generateBtn {
-  width: 100%;
-  padding: 12px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  transition: opacity 0.2s;
-  margin-top: 24px;
-}
-
-.generateBtn:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.generateBtn:disabled {
-  background: var(--border);
-  color: var(--text-muted);
-  cursor: not-allowed;
-}
-
-/* Script Preview Area */
 .previewHeader {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 }
 
 .scriptTitle {
@@ -120,145 +17,59 @@
 
 .scriptMeta {
   display: flex;
-  gap: 16px;
-  color: var(--text-muted);
-  font-size: 0.9rem;
+  gap: var(--space-md);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
   flex-wrap: wrap;
 }
 
-.badge {
-  background: var(--surface-hover);
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+/* ── Hook Banner ─────────────────────────────────────────── */
 
 .hookBanner {
-  background: linear-gradient(135deg, var(--accent-purple-light, #f3e8ff), var(--surface));
-  border-left: 4px solid var(--accent-purple-dark, #6b21a8);
-  padding: 16px;
-  border-radius: 0 8px 8px 0;
-  margin-bottom: 24px;
+  background: linear-gradient(
+    135deg,
+    var(--accent-purple-light),
+    transparent
+  );
+  border-left: 4px solid var(--accent-purple-dark);
+  padding: var(--space-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin-bottom: var(--space-lg);
 }
 
 .hookLabel {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--accent-purple-dark, #6b21a8);
+  color: var(--accent-purple);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
 }
 
 .hookText {
-  font-size: 1.2rem;
+  font-size: 1.125rem;
   font-weight: 500;
+  color: var(--color-text);
 }
 
-.emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 64px 24px;
-  text-align: center;
-  color: var(--text-muted);
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  height: 400px;
-}
-
-.emptyState p {
-  margin-top: 16px;
-  max-width: 300px;
-}
-
-/* Sidebar Info */
-.sidebarSection {
-  margin-bottom: 24px;
-}
-
-.sidebarSection h4 {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
-}
-
-.itemList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.itemListItem {
-  font-size: 0.9rem;
-  padding: 8px;
-  background: var(--surface-hover);
-  border-radius: 4px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.actionBtn {
-  width: 100%;
-  padding: 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.actionBtn:hover:not(:disabled) {
-  background: var(--surface-hover);
-}
-
-.primaryAction {
-  background: var(--primary);
-  color: white;
-  border: none;
-}
-
-.primaryAction:hover:not(:disabled) {
-  opacity: 0.9;
-  background: var(--primary);
-}
-
-.actionBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* ── Caption Box ─────────────────────────────────────────── */
 
 .captionBox {
-  margin-top: 32px;
+  margin-top: var(--space-xl);
   background: var(--surface-hover);
-  padding: 16px;
-  border-radius: 8px;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
 }
 
 .captionBox h4 {
   margin: 0 0 8px 0;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
 }
 
 .captionText {
   white-space: pre-wrap;
-  font-size: 0.95rem;
-  color: var(--text);
+  font-size: 0.875rem;
+  color: var(--color-text);
   margin-bottom: 12px;
 }
 
@@ -269,6 +80,6 @@
 }
 
 .hashtag {
-  color: var(--primary);
-  font-size: 0.85rem;
+  color: var(--color-primary);
+  font-size: 0.875rem;
 }

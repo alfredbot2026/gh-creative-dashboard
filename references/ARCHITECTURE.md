@@ -17,10 +17,19 @@
 ## File Organization
 - `app/` — Next.js App Router pages and API routes (e.g., `app/api/eval/score`, `app/api/create/short-form/route.ts`, `app/analytics/short-form/page.tsx`)
 - `app/actions/` — Next.js Server Actions (CRUD operations, e.g., `app/actions/performance.ts`)
+- `app/create/layout.module.css` — **Shared 3-panel generator layout** (CSS module). Imported by both `/create/short-form` and `/create/ads` pages. Contains: grid layout, panel, form controls, buttons, empty state, sidebar sections, knowledge itemList (with overflow scroll), meta badges.
 - `components/` — React UI components
+  - `components/create/QualityBadge.module.css` — Dark-mode badge CSS module (translucent backgrounds, CSS vars only)
+  - `components/create/SceneCard.module.css` — Dark-mode scene card CSS module (CSS vars only)
 - `lib/` — Shared utilities (supabase client, llm, knowledge types, `lib/eval/*` scoring engine, `lib/create/*` for script generation orchestration, `lib/create/performance-types.ts` for metrics)
 - `supabase/migrations/` — SQL migrations for DB schema (incl. `eval_dataset`, `quality_scores`, and `shortform_performance`)
 - `scripts/` — Seed scripts and utilities (e.g., `seed-eval-dataset.ts`)
+
+## Design System
+- **Token source:** `app/globals.css` `:root` block — all colors, spacing, radius, shadows
+- **Shorthand aliases:** `--surface`, `--border`, `--text`, `--text-muted`, `--primary`, `--background`, `--surface-hover` defined in globals.css for CSS module compatibility
+- **Accent colors:** `--accent-purple*`, `--accent-emerald`, `--accent-violet`, etc. defined in globals.css
+- **Rule:** No hardcoded hex values anywhere in component or page CSS/TSX files. All colors must trace to a `:root` variable.
 
 *(For more details, see `.agent/ARCHITECTURE.md` if it exists)*
 ## Database Tables (Updated TASK-012)

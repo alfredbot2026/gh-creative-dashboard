@@ -1,121 +1,97 @@
-.container {
-  border-radius: 6px;
+/**
+ * QualityBadge — dark-mode translucent badge styles.
+ * Uses CSS vars from globals.css. No hardcoded hex values.
+ */
+
+.badge {
+  border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--border, #e5e7eb);
-  margin-bottom: 1rem;
+  border: 1px solid;
 }
 
-.header {
+.badgeHeader {
+  padding: 12px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+}
+
+.badgeHeader.clickable {
   cursor: pointer;
-  background: var(--surface-1, #ffffff);
-  transition: background-color 0.2s;
 }
 
-.header:hover {
-  background: var(--surface-2, #f9fafb);
-}
-
-.left {
+.badgeLeft {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
-.label {
+.badgeLabel {
   font-weight: 600;
   font-size: 0.875rem;
 }
 
-.score {
-  font-size: 0.875rem;
-  color: var(--text-secondary, #4b5563);
-  margin-left: 0.5rem;
+.scorePill {
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  font-variant-numeric: tabular-nums;
 }
 
-.icon {
-  flex-shrink: 0;
-}
-
-.expandBtn {
+.chevronBtn {
   background: none;
   border: none;
-  color: var(--text-secondary, #4b5563);
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0.25rem;
 }
 
-.feedback {
-  padding: 0.75rem 1rem 1rem 1rem;
-  background: var(--surface-2, #f9fafb);
-  border-top: 1px solid var(--border, #e5e7eb);
+.feedbackPanel {
+  border-top: 1px solid;
+  padding: 12px 16px 16px;
   font-size: 0.875rem;
-  color: var(--text-secondary, #4b5563);
 }
 
-.feedback ul {
+.feedbackList {
   margin: 0;
-  padding-left: 1.25rem;
+  padding-left: 20px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
-.feedback li {
-  line-height: 1.4;
-}
+/* ── Color Variants ───────────────────────────────────────── */
 
-/* Colors */
 .green {
-  border-color: #a7f3d0;
+  background: rgba(var(--color-success-rgb), 0.12);
+  border-color: var(--color-success);
+  color: var(--color-success-light);
 }
-.green .header {
-  background: #ecfdf5;
-}
-.green .header:hover {
-  background: #d1fae5;
-}
-.green .label {
-  color: #065f46;
-}
-.green .icon {
-  color: #10b981;
+
+.green .feedbackPanel {
+  border-top-color: rgba(var(--color-success-rgb), 0.3);
 }
 
 .yellow {
-  border-color: #fde68a;
+  background: rgba(var(--color-warning-rgb), 0.12);
+  border-color: var(--color-warning);
+  color: var(--color-warning-light);
 }
-.yellow .header {
-  background: #fffbeb;
-}
-.yellow .header:hover {
-  background: #fef3c7;
-}
-.yellow .label {
-  color: #92400e;
-}
-.yellow .icon {
-  color: #f59e0b;
+
+.yellow .feedbackPanel {
+  border-top-color: rgba(var(--color-warning-rgb), 0.3);
 }
 
 .red {
-  border-color: #fecaca;
+  background: rgba(var(--color-danger-rgb), 0.12);
+  border-color: var(--color-danger);
+  color: var(--color-danger-light);
 }
-.red .header {
-  background: #fef2f2;
-}
-.red .header:hover {
-  background: #fee2e2;
-}
-.red .label {
-  color: #991b1b;
-}
-.red .icon {
-  color: #ef4444;
+
+.red .feedbackPanel {
+  border-top-color: rgba(var(--color-danger-rgb), 0.3);
 }

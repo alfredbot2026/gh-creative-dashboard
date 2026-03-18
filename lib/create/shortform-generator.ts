@@ -8,7 +8,7 @@ export async function generateShortFormScript(
   request: GenerateShortFormRequest
 ): Promise<GenerateShortFormResponse> {
   // 1. Retrieve KB context
-  const kbEntries = await getGenerationContext('short-form', [
+  const { entries: kbEntries } = await getGenerationContext('short-form', [
     'hook_library',
     'scripting_framework',
     'virality_science',

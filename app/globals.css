@@ -66,6 +66,39 @@
   --error-rgb: 239, 68, 68;
   --primary-rgb: 59, 130, 246;
 
+  /* -- Shorthand aliases (used by CSS modules and components) -- */
+  --surface: var(--color-surface);
+  --surface-hover: var(--bg-hover);
+  --border: var(--color-border);
+  --text: var(--color-text);
+  --text-muted: var(--color-text-muted);
+  --primary: var(--color-primary);
+  --background: var(--color-bg);
+
+  /* -- Accent Colors -- */
+  --accent-purple: #a855f7;
+  --accent-purple-dark: #7c3aed;
+  --accent-purple-light: rgba(168, 85, 247, 0.15);
+  --accent-blue: var(--color-primary);
+  --accent-green: var(--color-success);
+  --accent-amber: var(--color-warning);
+  --accent-red: var(--color-danger);
+  --accent-cyan: var(--color-reel);
+  --accent-emerald: #10b981;
+  --accent-violet: #8b5cf6;
+
+  /* -- RGB values for translucent backgrounds -- */
+  --color-success-rgb: 34, 197, 94;
+  --color-warning-rgb: 245, 158, 11;
+  --color-danger-rgb: 239, 68, 68;
+  --color-primary-rgb: 59, 130, 246;
+
+  /* -- Light text variants (for badges / dark-mode text on translucent bg) -- */
+  --color-success-light: #86efac;
+  --color-warning-light: #fcd34d;
+  --color-danger-light: #fca5a5;
+  --color-primary-light: #93c5fd;
+
   /* -- Sidebar -- */
   --sidebar-width: 240px;
   --sidebar-collapsed: 64px;

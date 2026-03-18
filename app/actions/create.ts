@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { ShortFormScript } from '@/lib/create/types'
+import type { AdVariant } from '@/lib/create/ad-types'
 
 export async function addScriptToCalendar(
   script: ShortFormScript,
@@ -42,6 +43,54 @@ export async function addScriptToCalendar(
       auxiliary_entries: [],
       generation_params: { topic: script.topic, angle: script.angle },
       pipeline_steps: [{ step: 'shortform-generator', model: 'gemini' }],
+    })
+    
+    if (provError) {
+      console.warn('Failed to record provenance, but content was saved:', provError)
+    }
+  }
+
+  return item
+}
+
+export async function addAdToCalendar(
+  variant: AdVariant,
+  imageUrl: string | undefined,
+  scheduledDate?: string
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: item, error } = await supabase
+    .from('content_items')
+    .insert({
+      title: variant.headline || 'Ad Variant',
+      tenant_id: user.id,
+      user_id: user.id,
+      content_type: 'ad',
+      platform: 'facebook',
+      script_data: { ...variant, image_url: imageUrl } as any,
+      status: 'draft',
+      scheduled_date: scheduledDate || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Failed to insert content item:', error)
+    throw new Error(`Failed to save to calendar: ${error.message}.`)
+  }
+
+  // Record provenance
+  if (item && variant.knowledge_entries_used?.length > 0) {
+    const { error: provError } = await supabase.from('generation_provenance').insert({
+      content_item_id: item.id,
+      lane: 'ad',
+      primary_entries: variant.knowledge_entries_used,
+      auxiliary_entries: [],
+      generation_params: { variantId: variant.id },
+      pipeline_steps: [{ step: 'ad-generator', model: 'gemini' }],
     })
     
     if (provError) {

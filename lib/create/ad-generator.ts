@@ -102,7 +102,7 @@ export async function generateAdCopy(
   }
 
   // 3. Retrieve KB entries for ads
-  const kbEntries = await getAdGenerationContext(15)
+  const { entries: kbEntries, tier: kbTierUsed } = await getAdGenerationContext(15)
 
   // 4. Build Prompt
   const prompt = buildAdPrompt(request, kbEntries, brand, frameworksContent)
@@ -113,7 +113,17 @@ export async function generateAdCopy(
     prompt
   )
 
-  const kbEntryIds = kbEntries.map(e => e.id)
+  const categoryIcons: Record<string, string> = {
+    'ad_creative': '🖼️',
+    'hook_library': '🪝',
+    'cro_patterns': '📈',
+    'brand_identity': '✨',
+    'scripting_framework': '📜'
+  }
+  const kbEntryTitles = kbEntries.map(e => {
+    const icon = categoryIcons[e.category] || '📘'
+    return `${icon} ${e.title} (${e.category})`
+  })
 
   // 6 & 7. Parse and Score variants
   const variants: AdVariant[] = []
@@ -162,7 +172,7 @@ export async function generateAdCopy(
       framework_explanation: raw.framework_explanation,
       image_prompt: raw.image_prompt,
       brand_voice_score: score,
-      knowledge_entries_used: kbEntryIds
+      knowledge_entries_used: kbEntryTitles
     })
   }
 
@@ -172,7 +182,8 @@ export async function generateAdCopy(
     generation_provenance: {
       model,
       kb_entries_loaded: kbEntries.length,
-      brand_guide_version: brand.updated_at || new Date().toISOString()
+      brand_guide_version: brand.updated_at || new Date().toISOString(),
+      kb_tier_used: kbTierUsed
     }
   }
 }

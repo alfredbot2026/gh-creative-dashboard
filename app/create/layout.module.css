@@ -1,0 +1,225 @@
+/**
+ * layout.module.css — Shared 3-panel generator layout.
+ * Used by both short-form and ads creation pages.
+ * All colors reference CSS vars from globals.css.
+ */
+
+/* ── 3-Column Grid ───────────────────────────────────────── */
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 300px;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Panel ───────────────────────────────────────────────── */
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.panelTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+}
+
+/* ── Form Controls ───────────────────────────────────────── */
+
+.formGroup {
+  margin-bottom: var(--space-md);
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.875rem;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider {
+  flex: 1;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+
+.generateBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-primary);
+  color: var(--color-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 200ms ease;
+  margin-top: var(--space-lg);
+}
+
+.generateBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.generateBtn:disabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.actionBtn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  transition: background 150ms ease;
+}
+
+.actionBtn:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primaryAction {
+  background: var(--color-primary);
+  color: var(--color-text);
+  border: none;
+}
+
+.primaryAction:hover:not(:disabled) {
+  opacity: 0.9;
+  background: var(--color-primary);
+}
+
+/* ── Empty State ─────────────────────────────────────────── */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-text-muted);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  height: 400px;
+}
+
+.emptyState p {
+  margin-top: var(--space-md);
+  max-width: 300px;
+  font-size: 0.875rem;
+}
+
+/* ── Right Sidebar Sections ──────────────────────────────── */
+
+.sidebarSection {
+  margin-bottom: var(--space-lg);
+}
+
+.sidebarSection h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+/* Knowledge list with overflow cap */
+.itemList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.itemListItem {
+  font-size: 0.875rem;
+  padding: 8px;
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ── Metadata badges ─────────────────────────────────────── */
+
+.metaBadge {
+  background: var(--surface-hover);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+}

@@ -6,18 +6,19 @@ import PageHeader from '@/components/ui/PageHeader'
 import SceneCard from '@/components/create/SceneCard'
 import QualityBadge from '@/components/create/QualityBadge'
 import { addScriptToCalendar } from '@/app/actions/create'
-import type { GenerateShortFormRequest, GenerateShortFormResponse, ShortFormScript } from '@/lib/create/types'
-import { 
-  Wand2, 
-  Sparkles, 
-  Settings, 
-  CalendarPlus, 
-  RotateCw, 
-  Clock, 
-  Hash, 
+import type { GenerateShortFormRequest, GenerateShortFormResponse } from '@/lib/create/types'
+import {
+  Wand2,
+  Sparkles,
+  Settings,
+  CalendarPlus,
+  RotateCw,
+  Clock,
+  Hash,
   BookOpen,
   LayoutTemplate
 } from 'lucide-react'
+import layout from '@/app/create/layout.module.css'
 import styles from './page.module.css'
 
 export default function ShortFormCreationPage() {
@@ -38,7 +39,7 @@ export default function ShortFormCreationPage() {
 
   const handleGenerate = async () => {
     if (!formData.topic) return alert('Topic is required')
-    
+
     setLoading(true)
     try {
       const res = await fetch('/api/create/short-form', {
@@ -85,18 +86,18 @@ export default function ShortFormCreationPage() {
         subtitle="Create research-backed scripts optimized for retention and brand voice"
       />
 
-      <div className={styles.layout}>
+      <div className={layout.layout}>
         {/* Left Panel: Configuration */}
-        <div className={styles.panel}>
-          <h2 className={styles.panelTitle}>
+        <div className={layout.panel}>
+          <h2 className={layout.panelTitle}>
             <Settings size={18} />
             Script Settings
           </h2>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Topic / Idea (Required)</label>
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Topic / Idea (Required)</label>
             <textarea
-              className={styles.input}
+              className={layout.input}
               rows={3}
               placeholder="e.g. 3 common mistakes when scaling FB ads"
               value={formData.topic}
@@ -104,21 +105,21 @@ export default function ShortFormCreationPage() {
             />
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Creative Angle (Optional)</label>
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Creative Angle (Optional)</label>
             <input
               type="text"
-              className={styles.input}
+              className={layout.input}
               placeholder="e.g. Counter-intuitive approach"
               value={formData.angle}
               onChange={e => setFormData({ ...formData, angle: e.target.value })}
             />
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Platform</label>
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Platform</label>
             <select
-              className={styles.select}
+              className={layout.select}
               value={formData.platform}
               onChange={e => setFormData({ ...formData, platform: e.target.value as any })}
             >
@@ -128,30 +129,30 @@ export default function ShortFormCreationPage() {
             </select>
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Framework Style</label>
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Framework Style</label>
             <select
-              className={styles.select}
+              className={layout.select}
               value={formData.style}
               onChange={e => setFormData({ ...formData, style: e.target.value as any })}
             >
               <option value="hook-first">Hook-First (High Retention)</option>
               <option value="tutorial">Step-by-Step Tutorial</option>
               <option value="storytelling">Storytelling / Founder Journey</option>
-              <option value="mistake">Mistake & Correction</option>
+              <option value="mistake">Mistake &amp; Correction</option>
               <option value="proof">Social Proof / Results</option>
             </select>
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Target Duration: {formData.target_duration}s</label>
-            <div className={styles.sliderContainer}>
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Target Duration: {formData.target_duration}s</label>
+            <div className={layout.sliderContainer}>
               <input
                 type="range"
                 min="15"
                 max="90"
                 step="5"
-                className={styles.slider}
+                className={layout.slider}
                 value={formData.target_duration}
                 onChange={e => setFormData({ ...formData, target_duration: Number(e.target.value) })}
               />
@@ -159,7 +160,7 @@ export default function ShortFormCreationPage() {
           </div>
 
           <button
-            className={styles.generateBtn}
+            className={layout.generateBtn}
             onClick={handleGenerate}
             disabled={loading || !formData.topic}
           >
@@ -169,9 +170,9 @@ export default function ShortFormCreationPage() {
         </div>
 
         {/* Center Panel: Preview */}
-        <div className={styles.panel} style={{ padding: result ? '32px' : '24px' }}>
+        <div className={layout.panel} style={{ padding: result ? 'var(--space-xl)' : 'var(--space-lg)' }}>
           {!result ? (
-            <div className={styles.emptyState}>
+            <div className={layout.emptyState}>
               <Sparkles size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
               <h3>No Script Generated</h3>
               <p>Fill out the settings on the left and click Generate to create a new script backed by your Knowledge Base.</p>
@@ -181,23 +182,23 @@ export default function ShortFormCreationPage() {
               <div className={styles.previewHeader}>
                 <h1 className={styles.scriptTitle}>{result.script.title}</h1>
                 <div className={styles.scriptMeta}>
-                  <span className={styles.badge}><Clock size={14} /> {result.script.total_duration_seconds}s Total</span>
-                  <span className={styles.badge}><Hash size={14} /> {result.script.scenes.length} Scenes</span>
+                  <span className={layout.metaBadge}><Clock size={14} /> {result.script.total_duration_seconds}s Total</span>
+                  <span className={layout.metaBadge}><Hash size={14} /> {result.script.scenes.length} Scenes</span>
                 </div>
               </div>
 
               {result.quality_score && (
-                <div style={{ marginBottom: '24px' }}>
+                <div style={{ marginBottom: 'var(--space-lg)' }}>
                   <QualityBadge score={result.quality_score} />
                 </div>
               )}
 
               <div className={styles.hookBanner}>
                 <div className={styles.hookLabel}>The Hook</div>
-                <div className={styles.hookText}>"{result.script.hook}"</div>
+                <div className={styles.hookText}>&ldquo;{result.script.hook}&rdquo;</div>
               </div>
 
-              <div className={styles.scenes}>
+              <div>
                 {result.script.scenes.map(scene => (
                   <SceneCard key={scene.scene_number} scene={scene} />
                 ))}
@@ -217,59 +218,29 @@ export default function ShortFormCreationPage() {
         </div>
 
         {/* Right Panel: Context & Actions */}
-        <div className={styles.panel}>
-          <div className={styles.sidebarSection}>
-            <h4>Knowledge Used</h4>
-            {result ? (
-              <ul className={styles.itemList}>
-                {result.knowledge_context.hooks_used.map((hook, i) => (
-                  <li key={`hook-${i}`} className={styles.itemListItem}>
-                    <BookOpen size={14} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--accent-purple-dark, #6b21a8)' }} />
-                    <span>Hook: {hook}</span>
-                  </li>
-                ))}
-                {result.knowledge_context.frameworks_used.map((fw, i) => (
-                  <li key={`fw-${i}`} className={styles.itemListItem}>
-                    <LayoutTemplate size={14} style={{ flexShrink: 0, marginTop: '2px', color: 'var(--primary)' }} />
-                    <span>Framework: {fw}</span>
-                  </li>
-                ))}
-                {result.knowledge_context.hooks_used.length === 0 && result.knowledge_context.frameworks_used.length === 0 && (
-                  <li className={styles.itemListItem} style={{ color: 'var(--text-muted)' }}>
-                    No specific hooks or frameworks referenced.
-                  </li>
-                )}
-              </ul>
-            ) : (
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                Generation context will appear here.
-              </div>
-            )}
-          </div>
-
-          <div className={styles.sidebarSection}>
+        <div className={layout.panel}>
+          <div className={layout.sidebarSection}>
             <h4>Actions</h4>
             <button
-              className={styles.actionBtn}
+              className={layout.actionBtn}
               onClick={handleGenerate}
               disabled={!result || loading}
             >
               <RotateCw size={16} />
               Regenerate Full Script
             </button>
-            
-            <div style={{ marginTop: '24px' }}>
-              <label className={styles.label} style={{ fontSize: '0.85rem' }}>Schedule Date (Optional)</label>
-              <input 
-                type="date" 
-                className={styles.input} 
-                style={{ marginBottom: '12px' }}
+
+            <div className={layout.scheduleGroup}>
+              <label className={layout.label}>Schedule Date (Optional)</label>
+              <input
+                type="date"
+                className={`${layout.input} ${layout.scheduleInput}`}
                 value={scheduledDate}
                 onChange={e => setScheduledDate(e.target.value)}
                 disabled={!result}
               />
               <button
-                className={`${styles.actionBtn} ${styles.primaryAction}`}
+                className={`${layout.actionBtn} ${layout.primaryAction}`}
                 onClick={handleSaveToCalendar}
                 disabled={!result || saving}
               >
@@ -277,6 +248,35 @@ export default function ShortFormCreationPage() {
                 {saving ? 'Saving...' : 'Add to Calendar'}
               </button>
             </div>
+          </div>
+
+          <div className={layout.sidebarSection}>
+            <h4>Knowledge Used</h4>
+            {result ? (
+              <ul className={layout.itemList}>
+                {result.knowledge_context.hooks_used.map((hook, i) => (
+                  <li key={`hook-${i}`} className={layout.itemListItem}>
+                    <BookOpen size={14} className={layout.knowledgeIconPurple} />
+                    <span>Hook: {hook}</span>
+                  </li>
+                ))}
+                {result.knowledge_context.frameworks_used.map((fw, i) => (
+                  <li key={`fw-${i}`} className={layout.itemListItem}>
+                    <LayoutTemplate size={14} className={layout.knowledgeIconPrimary} />
+                    <span>Framework: {fw}</span>
+                  </li>
+                ))}
+                {result.knowledge_context.hooks_used.length === 0 && result.knowledge_context.frameworks_used.length === 0 && (
+                  <li className={`${layout.itemListItem} ${layout.textMuted}`}>
+                    No specific hooks or frameworks referenced.
+                  </li>
+                )}
+              </ul>
+            ) : (
+              <p className={layout.textMuted}>
+                Generation context will appear here.
+              </p>
+            )}
           </div>
         </div>
       </div>

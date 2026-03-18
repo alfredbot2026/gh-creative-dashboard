@@ -9,6 +9,9 @@ export function buildShortFormPrompt(
 ): string {
   const hookEntries = kbEntries.filter(e => e.category === 'hook_library')
   const frameworks = kbEntries.filter(e => e.category === 'scripting_framework')
+  const viralityEntries = kbEntries.filter(e => e.category === 'virality_science')
+  const funnelEntries = kbEntries.filter(e => e.category === 'content_funnel')
+  const platformEntries = kbEntries.filter(e => e.category === 'platform_intelligence')
   const brandEntries = kbEntries.filter(e => e.is_mandatory_first_read)
 
   return `You are a content strategist for ${brand.creator_description || 'a creator'}.
@@ -21,10 +24,22 @@ export function buildShortFormPrompt(
 - Example phrases that match the voice: ${brand.voice_rubric.example_phrases.slice(0, 5).join(' | ')}
 
 ## Available Hook Patterns (USE ONE — do not invent generic hooks)
-${hookEntries.map(h => `- **${h.title}**: ${h.content}\n  Examples: ${h.examples.slice(0, 2).join('; ')}`).join('\n')}
+${hookEntries.map(h => {
+  const examples = typeof h.examples === 'string' ? JSON.parse(h.examples) : (h.examples || [])
+  return `- **${h.title}**: ${h.content}${examples.length > 0 ? `\n  Examples: ${examples.slice(0, 2).join('; ')}` : ''}`
+}).join('\n')}
 
 ## Scripting Frameworks
 ${frameworks.map(f => `- **${f.title}**: ${f.content}`).join('\n')}
+
+## Virality Patterns (apply where relevant)
+${viralityEntries.map(v => `- **${v.title}**: ${v.content}`).join('\n')}
+
+## Content Funnel Context
+${funnelEntries.map(f => `- **${f.title}**: ${f.content}`).join('\n')}
+
+## Platform Intelligence (${request.platform})
+${platformEntries.map(p => `- **${p.title}**: ${p.content}`).join('\n')}
 
 ## Task
 Create a short-form script for: "${request.topic}"

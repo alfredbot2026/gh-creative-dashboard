@@ -11,11 +11,12 @@ All bugs from QA-REPORT-TASK-015 have been fixed.
 
 3. **Bug 3 (P1): KB entries returning 0 (review_status constraint)**
    - Modified `lib/create/kb-retriever.ts` `getGenerationContext`.
-   - Now checks if there are `approved` entries first. If 0, it falls back to querying `candidate` entries (both for mandatory entries and category-specific entries).
+   - Now gracefully falls back: tries to fetch `approved` entries first. If 0 results, it falls back to fetching `candidate` entries (for both mandatory and category-specific lookups).
+   - Also updated the provenance object to include `kb_tier_used: 'approved' | 'candidate'` to clearly log whether it fell back to unapproved entries.
 
 4. **Bug 4 (P1): `brand_voice_score` always 0**
    - Modified `ad-generator.ts` to properly map `request.platform` before passing it to `checkQualityGate`.
-   - `checkQualityGate` expects platforms like `'ads'` instead of `'facebook'`, so it checks if the platform is `'facebook'` and passes `'ads'`, or just uses the platform correctly. 
+   - `checkQualityGate` expects platforms like `'ads'` instead of `'facebook'`, so it maps `'facebook'` -> `'ads'` to get a correct brand_voice_score. 
 
 ### Verification
 - `next build` executed successfully.

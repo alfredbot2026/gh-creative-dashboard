@@ -53,7 +53,8 @@ const navItems = [
         label: 'Create',
         icon: Sparkles,
         subItems: [
-            { href: '/create/short-form', label: 'Short-form Scripts', icon: Rocket }
+            { href: '/create/short-form', label: 'Short-form Scripts', icon: Rocket },
+            { href: '/create/ads', label: 'Ads', icon: Rocket }
         ]
     },
     { href: '/eval', label: 'Eval', icon: TestTube },

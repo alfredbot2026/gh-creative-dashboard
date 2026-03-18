@@ -80,6 +80,7 @@ export async function generateAdImage(
   const { data: brand, error: brandError } = await supabase
     .from('brand_style_guide')
     .select('*')
+    .limit(1)
     .single()
 
   if (brandError || !brand) {
@@ -153,13 +154,17 @@ export async function generateAdImage(
       throw new Error(`Failed to upload image to storage: ${uploadError.message}`)
     }
 
-    // 9. Get public URL
-    const { data: publicUrlData } = supabase.storage
+    // 9. Get signed URL (bucket is private — signed URL valid for 1 hour)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('ad-creatives')
-      .getPublicUrl(storagePath)
+      .createSignedUrl(storagePath, 3600)
+
+    if (signedUrlError || !signedUrlData) {
+      throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`)
+    }
 
     return {
-      image_url: publicUrlData.publicUrl,
+      image_url: signedUrlData.signedUrl,
       storage_path: `ad-creatives/${storagePath}`,
       prompt_used: fullPrompt,
       model: 'gemini-3-pro-image-preview',
