@@ -39,7 +39,9 @@ const NAV_GROUPS: NavGroup[] = [
     defaultOpen: true,
     items: [
       { href: '/', label: 'Home', icon: LayoutDashboard },
+      { href: '/create', label: 'Create', icon: Sparkles },
       { href: '/calendar', label: 'Calendar', icon: Calendar },
+      { href: '/library', label: 'Library', icon: BookOpen },
     ],
   },
   {
