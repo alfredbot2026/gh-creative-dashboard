@@ -1,20 +1,24 @@
 'use client'
 
 /**
- * Unified Create Page — One page for all content types.
+ * Unified Create Page — Purpose-first, format-second.
  * 
- * Content type is a pill selector at the top.
- * Topic is OPTIONAL — AI suggests ideas from KB.
- * Minimal form: just pick type, optionally add idea, hit create.
+ * Grace doesn't think "I need a script vs an ad."
+ * She thinks "I want to promote my course" or "I want to teach something."
+ * 
+ * Flow:
+ * 1. What's the goal? (purpose chips)
+ * 2. Any specific idea? (optional — AI suggests from KB)
+ * 3. Where's it going? (platform — determines output format)
+ * 4. Create → AI generates the right content for that platform
  */
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Sparkles, Wand2, ChevronDown, Package } from 'lucide-react'
 import styles from './create.module.css'
 
-type ContentType = 'script' | 'ad' | 'post' | 'youtube'
+type Platform = 'instagram-reels' | 'facebook-ad' | 'instagram-post' | 'youtube' | 'tiktok'
 type ContentPurpose = 'educate' | 'story' | 'sell' | 'prove' | 'trend' | 'inspire'
 
 interface Product {
@@ -24,7 +28,6 @@ interface Product {
 }
 
 interface GeneratedResult {
-  type: ContentType
   title: string
   content: string
   metadata?: Record<string, unknown>
@@ -32,49 +35,44 @@ interface GeneratedResult {
   quality_score?: number
 }
 
-const CONTENT_TYPES: { id: ContentType; label: string; emoji: string }[] = [
-  { id: 'script', label: 'Script', emoji: '📱' },
-  { id: 'ad', label: 'Ad', emoji: '🎯' },
-  { id: 'post', label: 'Post', emoji: '📸' },
-  { id: 'youtube', label: 'YouTube', emoji: '🎬' },
+const PURPOSES: { id: ContentPurpose; label: string }[] = [
+  { id: 'educate', label: 'Teach something' },
+  { id: 'story', label: 'Share a story' },
+  { id: 'sell', label: 'Promote a product' },
+  { id: 'prove', label: 'Show results' },
+  { id: 'trend', label: 'Ride a trend' },
+  { id: 'inspire', label: 'Inspire someone' },
 ]
 
-const PURPOSES: { id: ContentPurpose; label: string; emoji: string }[] = [
-  { id: 'educate', label: 'Teach something', emoji: '📚' },
-  { id: 'story', label: 'Share a story', emoji: '💬' },
-  { id: 'sell', label: 'Promote a product', emoji: '🛍️' },
-  { id: 'prove', label: 'Show results', emoji: '⭐' },
-  { id: 'trend', label: 'Join a trend', emoji: '🔥' },
-  { id: 'inspire', label: 'Inspire others', emoji: '✨' },
+const PLATFORMS: { id: Platform; label: string; description: string }[] = [
+  { id: 'instagram-reels', label: 'Reels / TikTok', description: 'Short video script with scenes' },
+  { id: 'instagram-post', label: 'Instagram Post', description: 'Caption, hashtags, image idea' },
+  { id: 'facebook-ad', label: 'Facebook Ad', description: 'Headline, copy, and image' },
+  { id: 'youtube', label: 'YouTube', description: 'Full script with timestamps' },
 ]
 
 function CreatePageInner() {
   const searchParams = useSearchParams()
   
-  // Form state
-  const [contentType, setContentType] = useState<ContentType>('script')
   const [purpose, setPurpose] = useState<ContentPurpose | null>(null)
+  const [platform, setPlatform] = useState<Platform>('instagram-reels')
   const [idea, setIdea] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<string>('')
-  const [showProductSelect, setShowProductSelect] = useState(false)
   
-  // Data
   const [products, setProducts] = useState<Product[]>([])
   const [suggestedIdeas, setSuggestedIdeas] = useState<string[]>([])
   
-  // Generation state
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<GeneratedResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // Pre-fill from query params
   useEffect(() => {
     const topic = searchParams.get('topic')
     const purposeParam = searchParams.get('purpose') as ContentPurpose | null
-    const type = searchParams.get('type') as ContentType | null
     if (topic) setIdea(topic)
     if (purposeParam) setPurpose(purposeParam)
-    if (type) setContentType(type)
   }, [searchParams])
 
   // Load products
@@ -88,19 +86,15 @@ function CreatePageInner() {
       })
   }, [])
 
-  // Show product select for ads
-  useEffect(() => {
-    setShowProductSelect(contentType === 'ad' || purpose === 'sell')
-  }, [contentType, purpose])
-
-  // Load suggested ideas when type/purpose changes
+  // Load suggestions when purpose changes
   useEffect(() => {
     loadSuggestions()
-  }, [contentType, purpose])
+  }, [purpose])
 
   async function loadSuggestions() {
     try {
-      const res = await fetch(`/api/calendar/suggest?lane=${contentType}&limit=3${purpose ? `&purpose=${purpose}` : ''}`)
+      const lane = platform === 'facebook-ad' ? 'ads' : platform === 'youtube' ? 'youtube' : 'short-form'
+      const res = await fetch(`/api/calendar/suggest?lane=${lane}&limit=3${purpose ? `&purpose=${purpose}` : ''}`)
       if (res.ok) {
         const data = await res.json()
         if (data.suggestions) {
@@ -108,7 +102,7 @@ function CreatePageInner() {
         }
       }
     } catch {
-      // Suggestions are non-critical
+      // Non-critical
     }
   }
 
@@ -120,45 +114,41 @@ function CreatePageInner() {
     try {
       let endpoint: string
       let body: Record<string, unknown>
+      const productName = selectedProduct ? products.find(p => p.id === selectedProduct)?.name : undefined
 
-      switch (contentType) {
-        case 'script':
-          endpoint = '/api/create/short-form'
-          body = {
-            topic: idea || undefined,
-            content_purpose: purpose || undefined,
-            platform: 'instagram-reels',
-            style: 'hook-first',
-            target_duration: 45,
-          }
-          break
-        case 'ad':
-          endpoint = '/api/create/ad'
-          body = {
-            product_name: selectedProduct ? products.find(p => p.id === selectedProduct)?.name : idea,
-            offer_details: idea || 'Special offer',
-            content_purpose: purpose || undefined,
-            platform: 'facebook',
-            variants: 1,
-            generate_image: false,
-          }
-          break
-        case 'post':
-          endpoint = '/api/create/social-post'
-          body = {
-            topic: idea || undefined,
-            content_purpose: purpose || undefined,
-            platform: 'instagram',
-          }
-          break
-        case 'youtube':
-          endpoint = '/api/create/youtube-script'
-          body = {
-            topic: idea || undefined,
-            content_purpose: purpose || undefined,
-            target_duration: 480,
-          }
-          break
+      if (platform === 'instagram-reels' || platform === 'tiktok') {
+        endpoint = '/api/create/short-form'
+        body = {
+          topic: idea || productName || undefined,
+          content_purpose: purpose || undefined,
+          platform: platform === 'tiktok' ? 'tiktok' : 'instagram-reels',
+          style: 'hook-first',
+          target_duration: 45,
+        }
+      } else if (platform === 'facebook-ad') {
+        endpoint = '/api/create/ad'
+        body = {
+          product_name: productName || idea || 'Featured product',
+          offer_details: idea || 'Special offer',
+          content_purpose: purpose || 'sell',
+          platform: 'facebook',
+          variants: 1,
+          generate_image: false,
+        }
+      } else if (platform === 'instagram-post') {
+        endpoint = '/api/create/social-post'
+        body = {
+          topic: idea || productName || undefined,
+          content_purpose: purpose || undefined,
+          platform: 'instagram',
+        }
+      } else {
+        endpoint = '/api/create/youtube-script'
+        body = {
+          topic: idea || productName || undefined,
+          content_purpose: purpose || undefined,
+          target_duration: 480,
+        }
       }
 
       const res = await fetch(endpoint, {
@@ -173,9 +163,7 @@ function CreatePageInner() {
       }
 
       const data = await res.json()
-      
-      // Normalize response
-      setResult(normalizeResult(contentType, data))
+      setResult(normalizeResult(data))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -183,107 +171,116 @@ function CreatePageInner() {
     }
   }
 
-  function normalizeResult(type: ContentType, data: Record<string, unknown>): GeneratedResult {
-    switch (type) {
-      case 'script': {
-        const scenes = (data.scenes as Array<{ scene_number: number; visual: string; voiceover: string }>) || []
-        return {
-          type,
-          title: (data.hook as string) || 'Your Script',
-          content: scenes.map((s) => `**Scene ${s.scene_number}:** ${s.voiceover}`).join('\n\n'),
-          quality_score: data.quality_score as number,
-          metadata: data as Record<string, unknown>,
-        }
+  function normalizeResult(data: Record<string, unknown>): GeneratedResult {
+    // Script
+    if (data.scenes) {
+      const scenes = data.scenes as Array<{ scene_number: number; visual: string; voiceover: string }>
+      return {
+        title: (data.hook as string) || 'Your content',
+        content: scenes.map(s => `**Scene ${s.scene_number}:** ${s.voiceover}\n_Visual: ${s.visual}_`).join('\n\n'),
+        quality_score: data.quality_score as number,
+        metadata: data,
       }
-      case 'ad': {
-        const variants = (data.variants as Array<{ headline: string; primary_text: string }>) || []
-        const v = variants[0]
-        return {
-          type,
-          title: v?.headline || 'Your Ad',
-          content: v?.primary_text || '',
-          image_url: data.image_url as string,
-          quality_score: data.quality_score as number,
-          metadata: data as Record<string, unknown>,
-        }
+    }
+    // Ad
+    if (data.variants) {
+      const variants = data.variants as Array<{ headline: string; primary_text: string }>
+      const v = variants[0]
+      return {
+        title: v?.headline || 'Your ad',
+        content: v?.primary_text || '',
+        image_url: data.image_url as string,
+        quality_score: data.quality_score as number,
+        metadata: data,
       }
-      case 'post':
-        return {
-          type,
-          title: 'Your Social Post',
-          content: (data.caption as string) || '',
-          metadata: data as Record<string, unknown>,
-        }
-      case 'youtube': {
-        const script = data.script || data
-        return {
-          type,
-          title: (script as Record<string, unknown>).title as string || 'Your YouTube Script',
-          content: (script as Record<string, unknown>).hook as string || '',
-          metadata: data as Record<string, unknown>,
-        }
+    }
+    // Social post
+    if (data.caption) {
+      return {
+        title: 'Your post',
+        content: data.caption as string,
+        metadata: data,
       }
+    }
+    // YouTube
+    if (data.script) {
+      const script = data.script as Record<string, unknown>
+      return {
+        title: script.title as string || 'Your script',
+        content: script.hook as string || '',
+        metadata: data,
+      }
+    }
+    return { title: 'Your content', content: JSON.stringify(data, null, 2) }
+  }
+
+  function handleCopy() {
+    if (result) {
+      navigator.clipboard.writeText(result.content.replace(/\*\*/g, '').replace(/_/g, ''))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
+  const showProductSelect = purpose === 'sell' || platform === 'facebook-ad'
+
   return (
     <div className={styles.page}>
-      {/* Content Type Pills */}
-      <div className={styles.typePills}>
-        {CONTENT_TYPES.map((t) => (
-          <button
-            key={t.id}
-            className={`${styles.pill} ${contentType === t.id ? styles.pillActive : ''}`}
-            onClick={() => setContentType(t.id)}
-          >
-            <span className={styles.pillEmoji}>{t.emoji}</span>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <h1 className={styles.pageTitle}>What do you want to create?</h1>
 
-      {/* Purpose chips */}
+      {/* Purpose */}
       <div className={styles.section}>
-        <label className={styles.label}>What&apos;s the goal?</label>
-        <div className={styles.purposeChips}>
+        <div className={styles.chips}>
           {PURPOSES.map((p) => (
             <button
               key={p.id}
               className={`${styles.chip} ${purpose === p.id ? styles.chipActive : ''}`}
               onClick={() => setPurpose(purpose === p.id ? null : p.id)}
             >
-              <span>{p.emoji}</span>
               {p.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Idea input — optional */}
+      {/* Platform */}
+      <div className={styles.section}>
+        <label className={styles.label}>Where is this going?</label>
+        <div className={styles.platforms}>
+          {PLATFORMS.map((p) => (
+            <button
+              key={p.id}
+              className={`${styles.platformBtn} ${platform === p.id ? styles.platformActive : ''}`}
+              onClick={() => setPlatform(p.id)}
+            >
+              <span className={styles.platformLabel}>{p.label}</span>
+              <span className={styles.platformDesc}>{p.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Idea — optional */}
       <div className={styles.section}>
         <label className={styles.label}>
-          Got an idea? <span className={styles.optional}>(optional — we&apos;ll suggest one)</span>
+          Any specific idea? <span className={styles.optional}>optional</span>
         </label>
         <textarea
           className={styles.textarea}
-          placeholder={contentType === 'ad' 
-            ? "What are you promoting?" 
-            : "Share your idea or leave blank for AI suggestions..."}
+          placeholder="Leave blank and we'll suggest something based on what's worked before..."
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
           rows={2}
         />
         
-        {/* Suggested ideas */}
         {suggestedIdeas.length > 0 && !idea && (
           <div className={styles.suggestions}>
             {suggestedIdeas.map((s, i) => (
               <button
                 key={i}
-                className={styles.suggestionChip}
+                className={styles.suggestionBtn}
                 onClick={() => setIdea(s)}
               >
-                <Sparkles size={12} />
                 {s}
               </button>
             ))}
@@ -291,65 +288,41 @@ function CreatePageInner() {
         )}
       </div>
 
-      {/* Product select — only for ads / sell purpose */}
+      {/* Product — only when selling */}
       {showProductSelect && products.length > 0 && (
         <div className={styles.section}>
           <label className={styles.label}>Which product?</label>
-          <div className={styles.selectWrapper}>
-            <select
-              className={styles.select}
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-            >
-              <option value="">Choose a product...</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}{p.price ? ` — ₱${p.price.toLocaleString()}` : ''}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} className={styles.selectIcon} />
-          </div>
+          <select
+            className={styles.select}
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
+          >
+            <option value="">Choose a product</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}{p.price ? ` — ₱${p.price.toLocaleString()}` : ''}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
-      {/* Generate button */}
+      {/* Generate */}
       <button
         className={styles.generateBtn}
         onClick={handleGenerate}
-        disabled={loading || (contentType === 'ad' && !idea && !selectedProduct)}
+        disabled={loading}
       >
-        {loading ? (
-          <>
-            <div className={styles.spinner} />
-            Creating...
-          </>
-        ) : (
-          <>
-            <Wand2 size={18} />
-            Create {CONTENT_TYPES.find(t => t.id === contentType)?.label}
-          </>
-        )}
+        {loading ? 'Creating...' : 'Create'}
       </button>
 
       {/* Error */}
-      {error && (
-        <div className={styles.error}>
-          {error}
-        </div>
-      )}
+      {error && <div className={styles.error}>{error}</div>}
 
       {/* Result */}
       {result && (
         <div className={styles.result}>
-          <div className={styles.resultHeader}>
-            <h2 className={styles.resultTitle}>{result.title}</h2>
-            {result.quality_score && (
-              <span className={styles.qualityBadge}>
-                {Math.round(result.quality_score * 100)}%
-              </span>
-            )}
-          </div>
+          <h2 className={styles.resultTitle}>{result.title}</h2>
           
           {result.image_url && (
             <img src={result.image_url} alt="" className={styles.resultImage} />
@@ -357,22 +330,23 @@ function CreatePageInner() {
           
           <div className={styles.resultContent}>
             {result.content.split('\n\n').map((p, i) => (
-              <p key={i}>{p}</p>
+              <p key={i} dangerouslySetInnerHTML={{ 
+                __html: p
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/_(.*?)_/g, '<em>$1</em>')
+              }} />
             ))}
           </div>
 
-          {/* Quick actions */}
           <div className={styles.resultActions}>
-            <button className={styles.actionBtn} onClick={() => {
-              navigator.clipboard.writeText(result.content)
-            }}>
-              Copy
+            <button className={styles.actionBtn} onClick={handleCopy}>
+              {copied ? 'Copied!' : 'Copy text'}
             </button>
             <button className={styles.actionBtn} onClick={() => {
               setResult(null)
               handleGenerate()
             }}>
-              Regenerate
+              Try again
             </button>
           </div>
         </div>

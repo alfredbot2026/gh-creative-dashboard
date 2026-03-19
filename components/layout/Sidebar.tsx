@@ -2,32 +2,24 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import {
-  LayoutDashboard,
-  Calendar,
-  BookOpen,
-  Settings,
-  LogOut,
-  Sparkles,
-} from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import styles from './Sidebar.module.css'
 
 interface NavItem {
   href: string
   label: string
-  icon: typeof LayoutDashboard
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'Home', icon: LayoutDashboard },
-  { href: '/create', label: 'Create', icon: Sparkles },
-  { href: '/calendar', label: 'Calendar', icon: Calendar },
-  { href: '/library', label: 'Library', icon: BookOpen },
+  { href: '/', label: 'Home' },
+  { href: '/create', label: 'Create' },
+  { href: '/calendar', label: 'Calendar' },
+  { href: '/library', label: 'Library' },
 ]
 
 const BOTTOM_ITEMS: NavItem[] = [
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/settings', label: 'Settings' },
 ]
 
 export default function Sidebar() {
@@ -57,8 +49,7 @@ export default function Sidebar() {
             href={item.href}
             className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
           >
-            <item.icon size={18} />
-            <span>{item.label}</span>
+            {item.label}
           </Link>
         ))}
       </nav>
@@ -70,13 +61,11 @@ export default function Sidebar() {
             href={item.href}
             className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
           >
-            <item.icon size={18} />
-            <span>{item.label}</span>
+            {item.label}
           </Link>
         ))}
         <button onClick={handleLogout} className={styles.logoutBtn}>
-          <LogOut size={18} />
-          <span>Log Out</span>
+          Log Out
         </button>
       </div>
     </aside>

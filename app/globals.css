@@ -211,7 +211,7 @@ a:hover {
 
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-collapsed-width);
+  margin-left: 180px;
   padding: var(--space-xl);
   max-width: 1400px;
   transition: margin-left 200ms ease;

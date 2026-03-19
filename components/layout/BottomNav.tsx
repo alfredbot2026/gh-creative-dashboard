@@ -2,15 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Sparkles, Calendar, BookOpen, Settings } from 'lucide-react'
 import styles from './BottomNav.module.css'
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Home', icon: LayoutDashboard },
-  { href: '/create', label: 'Create', icon: Sparkles },
-  { href: '/calendar', label: 'Calendar', icon: Calendar },
-  { href: '/library', label: 'Library', icon: BookOpen },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/', label: 'Home' },
+  { href: '/create', label: 'Create' },
+  { href: '/calendar', label: 'Calendar' },
+  { href: '/library', label: 'Library' },
+  { href: '/settings', label: 'Settings' },
 ]
 
 export default function BottomNav() {
@@ -28,8 +27,7 @@ export default function BottomNav() {
             href={item.href}
             className={`${styles.item} ${isActive ? styles.active : ''}`}
           >
-            <item.icon size={20} strokeWidth={isActive ? 2 : 1.5} />
-            <span className={styles.label}>{item.label}</span>
+            {item.label}
           </Link>
         )
       })}

@@ -7,15 +7,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import {
-  Sparkles,
   ArrowRight,
-  Calendar,
-  PenTool,
-  Megaphone,
-  MessageCircle,
-  Film,
-  TrendingUp,
-  CheckCircle2,
 } from 'lucide-react'
 import styles from './page.module.css'
 
@@ -41,12 +33,7 @@ const CONTENT_TYPE_ICONS: Record<string, { icon: string; label: string; href: st
   'youtube': { icon: '🎬', label: 'YouTube', href: '/create?type=youtube' },
 }
 
-const QUICK_CREATE = [
-  { icon: PenTool, label: 'Script', href: '/create?type=script', color: 'var(--color-reel)' },
-  { icon: Megaphone, label: 'Ad', href: '/create?type=ad', color: 'var(--color-primary)' },
-  { icon: MessageCircle, label: 'Post', href: '/create?type=post', color: 'var(--color-success)' },
-  { icon: Film, label: 'YouTube', href: '/create?type=youtube', color: 'var(--color-danger)' },
-]
+
 
 export default async function TodayPage() {
   const supabase = await createClient()
@@ -137,8 +124,6 @@ export default async function TodayPage() {
                   {s.platform && <span className={styles.platformChip}>{s.platform}</span>}
                 </div>
                 <div className={styles.createPrompt}>
-                  <Sparkles size={14} />
-                  <span>Create this</span>
                   <ArrowRight size={14} />
                 </div>
               </Link>
@@ -146,27 +131,21 @@ export default async function TodayPage() {
           </div>
         ) : (
           <div className={styles.emptySuggestions}>
-            <Sparkles size={32} strokeWidth={1.5} />
             <h3>Ready when you are</h3>
             <p>
-              Pick a content type below and start creating.
+              Hit Create below and start making content.
               It takes less than 30 seconds.
             </p>
           </div>
         )}
       </section>
 
-      {/* Quick Create */}
-      <section className={styles.quickCreate}>
-        <h2 className={styles.sectionLabel}>Quick create</h2>
-        <div className={styles.quickGrid}>
-          {QUICK_CREATE.map((item) => (
-            <Link key={item.label} href={item.href} className={styles.quickCard}>
-              <item.icon size={20} strokeWidth={1.5} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </div>
+      {/* Create button */}
+      <section className={styles.createSection}>
+        <Link href="/create" className={styles.createBtn}>
+          Create something new
+          <ArrowRight size={16} />
+        </Link>
       </section>
 
       {/* This Week */}
@@ -176,19 +155,16 @@ export default async function TodayPage() {
           <div className={styles.weekCard}>
             <div className={styles.weekStats}>
               <div className={styles.weekStat}>
-                <CheckCircle2 size={16} className={styles.iconSuccess} />
                 <span className={styles.weekNumber}>{publishedCount}</span>
                 <span className={styles.weekLabel}>published</span>
               </div>
               <div className={styles.weekDivider} />
               <div className={styles.weekStat}>
-                <Calendar size={16} className={styles.iconMuted} />
                 <span className={styles.weekNumber}>{draftCount}</span>
                 <span className={styles.weekLabel}>drafts</span>
               </div>
               <div className={styles.weekDivider} />
               <div className={styles.weekStat}>
-                <TrendingUp size={16} className={styles.iconPrimary} />
                 <span className={styles.weekNumber}>{totalWeek}</span>
                 <span className={styles.weekLabel}>total</span>
               </div>
