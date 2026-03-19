@@ -15,7 +15,7 @@
 
 .sidebar:hover {
   width: var(--sidebar-width);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
 }
 
 /* Brand */
@@ -133,12 +133,12 @@
 
 .navItem:hover {
   color: var(--color-text);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-hover);
 }
 
 .navItem.active {
-  color: var(--color-text);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
   font-weight: 600;
 }
 

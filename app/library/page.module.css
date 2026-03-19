@@ -30,16 +30,22 @@
 }
 
 .card {
+  display: block;
   background: var(--color-surface);
   border-radius: 12px;
   padding: 1rem 1.25rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   transition: all 200ms ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
 }
 
 .cardTop {
@@ -90,7 +96,7 @@
   font-weight: 500;
   padding: 0.15rem 0.4rem;
   border-radius: 100px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-elevated);
   color: var(--color-text-muted);
   text-transform: capitalize;
 }

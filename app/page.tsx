@@ -35,17 +35,17 @@ function getFormattedDate(): string {
 }
 
 const CONTENT_TYPE_ICONS: Record<string, { icon: string; label: string; href: string }> = {
-  'short-form': { icon: '📱', label: 'Script', href: '/create/short-form' },
-  'ad': { icon: '🎯', label: 'Ad', href: '/create/ads' },
-  'social-post': { icon: '📸', label: 'Post', href: '/create/social-post' },
-  'youtube': { icon: '🎬', label: 'YouTube', href: '/create/youtube' },
+  'short-form': { icon: '📱', label: 'Script', href: '/create?type=script' },
+  'ad': { icon: '🎯', label: 'Ad', href: '/create?type=ad' },
+  'social-post': { icon: '📸', label: 'Post', href: '/create?type=post' },
+  'youtube': { icon: '🎬', label: 'YouTube', href: '/create?type=youtube' },
 }
 
 const QUICK_CREATE = [
-  { icon: PenTool, label: 'Script', href: '/create/short-form', color: 'var(--color-reel)' },
-  { icon: Megaphone, label: 'Ad', href: '/create/ads', color: 'var(--color-primary)' },
-  { icon: MessageCircle, label: 'Post', href: '/create/social-post', color: 'var(--color-success)' },
-  { icon: Film, label: 'YouTube', href: '/create/youtube', color: 'var(--color-danger)' },
+  { icon: PenTool, label: 'Script', href: '/create?type=script', color: 'var(--color-reel)' },
+  { icon: Megaphone, label: 'Ad', href: '/create?type=ad', color: 'var(--color-primary)' },
+  { icon: MessageCircle, label: 'Post', href: '/create?type=post', color: 'var(--color-success)' },
+  { icon: Film, label: 'YouTube', href: '/create?type=youtube', color: 'var(--color-danger)' },
 ]
 
 export default async function TodayPage() {
@@ -266,7 +266,7 @@ function buildSuggestions(
       purposeLabel: 'Educate',
       icon: '📱',
       typeLabel: 'Script',
-      href: '/create/short-form',
+      href: '/create?type=script',
       platform: 'Instagram',
     })
     suggestions.push({
@@ -275,7 +275,7 @@ function buildSuggestions(
       purposeLabel: 'Sell',
       icon: '🎯',
       typeLabel: 'Ad',
-      href: '/create/ads',
+      href: '/create?type=ad',
       platform: 'Facebook',
     })
   }
@@ -288,7 +288,7 @@ function buildSuggestions(
       purposeLabel: 'Story',
       icon: '📱',
       typeLabel: 'Script',
-      href: '/create/short-form',
+      href: '/create?type=script',
     })
   }
 

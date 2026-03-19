@@ -13,26 +13,26 @@
    CSS Custom Properties
    =========================== */
 :root {
-  /* -- Colors (Calm Creative — warm dark theme) -- */
-  --color-bg: #0f0f12;
-  --color-surface: #18181f;
-  --color-elevated: #1f1f28;
-  --color-border: rgba(255, 255, 255, 0.07);
-  --color-text: #f0f0f3;
-  --color-text-muted: #71717a;
-  --color-text-dim: #52525b;
+  /* -- Colors (Calm Creative — warm light theme) -- */
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-elevated: #f5f5f5;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b7280;
+  --color-text-dim: #9ca3af;
   --color-primary: #6366f1;
-  --color-primary-hover: #818cf8;
-  --color-primary-soft: rgba(99, 102, 241, 0.08);
+  --color-primary-hover: #4f46e5;
+  --color-primary-soft: rgba(99, 102, 241, 0.06);
   --color-cta: #6366f1;
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
 
   /* -- Content type colors -- */
-  --color-reel: #06B6D4;
-  --color-youtube: #EF4444;
-  --color-ad: #3B82F6;
+  --color-reel: #0891b2;
+  --color-youtube: #dc2626;
+  --color-ad: #2563eb;
 
   /* -- Spacing (8pt grid) -- */
   --space-xs: 4px;
@@ -48,10 +48,10 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  /* -- Shadows (dark mode) -- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  /* -- Shadows (light mode) -- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
 
   /* -- Aliases for component compatibility -- */
   --bg-surface: var(--color-surface);
@@ -63,7 +63,7 @@
   --primary-hover: var(--color-primary-hover);
   --bg-input: var(--color-elevated);
   --bg-element: var(--color-elevated);
-  --bg-hover: rgba(255, 255, 255, 0.04);
+  --bg-hover: rgba(0, 0, 0, 0.03);
   --error-color: var(--color-danger);
   --error-rgb: 239, 68, 68;
   --primary-rgb: 99, 102, 241;
@@ -90,16 +90,16 @@
   --accent-violet: #8b5cf6;
 
   /* -- RGB values for translucent backgrounds -- */
-  --color-success-rgb: 34, 197, 94;
-  --color-warning-rgb: 245, 158, 11;
-  --color-danger-rgb: 239, 68, 68;
-  --color-primary-rgb: 59, 130, 246;
+  --color-success-rgb: 22, 163, 74;
+  --color-warning-rgb: 217, 119, 6;
+  --color-danger-rgb: 220, 38, 38;
+  --color-primary-rgb: 99, 102, 241;
 
-  /* -- Light text variants (for badges / dark-mode text on translucent bg) -- */
-  --color-success-light: #86efac;
-  --color-warning-light: #fcd34d;
-  --color-danger-light: #fca5a5;
-  --color-primary-light: #93c5fd;
+  /* -- Badge text variants -- */
+  --color-success-light: #15803d;
+  --color-warning-light: #a16207;
+  --color-danger-light: #b91c1c;
+  --color-primary-light: #4f46e5;
 
   /* -- Sidebar -- */
   --sidebar-width: 240px;
@@ -161,7 +161,7 @@ a:hover {
 }
 
 /* ===========================
-   Scrollbar (Dark themed)
+   Scrollbar
    =========================== */
 ::-webkit-scrollbar {
   width: 6px;

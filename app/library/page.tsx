@@ -52,7 +52,7 @@ export default async function LibraryPage() {
             const preview = scriptData?.hook || scriptData?.headline || scriptData?.caption || item.title || 'Untitled'
 
             return (
-              <div key={item.id} className={styles.card}>
+              <Link key={item.id} href={`/library/${item.id}`} className={styles.card}>
                 <div className={styles.cardTop}>
                   <span className={styles.typeIcon}>{meta.icon}</span>
                   <span className={styles.typeLabel}>{meta.label}</span>
@@ -66,7 +66,7 @@ export default async function LibraryPage() {
                   <span className={`${styles.statusDot} ${item.status === 'published' ? styles.published : ''}`} />
                   <span className={styles.statusText}>{item.status || 'draft'}</span>
                 </div>
-              </div>
+              </Link>
             )
           })}
         </div>
