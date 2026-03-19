@@ -164,30 +164,43 @@
 
 .generateBtn {
   width: 100%;
-  padding: 12px;
+  padding: 0.75rem;
+  height: 48px;
   background: var(--color-primary);
-  color: var(--color-text);
+  color: white;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.875rem;
+  font-family: inherit;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  transition: opacity 200ms ease;
-  margin-top: var(--space-lg);
+  gap: 0.5rem;
+  transition: all 150ms ease;
+  margin-top: 1rem;
 }
 
 .generateBtn:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.generateBtn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .generateBtn:disabled {
-  background: var(--color-border);
+  background: var(--color-elevated);
   color: var(--color-text-muted);
   cursor: not-allowed;
+  transform: none;
+}
+
+.generating {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .actionBtn {

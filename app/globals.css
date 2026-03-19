@@ -13,16 +13,18 @@
    CSS Custom Properties
    =========================== */
 :root {
-  /* -- Colors (Dark Theme) -- */
-  --color-bg: #0A0E17;
-  --color-surface: #111827;
-  --color-elevated: #1F2937;
-  --color-border: #374151;
-  --color-text: #F9FAFB;
-  --color-text-muted: #9CA3AF;
-  --color-primary: #3B82F6;
-  --color-primary-hover: #60A5FA;
-  --color-cta: #F97316;
+  /* -- Colors (Calm Creative — warm dark theme) -- */
+  --color-bg: #0f0f12;
+  --color-surface: #18181f;
+  --color-elevated: #1f1f28;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-text: #f0f0f3;
+  --color-text-muted: #71717a;
+  --color-text-dim: #52525b;
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-primary-soft: rgba(99, 102, 241, 0.08);
+  --color-cta: #6366f1;
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
@@ -61,10 +63,10 @@
   --primary-hover: var(--color-primary-hover);
   --bg-input: var(--color-elevated);
   --bg-element: var(--color-elevated);
-  --bg-hover: #374151;
+  --bg-hover: rgba(255, 255, 255, 0.04);
   --error-color: var(--color-danger);
   --error-rgb: 239, 68, 68;
-  --primary-rgb: 59, 130, 246;
+  --primary-rgb: 99, 102, 241;
 
   /* -- Shorthand aliases (used by CSS modules and components) -- */
   --surface: var(--color-surface);
