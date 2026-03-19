@@ -61,6 +61,7 @@ const navItems = [
     { href: '/eval', label: 'Eval', icon: TestTube },
     { href: '/upload', label: 'Upload', icon: Upload },
     { href: '/chat', label: 'AI Chat', icon: MessageSquare },
+    { href: '/onboarding', label: 'Brand Setup', icon: Settings },
     { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
