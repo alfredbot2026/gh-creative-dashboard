@@ -103,6 +103,7 @@
 
   /* -- Sidebar -- */
   --sidebar-width: 240px;
+  --sidebar-collapsed-width: 56px;
   --sidebar-collapsed: 64px;
 
   /* -- Typography -- */
@@ -210,16 +211,17 @@ a:hover {
 
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  margin-left: var(--sidebar-collapsed-width);
   padding: var(--space-xl);
   max-width: 1400px;
+  transition: margin-left 200ms ease;
 }
 
-/* Responsive: collapse sidebar on mobile */
+/* Responsive: no sidebar on mobile, bottom nav instead */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
     padding: var(--space-md);
-    padding-top: 72px; /* account for mobile top bar */
+    padding-bottom: calc(var(--space-md) + 72px); /* account for bottom nav */
   }
 }

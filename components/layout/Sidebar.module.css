@@ -2,14 +2,20 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: var(--sidebar-width);
+  width: 56px;
   height: 100vh;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   z-index: 100;
-  overflow-y: auto;
+  overflow: hidden;
+  transition: width 200ms ease;
+}
+
+.sidebar:hover {
+  width: var(--sidebar-width);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
 }
 
 /* Brand */
@@ -17,11 +23,17 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1.25rem 1.25rem 1rem;
+  padding: 1.25rem 1rem 1rem;
+  min-height: 56px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .brandEmoji {
   font-size: 1.25rem;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
 }
 
 .brandText {
@@ -29,6 +41,12 @@
   font-weight: 700;
   color: var(--color-text);
   letter-spacing: -0.02em;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.sidebar:hover .brandText {
+  opacity: 1;
 }
 
 /* Nav */
@@ -93,7 +111,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.45rem 0.625rem;
+  padding: 0.5rem 0.75rem;
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
   font-size: 0.8125rem;
@@ -101,6 +119,8 @@
   text-decoration: none;
   transition: all 0.12s ease;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .navItem:hover {
@@ -112,6 +132,23 @@
   color: var(--color-text);
   background: rgba(255, 255, 255, 0.08);
   font-weight: 600;
+}
+
+/* Icon: always visible and fixed width */
+.navItem > svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+/* Label: fade in on hover */
+.navItem > span {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.sidebar:hover .navItem > span {
+  opacity: 1;
 }
 
 /* Bottom section */
@@ -145,56 +182,9 @@
   background: rgba(239, 68, 68, 0.06);
 }
 
-/* Mobile */
+/* Mobile — hide sidebar entirely, BottomNav takes over */
 @media (max-width: 768px) {
   .sidebar {
-    position: fixed;
-    bottom: 0;
-    top: auto;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    border-right: none;
-    border-top: 1px solid var(--color-border);
-    padding: 0.5rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .brand { display: none; }
-  .bottom { display: none; }
-
-  .nav {
-    flex-direction: row;
-    gap: 0;
-    padding: 0;
-    width: 100%;
-    justify-content: space-around;
-  }
-
-  .group {
-    flex-direction: row;
-  }
-
-  .groupHeader { display: none; }
-
-  .groupItems {
-    display: flex;
-    flex-direction: row;
-    gap: 0;
-    margin: 0;
-  }
-
-  .navItem {
-    flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.625rem;
-  }
-
-  .navItem span {
-    white-space: nowrap;
+    display: none;
   }
 }
