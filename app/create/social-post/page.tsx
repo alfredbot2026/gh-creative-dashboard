@@ -5,6 +5,8 @@ import PageHeader from '@/components/ui/PageHeader'
 import PurposePicker from '@/components/create/PurposePicker'
 import ProductSelect from '@/components/create/ProductSelect'
 import TemplatePicker from '@/components/create/TemplatePicker'
+import StyleModeToggle from '@/components/create/StyleModeToggle'
+import type { StyleMode } from '@/components/create/StyleModeToggle'
 import type { ContentPurpose } from '@/lib/create/types'
 import type { ProductData } from '@/app/actions/products'
 import { Wand2, Copy, Image as ImageIcon, Hash } from 'lucide-react'
@@ -23,6 +25,9 @@ export default function SocialPostPage() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SocialPostResult | null>(null)
   const [copied, setCopied] = useState(false)
+
+  const [styleMode, setStyleMode] = useState<StyleMode>('polished')
+  const [ugcPhoto, setUgcPhoto] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     topic: '',
@@ -126,6 +131,13 @@ export default function SocialPostPage() {
               <option value="facebook">Facebook Post</option>
             </select>
           </div>
+
+          <StyleModeToggle
+            value={styleMode}
+            onChange={setStyleMode}
+            onPhotoSelect={setUgcPhoto}
+            selectedPhoto={ugcPhoto}
+          />
 
           <button
             className={`${layout.generateBtn} ${loading ? layout.generating : ''}`}

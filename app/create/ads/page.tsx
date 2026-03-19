@@ -9,6 +9,8 @@ import type { AdGenerationRequest, AdGenerationResponse, AdVariant, ContentPurpo
 import PurposePicker from '@/components/create/PurposePicker'
 import ProductSelect from '@/components/create/ProductSelect'
 import TemplatePicker from '@/components/create/TemplatePicker'
+import StyleModeToggle from '@/components/create/StyleModeToggle'
+import type { StyleMode } from '@/components/create/StyleModeToggle'
 import type { CarouselGenerationResponse, CarouselSlide } from '@/lib/create/carousel-types'
 import CarouselSlideCard from '@/components/create/CarouselSlideCard'
 import {
@@ -84,6 +86,10 @@ export default function AdsCreationPage() {
   const [generatingAllImages, setGeneratingAllImages] = useState(false)
   const [carouselSlideCount, setCarouselSlideCount] = useState(5)
   const [carouselStyle, setCarouselStyle] = useState('educational')
+
+  // Style mode (polished AI vs UGC)
+  const [styleMode, setStyleMode] = useState<StyleMode>('polished')
+  const [ugcPhoto, setUgcPhoto] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<AdGenerationRequest>({
     product: '',
@@ -204,6 +210,17 @@ export default function AdsCreationPage() {
   }
 
   const handleGenerateImage = async (variant: AdVariant) => {
+    // UGC mode: use selected photo directly, no AI generation
+    if (styleMode === 'ugc' && ugcPhoto) {
+      setGeneratedImages(prev => ({ ...prev, [variant.id]: ugcPhoto }))
+      return
+    }
+
+    if (styleMode === 'ugc' && !ugcPhoto) {
+      alert('Select a photo first — pick from your references or upload one.')
+      return
+    }
+
     setIsGeneratingImage(prev => ({ ...prev, [variant.id]: true }))
     try {
       const res = await fetch('/api/create/image', {
@@ -452,6 +469,16 @@ export default function AdsCreationPage() {
             </select>
           </div>
 
+          {/* Image Style Toggle */}
+          {formData.ad_format === 'static' && (
+            <StyleModeToggle
+              value={styleMode}
+              onChange={setStyleMode}
+              onPhotoSelect={setUgcPhoto}
+              selectedPhoto={ugcPhoto}
+            />
+          )}
+
           <button
             className={layout.generateBtn}
             onClick={handleGenerate}
@@ -578,7 +605,7 @@ export default function AdsCreationPage() {
                             style={{ width: 'auto', padding: '6px 16px', margin: 0 }}
                           >
                             {isGeneratingImg ? <RotateCw className="animate-spin" size={16} /> : <Sparkles size={16} />}
-                            {isGeneratingImg ? 'Generating...' : 'Generate Image'}
+                            {isGeneratingImg ? 'Generating...' : styleMode === 'ugc' ? 'Use Photo' : 'Generate Image'}
                           </button>
                         </div>
                       )}

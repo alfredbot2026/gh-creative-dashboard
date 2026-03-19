@@ -55,7 +55,8 @@ const navItems = [
         subItems: [
             { href: '/create/short-form', label: 'Short-form Scripts', icon: Rocket },
             { href: '/create/ads', label: 'Ads', icon: Rocket },
-            { href: '/create/social-post', label: 'Social Posts', icon: Rocket }
+            { href: '/create/social-post', label: 'Social Posts', icon: Rocket },
+            { href: '/create/youtube', label: 'YouTube Scripts', icon: Youtube }
         ]
     },
     { href: '/eval', label: 'Eval', icon: TestTube },

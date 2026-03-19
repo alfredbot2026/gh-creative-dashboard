@@ -20,7 +20,7 @@ interface TechniquesResponse {
 }
 
 interface PurposePickerProps {
-  lane: 'short-form' | 'ads'
+  lane: 'short-form' | 'ads' | 'youtube'
   onSelect: (purpose: ContentPurpose | null, hookId: string | null, frameworkId: string | null) => void
 }
 
