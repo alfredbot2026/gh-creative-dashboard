@@ -54,11 +54,13 @@ export default async function TodayPage() {
   // Get user's name from business profile
   const { data: profile } = await supabase
     .from('business_profile')
-    .select('business_name, owner_name')
+    .select('*')
     .limit(1)
     .single()
 
-  const userName = profile?.owner_name?.split(' ')[0] || 'there'
+  const userName = (profile as any)?.owner_name?.split(' ')[0]
+    || profile?.business_name?.split(' ')[0]
+    || 'there'
 
   // Get today's calendar items
   const todayStr = new Date().toISOString().split('T')[0]
