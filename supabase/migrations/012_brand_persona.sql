@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS brand_persona (
   backstory TEXT,
   appearance TEXT,
   avatar_url TEXT,
+  reference_images JSONB DEFAULT '[]'::jsonb,
   voice_preset TEXT DEFAULT 'warm_empowering',
   custom_voice_notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),

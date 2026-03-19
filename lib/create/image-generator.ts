@@ -84,25 +84,40 @@ export async function generateAdImage(
     .single()
 
   if (brandError || !brand) {
-    throw new Error('Brand style guide not found. Please configure it in Settings before generating images.')
+    console.warn('[image-generator] Brand style guide not found — using defaults')
   }
 
-  // 1b. Load brand persona for reference image (if creator_featured)
-  let personaAvatarPath: string | null = null
-  if (request.style === 'creator_featured') {
+  // 1b. Load brand persona for identity-consistent reference images
+  // Auto-inject for ANY style that features a person (not just creator_featured)
+  let personaRefImages: string[] = []
+  let identityLockPrompt = ''
+  if (request.style !== 'faceless_quote') {
     const { data: persona } = await supabase
       .from('brand_persona')
-      .select('avatar_url, appearance')
+      .select('*')
       .limit(1)
       .maybeSingle()
-    if (persona?.avatar_url) {
-      personaAvatarPath = persona.avatar_url
+    if (persona) {
+      // Use reference_images array (up to 6 photos) for identity consistency
+      const refs = (persona.reference_images as string[] | null) || []
+      if (refs.length > 0) {
+        personaRefImages = refs
+      } else if (persona.avatar_url) {
+        // Fallback: single avatar
+        personaRefImages = [persona.avatar_url]
+      }
+      if (personaRefImages.length > 0) {
+        // Identity lock prompt — tells Gemini to preserve exact facial features
+        identityLockPrompt = `CRITICAL IDENTITY REQUIREMENT: The person in this image must have the EXACT same facial features as the person shown in the reference photos. Maintain identical: eye shape, eye size, eye spacing, nose shape, nose bridge, lip shape, jawline contour, cheekbone structure, skin tone, skin texture, face proportions, and hair style. Do NOT generate a new face — reproduce the reference person's face exactly. All facial features must remain identical to the reference, including eyelid thickness, iris proportion, and expression style.`
+      }
     }
   }
 
-  // 2. Build full prompt
-  const brandPrefix = buildBrandPrefix(brand as BrandStyleGuide, request.style)
-  const fullPrompt = `${brandPrefix} ${request.prompt}`
+  // 2. Build full prompt with identity lock
+  const brandPrefix = brand ? buildBrandPrefix(brand as BrandStyleGuide, request.style) : ''
+  const fullPrompt = identityLockPrompt
+    ? `${identityLockPrompt}\n\n${brandPrefix} ${request.prompt}`
+    : `${brandPrefix} ${request.prompt}`
 
   // 3. Create temp directory
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gh-creative-'))
@@ -113,9 +128,9 @@ export async function generateAdImage(
   try {
     // 4. Download reference images if provided
     const allRefImages = [...(request.reference_images || [])]
-    // Inject persona avatar as reference for creator_featured style
-    if (personaAvatarPath) {
-      allRefImages.unshift(personaAvatarPath)
+    // Inject ALL persona reference photos for identity consistency
+    if (personaRefImages.length > 0) {
+      allRefImages.unshift(...personaRefImages)
     }
     if (allRefImages.length > 0) {
       localRefPaths = await Promise.all(
@@ -142,7 +157,7 @@ export async function generateAdImage(
     // 6. Execute via uv (no shell — execFile)
     const { stdout, stderr } = await execFileAsync('uv', args, {
       env: { ...process.env },
-      timeout: 120_000, // 2 min timeout
+      timeout: 180_000, // 3 min timeout (extra time for multi-reference identity lock)
     })
 
     if (stderr && stderr.trim()) {

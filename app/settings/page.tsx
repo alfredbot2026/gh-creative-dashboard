@@ -62,6 +62,7 @@ export default function SettingsPage() {
     const [persona, setPersona] = useState<{ character_name: string; backstory: string; appearance: string; voice_preset: string; custom_voice_notes: string; avatar_url?: string }>({ character_name: 'Grace', backstory: '', appearance: '', voice_preset: 'warm_empowering', custom_voice_notes: '' })
     const [uploadingAvatar, setUploadingAvatar] = useState(false)
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+    const [refPreviews, setRefPreviews] = useState<string[]>([])
 
     const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
     const [error, setError] = useState<string | null>(null)
@@ -82,13 +83,22 @@ export default function SettingsPage() {
                 if (existingProducts) setProducts(existingProducts)
                 if (existingPersona) {
                     setPersona({ ...persona, ...existingPersona })
-                    // Load avatar preview if exists
-                    if (existingPersona.avatar_url) {
+                    // Load reference image previews
+                    const refs = (existingPersona.reference_images as string[]) || []
+                    if (refs.length > 0) {
                         const sb2 = createBrowserClient()
-                        const parts = existingPersona.avatar_url.replace('ad-creatives/', '').split('/')
-                        const objPath = parts.join('/')
+                        const urls: string[] = []
+                        for (const ref of refs) {
+                            const objPath = ref.replace('ad-creatives/', '')
+                            const { data: signedData } = await sb2.storage.from('ad-creatives').createSignedUrl(objPath, 3600)
+                            if (signedData?.signedUrl) urls.push(signedData.signedUrl)
+                        }
+                        setRefPreviews(urls)
+                    } else if (existingPersona.avatar_url) {
+                        const sb2 = createBrowserClient()
+                        const objPath = existingPersona.avatar_url.replace('ad-creatives/', '')
                         const { data: signedData } = await sb2.storage.from('ad-creatives').createSignedUrl(objPath, 3600)
-                        if (signedData?.signedUrl) setAvatarPreview(signedData.signedUrl)
+                        if (signedData?.signedUrl) setRefPreviews([signedData.signedUrl])
                     }
                 }
                 if (existingBrand) {
@@ -478,29 +488,33 @@ export default function SettingsPage() {
                             <textarea className={styles.textarea} rows={2} value={persona.appearance} onChange={e => setPersona({ ...persona, appearance: e.target.value })} placeholder="e.g. Filipino woman, 30s, warm smile, casual-professional style" />
                         </label>
                         <div className={styles.label}>
-                            Reference Photo (used by AI for consistent character)
-                            {persona.avatar_url && avatarPreview && (
-                                <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
-                                    <img src={avatarPreview} alt="Reference" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 'var(--radius-md)', border: '2px solid var(--color-border)' }} />
+                            Reference Photos (used by AI for consistent face identity)
+                            {refPreviews.length > 0 && (
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                                    {refPreviews.map((url, i) => (
+                                        <img key={i} src={url} alt={`Ref ${i + 1}`} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 'var(--radius-md)', border: '2px solid var(--color-border)' }} />
+                                    ))}
                                 </div>
                             )}
                             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
+                                    multiple
                                     style={{ fontSize: '0.75rem' }}
                                     onChange={async (e) => {
-                                        const file = e.target.files?.[0]
-                                        if (!file) return
+                                        const files = e.target.files
+                                        if (!files || files.length === 0) return
                                         setUploadingAvatar(true)
                                         try {
                                             const fd = new FormData()
-                                            fd.append('avatar', file)
+                                            for (const file of Array.from(files)) {
+                                                fd.append('photos', file)
+                                            }
                                             const res = await fetch('/api/persona/avatar', { method: 'POST', body: fd })
                                             if (!res.ok) throw new Error((await res.json()).error || 'Upload failed')
                                             const data = await res.json()
-                                            setPersona(prev => ({ ...prev, avatar_url: data.avatar_url }))
-                                            setAvatarPreview(data.signed_url)
+                                            setRefPreviews(data.signed_urls || [])
                                             setStatus('saved')
                                             setTimeout(() => setStatus('idle'), 2000)
                                         } catch (err: any) {
@@ -513,7 +527,7 @@ export default function SettingsPage() {
                                 {uploadingAvatar && <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Uploading...</span>}
                             </div>
                             <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.35rem' }}>
-                                Upload a clear photo. AI will use this as a style reference for consistent character generation. JPG/PNG/WebP, max 10MB.
+                                Upload 3-6 clear photos from different angles. AI uses these as identity references — it will preserve exact facial features across all generated images. JPG/PNG/WebP, max 10MB each.
                             </p>
                         </div>
                     </section>
