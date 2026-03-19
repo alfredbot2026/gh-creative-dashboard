@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { generateAdImage } from '@/lib/create/image-generator'
+import { generateImage } from '@/lib/create/image-generator-api'
 import type { ImageGenerationRequest } from '@/lib/create/image-types'
 
 const VALID_STYLES = ['product_shot', 'lifestyle', 'promotional', 'faceless_quote', 'creator_featured'] as const
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await generateAdImage(body, user.id)
+    const result = await generateImage(body)
     return NextResponse.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Image generation failed'
