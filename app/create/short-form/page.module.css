@@ -1,0 +1,85 @@
+/**
+ * Short-form Script Generator — page-specific styles.
+ * Shared 3-panel layout classes live in app/create/layout.module.css.
+ * All colors reference CSS vars from globals.css.
+ */
+
+/* ── Script Preview ──────────────────────────────────────── */
+
+.previewHeader {
+  margin-bottom: var(--space-lg);
+}
+
+.scriptTitle {
+  font-size: 1.5rem;
+  margin: 0 0 8px 0;
+}
+
+.scriptMeta {
+  display: flex;
+  gap: var(--space-md);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+}
+
+/* ── Hook Banner ─────────────────────────────────────────── */
+
+.hookBanner {
+  background: linear-gradient(
+    135deg,
+    var(--accent-purple-light),
+    transparent
+  );
+  border-left: 4px solid var(--accent-purple-dark);
+  padding: var(--space-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin-bottom: var(--space-lg);
+}
+
+.hookLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.hookText {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* ── Caption Box ─────────────────────────────────────────── */
+
+.captionBox {
+  margin-top: var(--space-xl);
+  background: var(--surface-hover);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+}
+
+.captionBox h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.875rem;
+}
+
+.captionText {
+  white-space: pre-wrap;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hashtag {
+  color: var(--color-primary);
+  font-size: 0.875rem;
+}

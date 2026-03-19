@@ -344,3 +344,47 @@
         min-height: auto;
     }
 }
+/* Content Mix Suggestion Banner */
+.mixBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.mixBannerIcon {
+  color: var(--color-warning, #f59e0b);
+  flex-shrink: 0;
+}
+
+.mixBannerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.8125rem;
+}
+
+.mixBannerContent strong {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+}
+
+.mixBannerText {
+  color: var(--color-text);
+}
+
+.mixLink {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.mixLink:hover {
+  text-decoration: underline;
+}

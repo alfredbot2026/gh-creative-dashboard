@@ -192,3 +192,80 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Insights Section ────────────────────────────────────── */
+
+.insightsSection {
+    margin: var(--space-xl) 0;
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.insightsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.insightsTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-text);
+}
+
+.insightsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.insightCard {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--surface-hover);
+    border-radius: var(--radius-md);
+}
+
+.insightIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.insightFramework {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.insightMetric {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.kbUpdatesSummary {
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(168, 85, 247, 0.1);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: var(--accent-purple);
+}
+
+.noInsights {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin: 0;
+}

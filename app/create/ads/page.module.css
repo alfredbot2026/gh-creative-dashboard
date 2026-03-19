@@ -1,0 +1,337 @@
+/**
+ * Ad Copy Generator — page-specific styles.
+ * Shared 3-panel layout classes live in app/create/layout.module.css.
+ * All colors reference CSS vars from globals.css.
+ */
+
+/* ── Variants Grid ───────────────────────────────────────── */
+
+.variantsGrid {
+  /* intentionally minimal — auto-fill grid is set inline for dynamic column count */
+}
+
+.variantsGridInner {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-lg);
+}
+
+/* ── Ad Variant Card ─────────────────────────────────────── */
+
+.adVariantCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  position: relative;
+  transition: border-color 150ms ease;
+}
+
+.adVariantCard.selected {
+  border: 2px solid var(--color-primary);
+}
+
+.cardCheckbox {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* ── Framework Badge ─────────────────────────────────────── */
+
+.frameworkBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  /* color/background set via inline style from getFrameworkColor() */
+}
+
+.cardBadgeRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── Image Placeholder ───────────────────────────────────── */
+
+.imagePlaceholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-bottom: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.imagePreview {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-bottom: var(--space-md);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.imagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Ad Copy Text ────────────────────────────────────────── */
+
+.adHeadline {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  padding-right: 24px;
+  color: var(--color-text);
+}
+
+.adPrimaryText {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  color: var(--color-text);
+}
+
+.adDescription {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ── CTA Preview Box ─────────────────────────────────────── */
+
+.ctaPreview {
+  padding: 12px;
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.ctaLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.ctaType {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Card Footer Actions ─────────────────────────────────── */
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.cardActionBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.cardActionBtn:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.cardActionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Variants Header ─────────────────────────────────────── */
+
+.variantsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.variantsTitle {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.provenanceMeta {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Empty hint ──────────────────────────────────────────── */
+
+.selectionHint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ── Carousel Strip ──────────────────────────────────────── */
+
+.carouselStrip {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-md);
+  scroll-snap-type: x mandatory;
+}
+
+.slideCard {
+  min-width: 280px;
+  max-width: 320px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  background: var(--color-surface);
+}
+
+.slideHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+}
+
+.slideNumber {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.slideImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+}
+
+.slideImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.slideImagePlaceholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: var(--space-sm);
+}
+
+.slideGenBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.slideGenBtn:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.slideGenBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slideHeadline {
+  margin: 0 0 6px 0;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.slideBody {
+  margin: 0 0 6px 0;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.slideOverlay {
+  margin: 0 0 6px 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* ── Carousel Caption ────────────────────────────────────── */
+
+.carouselCaption {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--surface-hover);
+  border-radius: var(--radius-md);
+}
+
+.carouselCaption h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.carouselCaption p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.hashtags {
+  margin-top: 8px !important;
+  font-size: 0.8rem !important;
+  color: var(--color-primary) !important;
+}

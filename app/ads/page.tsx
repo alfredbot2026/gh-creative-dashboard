@@ -10,7 +10,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import PageHeader from '@/components/ui/PageHeader'
 import StatCard from '@/components/ui/StatCard'
 import StatusBadge from '@/components/ui/StatusBadge'
-import { DollarSign, MousePointerClick, Target, TrendingUp, RefreshCw, Loader2 } from 'lucide-react'
+import { DollarSign, MousePointerClick, Target, TrendingUp, RefreshCw, Loader2, Brain, Trophy, AlertTriangle } from 'lucide-react'
 import styles from './page.module.css'
 
 /* Ad row from Supabase */
@@ -36,6 +36,8 @@ export default function AdsPage() {
     const [ads, setAds] = useState<AdRow[]>([])
     const [syncing, setSyncing] = useState(false)
     const [syncResult, setSyncResult] = useState<string | null>(null)
+    const [insights, setInsights] = useState<any>(null)
+    const [analyzingInsights, setAnalyzingInsights] = useState(false)
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,6 +76,25 @@ export default function AdsPage() {
         }
     }
 
+    /* Run learning analysis */
+    const handleAnalyze = async () => {
+        setAnalyzingInsights(true)
+        try {
+            const res = await fetch('/api/analytics/learn', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ period_days: 30 }),
+            })
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || 'Analysis failed')
+            setInsights(data)
+        } catch (err) {
+            console.error('Learning analysis error:', err)
+        } finally {
+            setAnalyzingInsights(false)
+        }
+    }
+
     /* Calculate aggregate stats */
     const totalSpend = ads.reduce((sum, ad) => sum + Number(ad.spend || 0), 0)
     const avgRoas = ads.length > 0
@@ -106,6 +127,60 @@ export default function AdsPage() {
                 <StatCard label="Avg ROAS" value={`${avgRoas}x`} icon={<TrendingUp size={18} />} />
                 <StatCard label="Total Conversions" value={totalConversions} icon={<Target size={18} />} />
                 <StatCard label="Avg CTR" value={`${avgCtr}%`} icon={<MousePointerClick size={18} />} />
+            </div>
+
+            {/* Insights Section */}
+            <div className={styles.insightsSection}>
+                <div className={styles.insightsHeader}>
+                    <h2 className={styles.insightsTitle}>
+                        <Brain size={20} /> Performance Insights
+                    </h2>
+                    <button
+                        className={styles.syncButton}
+                        onClick={handleAnalyze}
+                        disabled={analyzingInsights}
+                    >
+                        {analyzingInsights ? <Loader2 size={16} className={styles.spinner} /> : <Brain size={16} />}
+                        {analyzingInsights ? 'Analyzing...' : 'Analyze Patterns'}
+                    </button>
+                </div>
+
+                {insights ? (
+                    <div className={styles.insightsGrid}>
+                        {insights.insights
+                            ?.filter((i: any) => i.metric_name === 'avg_roas')
+                            ?.sort((a: any, b: any) => b.metric_value - a.metric_value)
+                            ?.map((insight: any, idx: number) => (
+                                <div key={idx} className={styles.insightCard}>
+                                    <div className={styles.insightIcon}>
+                                        {idx === 0 ? <Trophy size={18} style={{ color: 'var(--accent-emerald)' }} /> : <TrendingUp size={18} style={{ color: 'var(--color-text-muted)' }} />}
+                                    </div>
+                                    <div>
+                                        <span className={styles.insightFramework}>{insight.framework}</span>
+                                        <span className={styles.insightMetric}>
+                                            {insight.metric_value}x ROAS ({insight.sample_size} ads)
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+
+                        {insights.kb_updates?.length > 0 && (
+                            <div className={styles.kbUpdatesSummary}>
+                                <span>{insights.kb_updates.length} KB entries adjusted based on performance</span>
+                            </div>
+                        )}
+
+                        {insights.insights?.length === 0 && (
+                            <p className={styles.noInsights}>
+                                Not enough data yet. Need 3+ ads per framework to generate insights.
+                            </p>
+                        )}
+                    </div>
+                ) : (
+                    <p className={styles.noInsights}>
+                        Click &quot;Analyze Patterns&quot; to see which frameworks perform best.
+                    </p>
+                )}
             </div>
 
             {/* Campaign cards */}

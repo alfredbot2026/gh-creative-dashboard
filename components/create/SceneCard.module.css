@@ -1,0 +1,126 @@
+/**
+ * SceneCard — dark-mode CSS module.
+ * All colors reference CSS vars from globals.css. No hardcoded hex values.
+ */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.headerLeft {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sceneNumberBadge {
+  background: var(--color-primary);
+  color: var(--color-text);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.hookTypeBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent-purple-light);
+  color: var(--accent-purple);
+  border: 1px solid var(--accent-purple-dark);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.duration {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* ── Visual Direction ────────────────────────────────────── */
+
+.visualDirection {
+  display: flex;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.875rem;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+}
+
+.visualIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Script Text ─────────────────────────────────────────── */
+
+.scriptText {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.scriptText:last-child {
+  margin-bottom: 0;
+}
+
+/* ── B-Roll Callout ──────────────────────────────────────── */
+
+.brollCallout {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  padding: 6px 10px;
+  border-left: 3px solid var(--color-primary);
+  background: var(--surface-hover);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-top: 12px;
+}
+
+/* ── Footer Actions ──────────────────────────────────────── */
+
+.footer {
+  margin-top: var(--space-md);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.regenerateBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 150ms ease;
+}
+
+.regenerateBtn:hover {
+  background: var(--surface-hover);
+}

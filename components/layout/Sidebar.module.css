@@ -1,133 +1,200 @@
-/**
- * Sidebar Styles — Fixed left nav
- * Dark surface background with glow-based active indicator.
- */
-
 .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: var(--sidebar-width);
-    height: 100vh;
-    background: var(--color-surface);
-    border-right: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    padding: var(--space-md);
-    z-index: 100;
-    overflow-y: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
 }
 
-/* -- Brand area -- */
+/* Brand */
 .brand {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-sm);
-    margin-bottom: var(--space-xl);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1.25rem 1rem;
 }
 
-.brandIcon {
-    color: var(--color-cta);
+.brandEmoji {
+  font-size: 1.25rem;
 }
 
 .brandText {
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-text);
-    letter-spacing: -0.02em;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
 }
 
-/* -- Navigation -- */
+/* Nav */
 .nav {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    flex: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
 }
 
+/* Groups */
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.group + .group {
+  margin-top: 0.5rem;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color 0.12s ease;
+}
+
+.groupHeader:hover {
+  color: var(--color-text);
+}
+
+.chevron {
+  transition: transform 0.15s ease;
+  opacity: 0.5;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.groupItems {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 2px;
+}
+
+/* Nav items */
 .navItem {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius-md);
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 200ms ease;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.625rem;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.12s ease;
+  cursor: pointer;
 }
 
 .navItem:hover {
-    color: var(--color-text);
-    background: var(--color-elevated);
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-/* Active nav item — blue left border + subtle blue bg */
-.active {
-    color: var(--color-primary);
-    background: rgba(59, 130, 246, 0.1);
-    border-left: 3px solid var(--color-primary);
-    padding-left: calc(var(--space-md) - 3px);
+.navItem.active {
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
 }
 
-.navLabel {
-    white-space: nowrap;
+/* Bottom section */
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0.75rem;
+  border-top: 1px solid var(--color-border);
 }
 
-/* -- Footer -- */
-.footer {
-    padding: var(--space-md) var(--space-sm);
-    border-top: 1px solid var(--color-border);
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.45rem 0.625rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
 }
 
-.footerText {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    font-family: var(--font-mono);
+.logoutBtn:hover {
+  color: var(--color-danger, #ef4444);
+  background: rgba(239, 68, 68, 0.06);
 }
 
-/* ===========================
-   Mobile: hide sidebar, show top bar
-   =========================== */
+/* Mobile */
 @media (max-width: 768px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-        align-items: center;
-        padding: var(--space-sm) var(--space-md);
-        border-right: none;
-        border-bottom: 1px solid var(--color-border);
-    }
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--color-border);
+    padding: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
 
-    .brand {
-        margin-bottom: 0;
-        padding: 0;
-    }
+  .brand { display: none; }
+  .bottom { display: none; }
 
-    .nav {
-        flex-direction: row;
-        flex: 1;
-        justify-content: flex-end;
-        gap: var(--space-xs);
-        overflow-x: auto;
-    }
+  .nav {
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
+    width: 100%;
+    justify-content: space-around;
+  }
 
-    .navLabel {
-        display: none;
-    }
+  .group {
+    flex-direction: row;
+  }
 
-    .active {
-        border-left: none;
-        border-bottom: 2px solid var(--color-primary);
-        padding-left: var(--space-md);
-    }
+  .groupHeader { display: none; }
 
-    .footer {
-        display: none;
-    }
+  .groupItems {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    margin: 0;
+  }
+
+  .navItem {
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.625rem;
+  }
+
+  .navItem span {
+    white-space: nowrap;
+  }
 }

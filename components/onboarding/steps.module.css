@@ -1,0 +1,247 @@
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: -0.5rem 0 0.5rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.inputSmall {
+  composes: input;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--color-primary);
+}
+
+.hint {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* List sections */
+.listSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.listTitle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.addBtn {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: none;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+}
+
+.listItem {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.removeBtn {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.removeBtn:hover {
+  color: var(--color-danger, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* Color palette */
+.colorRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.colorPicker {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+/* Products */
+.productCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--color-surface);
+}
+
+.productHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.addProductBtn {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.addProductBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.emptyHint {
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  padding: 1rem;
+}
+
+/* Persona photos */
+.photoGrid {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.photoThumb {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-border);
+}
+
+.fileInput {
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+/* Complete step */
+.complete {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.completeIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.whatNext {
+  text-align: left;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.whatNext h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  color: var(--color-text);
+}
+
+.whatNext ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.whatNext li {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
