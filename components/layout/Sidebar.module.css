@@ -84,6 +84,14 @@
   cursor: pointer;
   border-radius: var(--radius-sm);
   transition: color 0.12s ease;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.sidebar:hover .groupHeader {
+  opacity: 1;
 }
 
 .groupHeader:hover {

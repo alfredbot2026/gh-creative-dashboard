@@ -7,6 +7,18 @@
   max-width: 640px;
   margin: 0 auto;
   padding: 2.5rem 1.5rem 4rem;
+  animation: fadeInUp 400ms ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== Greeting ===== */
@@ -20,6 +32,10 @@
   letter-spacing: -0.02em;
   color: var(--color-text);
   margin: 0;
+  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-text-muted) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .wave {
@@ -68,17 +84,35 @@
 .suggestionCard {
   display: block;
   background: var(--color-surface);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 1.25rem;
   text-decoration: none;
   color: var(--color-text);
   transition: all 200ms ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.suggestionCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.suggestionCard:hover::before {
+  opacity: 1;
 }
 
 .suggestionCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .suggestionCard:active {
@@ -194,20 +228,31 @@
   gap: 0.5rem;
   padding: 1.25rem 0.5rem;
   background: var(--color-surface);
-  border-radius: 12px;
+  border-radius: 14px;
   text-decoration: none;
   color: var(--color-text-muted);
   font-size: 0.75rem;
   font-weight: 500;
   transition: all 200ms ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  position: relative;
 }
+
+.quickCard:nth-child(1) { --card-accent: #06b6d4; }
+.quickCard:nth-child(2) { --card-accent: #6366f1; }
+.quickCard:nth-child(3) { --card-accent: #22c55e; }
+.quickCard:nth-child(4) { --card-accent: #ef4444; }
 
 .quickCard:hover {
   color: var(--color-text);
   background: var(--color-elevated);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
+              0 0 20px color-mix(in srgb, var(--card-accent) 15%, transparent);
+}
+
+.quickCard:hover svg {
+  color: var(--card-accent);
 }
 
 .quickCard:active {
