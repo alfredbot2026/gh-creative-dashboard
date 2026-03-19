@@ -68,14 +68,14 @@ export default function OnboardingPage() {
   useEffect(() => {
     const checkOnboarding = async () => {
       const { data: profile } = await supabase
-        .from('business_profiles')
+        .from('business_profile')
         .select('business_name')
         .limit(1)
         .maybeSingle()
       // If they have a profile, pre-fill what we can
       if (profile?.business_name) {
         const { data: fullProfile } = await supabase
-          .from('business_profiles')
+          .from('business_profile')
           .select('*')
           .limit(1)
           .single()
@@ -91,12 +91,64 @@ export default function OnboardingPage() {
             content_pillars: fullProfile.content_pillars || [],
             platforms: fullProfile.platforms || [],
             competitors: fullProfile.competitors || [],
-            additional_notes: fullProfile.additional_notes || '',
+            additional_notes: fullProfile.notes || fullProfile.additional_notes || '',
           }))
         }
       }
     }
+    // Also load brand style guide
+    const loadBrand = async () => {
+      const { data: guide } = await supabase.from('brand_style_guide').select('*').limit(1).maybeSingle()
+      if (guide) {
+        const vr = (guide.voice_rubric as any) || {}
+        setData(prev => ({
+          ...prev,
+          color_palette: (guide.color_palette as any[])?.length ? guide.color_palette as any : prev.color_palette,
+          photography_style: guide.photography_style || '',
+          product_styling_rules: guide.product_styling_rules || '',
+          creator_description: guide.creator_description || '',
+          wardrobe_notes: guide.wardrobe_notes || '',
+          tone_descriptors: vr.tone_descriptors || [],
+          taglish_ratio: vr.taglish_ratio?.target ?? 0.4,
+          banned_ai_words: vr.banned_ai_words || prev.banned_ai_words,
+        }))
+      }
+    }
+
+    // Load products
+    const loadProducts = async () => {
+      const { data: prods } = await supabase.from('product_catalog').select('*').eq('is_active', true)
+      if (prods?.length) {
+        setData(prev => ({
+          ...prev,
+          products: prods.map((p: any) => ({
+            name: p.name || '', description: p.description || '', price: p.price || '',
+            product_type: p.product_type || 'course', target_audience: p.target_audience || '',
+            usps: p.usps || [], offer_details: p.offer_details || '',
+          })),
+        }))
+      }
+    }
+
+    // Load persona
+    const loadPersona = async () => {
+      const { data: persona } = await supabase.from('brand_persona').select('*').limit(1).maybeSingle()
+      if (persona) {
+        setData(prev => ({
+          ...prev,
+          character_name: persona.character_name || '',
+          backstory: persona.backstory || '',
+          appearance: persona.appearance || '',
+          voice_preset: persona.voice_preset || 'warm_empowering',
+          custom_voice_notes: persona.custom_voice_notes || '',
+        }))
+      }
+    }
+
     checkOnboarding()
+    loadBrand()
+    loadProducts()
+    loadPersona()
   }, [])
 
   const updateData = (partial: Partial<typeof data>) => {
@@ -108,7 +160,7 @@ export default function OnboardingPage() {
     try {
       if (step === 0) {
         // Save business profile
-        const { data: existing } = await supabase.from('business_profiles').select('id').limit(1).maybeSingle()
+        const { data: existing } = await supabase.from('business_profile').select('id').limit(1).maybeSingle()
         const profileData = {
           business_name: data.business_name,
           industry: data.industry,
@@ -119,12 +171,12 @@ export default function OnboardingPage() {
           content_pillars: data.content_pillars.filter(Boolean),
           platforms: data.platforms.filter(Boolean),
           competitors: data.competitors.filter(Boolean),
-          additional_notes: data.additional_notes,
+          notes: data.additional_notes,
         }
         if (existing?.id) {
-          await supabase.from('business_profiles').update(profileData).eq('id', existing.id)
+          await supabase.from('business_profile').update({ ...profileData, updated_at: new Date().toISOString() }).eq('id', existing.id)
         } else {
-          await supabase.from('business_profiles').insert(profileData)
+          await supabase.from('business_profile').insert(profileData)
         }
       } else if (step === 1) {
         // Save brand style guide

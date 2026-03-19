@@ -2,9 +2,13 @@ const { createClient } = require('@supabase/supabase-js');
 const dotenv = require('dotenv');
 dotenv.config({ path: '.env.local' });
 
+// Use service role key to bypass RLS for seeding
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucXdxdW9ld3ZnZnp0ZW55eWdmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzAxMzEzMSwiZXhwIjoyMDg4NTg5MTMxfQ.IVOhKJrpDb2RdIkNdPi7IoF9j1Df8r0_hMwgx7-V7oY';
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  SERVICE_ROLE_KEY
 );
 
 const brandStyleGuide = {
@@ -98,7 +102,6 @@ GENERAL RULES:
 - Never use competitor product photos.
 - Always show products in use — in the hands of a mom, on her desk, in her bag.`,
 
-  // ── GRACE'S APPEARANCE (for AI image generation) ──────────────────────────
   creator_description: `Grace is a Filipino woman in her early-to-mid 30s. She has a warm, approachable presence — the "ate" (older sister) energy that Filipino moms trust immediately. Physical baseline for image generation:
 
 - Ethnicity: Filipina, Southeast Asian features
@@ -132,7 +135,6 @@ AVOID:
 - Heavy jewelry or bling
 - Any clothing that reads as "rich influencer" rather than "real mom who built this"`,
 
-  // ── BRAND VOICE ────────────────────────────────────────────────────────────
   voice_rubric: {
     tone_descriptors: [
       "warm",
@@ -196,7 +198,6 @@ AVOID:
     cta_style: "Soft invitation, not pressure. 'Subukan mo' > 'Buy now'. 'I-message mo ako' > 'Click the link'."
   },
 
-  // ── CAPTION RULES ──────────────────────────────────────────────────────────
   caption_rules: {
     instagram: {
       max_length: 2200,
@@ -247,7 +248,6 @@ AVOID:
     }
   },
 
-  // ── AVOID LIST ─────────────────────────────────────────────────────────────
   avoid_list: [
     "Competitors' branding or logos",
     "Any imagery that looks like a Western lifestyle brand",
@@ -263,24 +263,41 @@ AVOID:
 };
 
 async function run() {
-  console.log('Checking existing brand_style_guide rows...');
+  console.log('Fetching all existing brand_style_guide rows...');
   
   const { data: existing, error: checkErr } = await supabase
     .from('brand_style_guide')
-    .select('id')
-    .limit(1);
+    .select('id');
 
   if (checkErr) {
     console.error('❌ Error checking table:', checkErr.message);
     process.exit(1);
   }
 
-  if (existing && existing.length > 0) {
-    console.log(`⚠️  Table already has ${existing.length} row(s). Updating the first row instead of inserting.`);
+  const keepId = existing[0]?.id;
+
+  // Delete duplicate rows if more than 1
+  if (existing.length > 1) {
+    const deleteIds = existing.slice(1).map(r => r.id);
+    console.log(`🗑️  Deleting ${deleteIds.length} duplicate row(s)...`);
+    const { error: delErr } = await supabase
+      .from('brand_style_guide')
+      .delete()
+      .in('id', deleteIds);
+    if (delErr) {
+      console.error('❌ Delete failed:', delErr.message);
+      process.exit(1);
+    }
+    console.log('✅ Duplicates removed.');
+  }
+
+  if (keepId) {
+    // Update the surviving row with full brand guide
+    console.log(`Updating row ${keepId} with full brand style guide...`);
     const { data, error } = await supabase
       .from('brand_style_guide')
       .update(brandStyleGuide)
-      .eq('id', existing[0].id)
+      .eq('id', keepId)
       .select();
     
     if (error) {
@@ -288,21 +305,21 @@ async function run() {
       process.exit(1);
     }
     console.log('✅ Brand style guide UPDATED. Row ID:', data[0].id);
-    return;
+  } else {
+    // No existing rows — fresh insert
+    console.log('No existing rows. Inserting fresh...');
+    const { data, error } = await supabase
+      .from('brand_style_guide')
+      .insert([brandStyleGuide])
+      .select();
+
+    if (error) {
+      console.error('❌ Insert failed:', error.message);
+      process.exit(1);
+    }
+    console.log('✅ Brand style guide INSERTED. Row ID:', data[0].id);
   }
 
-  console.log('Inserting brand style guide...');
-  const { data, error } = await supabase
-    .from('brand_style_guide')
-    .insert([brandStyleGuide])
-    .select();
-
-  if (error) {
-    console.error('❌ Insert failed:', error.message);
-    process.exit(1);
-  }
-
-  console.log('✅ Brand style guide INSERTED. Row ID:', data[0].id);
   console.log('Fields populated:', Object.keys(brandStyleGuide).join(', '));
 }
 
