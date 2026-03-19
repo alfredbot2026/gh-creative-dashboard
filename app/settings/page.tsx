@@ -52,13 +52,14 @@ const EMPTY_BRAND_STYLE: Partial<BrandStyleGuide> = {
 }
 
 export default function SettingsPage() {
-    const [activeTab, setActiveTab] = useState<'business' | 'brand' | 'products'>('business')
+    const [activeTab, setActiveTab] = useState<'business' | 'brand' | 'products' | 'persona'>('business')
 
     const [profile, setProfile] = useState<BusinessProfileData>(EMPTY_PROFILE)
     const [brandStyle, setBrandStyle] = useState<Partial<BrandStyleGuide>>(EMPTY_BRAND_STYLE)
     const [products, setProducts] = useState<ProductData[]>([])
     const [editingProduct, setEditingProduct] = useState<ProductData | null>(null)
     const [showProductForm, setShowProductForm] = useState(false)
+    const [persona, setPersona] = useState({ character_name: 'Grace', backstory: '', appearance: '', voice_preset: 'warm_empowering', custom_voice_notes: '' })
 
     const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
     const [error, setError] = useState<string | null>(null)
@@ -67,13 +68,17 @@ export default function SettingsPage() {
     useEffect(() => {
         async function load() {
             try {
-                const [existingProfile, existingBrand, existingProducts] = await Promise.all([
+                const { createClient: createBrowserClient } = await import('@/lib/supabase/client')
+                const supabaseClient = createBrowserClient()
+                const [existingProfile, existingBrand, existingProducts, { data: existingPersona }] = await Promise.all([
                     getBusinessProfile(),
                     getBrandStyleGuide().catch(() => null),
-                    listProducts().catch(() => [])
+                    listProducts().catch(() => []),
+                    supabaseClient.from('brand_persona').select('*').limit(1).maybeSingle()
                 ])
                 if (existingProfile) setProfile(existingProfile)
                 if (existingProducts) setProducts(existingProducts)
+                if (existingPersona) setPersona({ ...persona, ...existingPersona })
                 if (existingBrand) {
                     // merge in case of missing nested keys
                     setBrandStyle({
@@ -215,6 +220,12 @@ export default function SettingsPage() {
                     onClick={() => setActiveTab('products')}
                 >
                     Products
+                </button>
+                <button
+                    className={`${styles.tab} ${activeTab === 'persona' ? styles.tabActive : ''}`}
+                    onClick={() => setActiveTab('persona')}
+                >
+                    Brand Persona
                 </button>
             </div>
 
@@ -433,6 +444,65 @@ export default function SettingsPage() {
                             {products.length === 0 && !showProductForm && (
                                 <span className={styles.emptyList}>No products yet. Add your first product to auto-fill content generators.</span>
                             )}
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {activeTab === 'persona' && (
+                <div className={styles.formGrid}>
+                    <section className={styles.section}>
+                        <h2 className={styles.sectionTitle}>Brand Character</h2>
+                        <label className={styles.label}>
+                            Character Name
+                            <input type="text" className={styles.input} value={persona.character_name} onChange={e => setPersona({ ...persona, character_name: e.target.value })} placeholder="e.g. Grace" />
+                        </label>
+                        <label className={styles.label}>
+                            Backstory (for AI context)
+                            <textarea className={styles.textarea} rows={3} value={persona.backstory} onChange={e => setPersona({ ...persona, backstory: e.target.value })} placeholder="e.g. Filipino mompreneur who turned paper crafting into a business..." />
+                        </label>
+                        <label className={styles.label}>
+                            Appearance / Visual Description (for AI image generation)
+                            <textarea className={styles.textarea} rows={2} value={persona.appearance} onChange={e => setPersona({ ...persona, appearance: e.target.value })} placeholder="e.g. Filipino woman, 30s, warm smile, casual-professional style" />
+                        </label>
+                    </section>
+                    <section className={styles.section}>
+                        <h2 className={styles.sectionTitle}>Voice Preset</h2>
+                        <label className={styles.label}>
+                            Voice Style
+                            <select className={styles.input} value={persona.voice_preset} onChange={e => setPersona({ ...persona, voice_preset: e.target.value })}>
+                                <option value="warm_empowering">🤗 Warm &amp; Empowering (Ate Energy)</option>
+                                <option value="professional_mommy">👩‍💼 Professional Mommy</option>
+                                <option value="bestie_vibes">💬 Bestie Vibes (Casual, Fun)</option>
+                                <option value="hustle_queen">🔥 Hustle Queen (Motivational)</option>
+                                <option value="expert_teacher">📚 Expert Teacher (Educational)</option>
+                                <option value="custom">✏️ Custom (set below)</option>
+                            </select>
+                        </label>
+                        {persona.voice_preset === 'custom' && (
+                            <label className={styles.label}>
+                                Custom Voice Notes
+                                <textarea className={styles.textarea} rows={3} value={persona.custom_voice_notes} onChange={e => setPersona({ ...persona, custom_voice_notes: e.target.value })} placeholder="Describe the tone, language style, and personality..." />
+                            </label>
+                        )}
+                        <div className={styles.listHeader} style={{ marginTop: '1rem' }}>
+                            <span />
+                            <button className={styles.saveButton} onClick={async () => {
+                                try {
+                                    const { createClient: createBrowserClient } = await import('@/lib/supabase/client')
+                                    const sb = createBrowserClient()
+                                    const { data: existing } = await sb.from('brand_persona').select('id').limit(1).maybeSingle()
+                                    if (existing?.id) {
+                                        await sb.from('brand_persona').update({ ...persona, updated_at: new Date().toISOString() }).eq('id', existing.id)
+                                    } else {
+                                        await sb.from('brand_persona').insert({ ...persona })
+                                    }
+                                    setStatus('saved')
+                                    setTimeout(() => setStatus('idle'), 2000)
+                                } catch { setStatus('error') }
+                            }}>
+                                <Save size={14} /> Save Persona
+                            </button>
                         </div>
                     </section>
                 </div>

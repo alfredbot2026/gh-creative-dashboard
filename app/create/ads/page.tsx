@@ -8,6 +8,7 @@ import { addAdToCalendar } from '@/app/actions/create'
 import type { AdGenerationRequest, AdGenerationResponse, AdVariant, ContentPurpose } from '@/lib/create/ad-types'
 import PurposePicker from '@/components/create/PurposePicker'
 import ProductSelect from '@/components/create/ProductSelect'
+import TemplatePicker from '@/components/create/TemplatePicker'
 import type { CarouselGenerationResponse, CarouselSlide } from '@/lib/create/carousel-types'
 import CarouselSlideCard from '@/components/create/CarouselSlideCard'
 import {
@@ -325,6 +326,11 @@ export default function AdsCreationPage() {
             <Settings size={18} />
             Ad Settings
           </h2>
+
+          <TemplatePicker
+            lane="ads"
+            onSelect={(params) => setFormData(prev => ({ ...prev, ...params as any }))}
+          />
 
           <div className={layout.formGroup}>
             <label className={layout.label}>Content Purpose (Optional)</label>
@@ -677,6 +683,32 @@ export default function AdsCreationPage() {
                 <p className={styles.selectionHint}>Select at least one variant</p>
               )}
             </div>
+
+            <button
+              className={layout.actionBtn}
+              disabled={!result && !carouselResult}
+              onClick={async () => {
+                const name = prompt('Template name:', formData.product || 'My Ad Template')
+                if (!name) return
+                try {
+                  await fetch('/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name,
+                      content_purpose: formData.content_purpose,
+                      content_lane: 'ads',
+                      template_params: formData,
+                      sample_output: result || carouselResult,
+                    })
+                  })
+                  alert('Template saved!')
+                } catch { alert('Failed to save template') }
+              }}
+            >
+              <LayoutTemplate size={16} />
+              Save as Template
+            </button>
           </div>
 
           <div className={layout.sidebarSection}>

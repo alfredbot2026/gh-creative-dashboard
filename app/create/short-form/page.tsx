@@ -7,6 +7,7 @@ import SceneCard from '@/components/create/SceneCard'
 import QualityBadge from '@/components/create/QualityBadge'
 import PurposePicker from '@/components/create/PurposePicker'
 import ProductSelect from '@/components/create/ProductSelect'
+import TemplatePicker from '@/components/create/TemplatePicker'
 import { addScriptToCalendar } from '@/app/actions/create'
 import type { GenerateShortFormRequest, GenerateShortFormResponse, ContentPurpose } from '@/lib/create/types'
 import {
@@ -95,6 +96,11 @@ export default function ShortFormCreationPage() {
             <Settings size={18} />
             Script Settings
           </h2>
+
+          <TemplatePicker
+            lane="short-form"
+            onSelect={(params) => setFormData(prev => ({ ...prev, ...params as any }))}
+          />
 
           <div className={layout.formGroup}>
             <label className={layout.label}>Content Purpose (Optional)</label>
@@ -289,6 +295,35 @@ export default function ShortFormCreationPage() {
                 {saving ? 'Saving...' : 'Add to Calendar'}
               </button>
             </div>
+
+            <button
+              className={layout.actionBtn}
+              disabled={!result}
+              onClick={async () => {
+                if (!result) return
+                const name = prompt('Template name:', result.script.title || 'My Template')
+                if (!name) return
+                try {
+                  await fetch('/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name,
+                      content_purpose: formData.content_purpose,
+                      content_lane: 'short-form',
+                      hook_entry_id: formData.selected_hook_id,
+                      framework_entry_id: formData.selected_framework_id,
+                      template_params: formData,
+                      sample_output: result,
+                    })
+                  })
+                  alert('Template saved! Reuse it anytime from the template picker.')
+                } catch { alert('Failed to save template') }
+              }}
+            >
+              <LayoutTemplate size={16} />
+              Save as Template
+            </button>
           </div>
 
           <div className={layout.sidebarSection}>
