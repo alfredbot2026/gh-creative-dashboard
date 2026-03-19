@@ -39,7 +39,7 @@ export default function ShortFormCreationPage() {
   })
 
   const handleGenerate = async () => {
-    if (!formData.topic) return alert('Topic is required')
+    if (!formData.topic && !formData.content_purpose) return alert('Enter a topic or select a content purpose')
 
     setLoading(true)
     try {
@@ -111,7 +111,7 @@ export default function ShortFormCreationPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Topic / Idea (Required)</label>
+            <label className={layout.label}>Topic / Idea {!formData.content_purpose ? '(Required)' : '(Optional — AI will pick based on purpose)'}</label>
             <textarea
               className={layout.input}
               rows={3}

@@ -63,7 +63,9 @@ ${funnelEntries.map(f => `- **${f.title}**: ${f.content}`).join('\n')}
 ${platformEntries.map(p => `- **${p.title}**: ${p.content}`).join('\n')}
 
 ## Task
-Create a short-form script for: "${request.topic}"
+${request.topic
+  ? `Create a short-form script for: "${request.topic}"`
+  : `Create a short-form script. Pick the best topic for this creator based on their brand, products, and the ${request.content_purpose || 'educational'} purpose. Use their product/service knowledge to choose a highly relevant topic.`}
 ${request.angle ? `Angle: ${request.angle}` : 'Pick the most compelling angle.'}
 ${request.style ? `Style: ${request.style}` : ''}
 Platform: ${request.platform}
