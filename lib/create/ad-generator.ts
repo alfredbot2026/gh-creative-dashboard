@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { generateJSON } from '@/lib/llm/client'
-import { getAdGenerationContext, getBrandContext } from './kb-retriever'
+import { getAdGenerationContext, getContextWithPinnedSelections, getBrandContext } from './kb-retriever'
 import type { AdGenerationRequest, AdGenerationResponse, AdVariant, AdFramework } from './ad-types'
 import type { BrandStyleGuide } from '@/lib/brand/types'
 import { checkQualityGate } from '@/lib/eval/quality-gate'
@@ -24,7 +24,9 @@ function buildAdPrompt(
   request: AdGenerationRequest,
   kbEntries: any[],
   brand: BrandStyleGuide,
-  frameworksContent: string
+  frameworksContent: string,
+  pinnedHook?: any,
+  pinnedFramework?: any
 ): string {
   return `
 You are an expert Direct Response Copywriter. Generate 3-5 distinct ad copy variants for the following request.
@@ -46,7 +48,7 @@ Voice Rubric: ${JSON.stringify(brand.voice_rubric)}
 ## Ad Frameworks Available
 ${frameworksContent}
 
-## Knowledge Base Context
+\n${request.content_purpose ? `Content Purpose: ${request.content_purpose.toUpperCase()} — optimize for this intent.\n` : ''}\n${pinnedHook ? `## REQUIRED HOOK (must use this exact pattern)\n- ${pinnedHook.title}: ${pinnedHook.content}\nExamples: ${pinnedHook.examples?.join('; ') || ''}` : ''}\n${pinnedFramework ? `## REQUIRED FRAMEWORK (must use this structure)\n- ${pinnedFramework.title}: ${pinnedFramework.content}` : ''}\n## Knowledge Base Context
 ${kbEntries.map((e, i) => `[Entry ${i+1}] ${e.title}\n${e.content}`).join('\n\n')}
 
 ## Instructions
@@ -102,10 +104,19 @@ export async function generateAdCopy(
   }
 
   // 3. Retrieve KB entries for ads
-  const { entries: kbEntries, tier: kbTierUsed } = await getAdGenerationContext(15)
+  const hasPinned = request.selected_hook_id || request.selected_framework_id;
+  const { entries: kbEntries, pinnedHook, pinnedFramework, tier: kbTierUsed } = hasPinned
+    ? await getContextWithPinnedSelections(
+        'ads',
+        ['ad_creative', 'hook_library', 'cro_patterns', 'content_funnel', 'virality_science', 'platform_intelligence'],
+        request.selected_hook_id,
+        request.selected_framework_id,
+        15
+      )
+    : { ...(await getAdGenerationContext(15)), pinnedHook: undefined, pinnedFramework: undefined }
 
   // 4. Build Prompt
-  const prompt = buildAdPrompt(request, kbEntries, brand, frameworksContent)
+  const prompt = buildAdPrompt(request, kbEntries, brand, frameworksContent, pinnedHook, pinnedFramework)
 
   // 5. Call Gemini
   const { data: rawResponse, model } = await generateJSON<RawAdGenerationResponse>(

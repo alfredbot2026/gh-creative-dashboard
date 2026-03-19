@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import QualityBadge from '@/components/create/QualityBadge'
 import { addAdToCalendar } from '@/app/actions/create'
-import type { AdGenerationRequest, AdGenerationResponse, AdVariant } from '@/lib/create/ad-types'
+import type { AdGenerationRequest, AdGenerationResponse, AdVariant, ContentPurpose } from '@/lib/create/ad-types'
+import PurposePicker from '@/components/create/PurposePicker'
 import type { CarouselGenerationResponse, CarouselSlide } from '@/lib/create/carousel-types'
+import CarouselSlideCard from '@/components/create/CarouselSlideCard'
 import {
   Wand2,
   Sparkles,
@@ -249,6 +251,43 @@ export default function AdsCreationPage() {
     }
   }
 
+  const handleDownloadSingleImage = async (url: string, slideNumber: number) => {
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const objectUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = objectUrl
+      a.download = `carousel-slide-${slideNumber}.png`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(objectUrl)
+    } catch (err) {
+      console.error('Failed to download image:', err)
+    }
+  }
+
+  const handleCopyAllText = () => {
+    if (!carouselResult) return
+    let text = `Theme: ${carouselResult.carousel_theme}\n
+`
+    carouselResult.slides.forEach(s => {
+      text += `Slide ${s.slide_number} (${s.role}):\n`
+      text += `Headline: ${s.headline}\n`
+      text += `Body: ${s.body_text}\n`
+      if (s.text_overlay) text += `Overlay: ${s.text_overlay}\n`
+      if (s.cta_text) text += `CTA: ${s.cta_text}\n`
+      text += `\n`
+    })
+    if (carouselResult.caption) {
+      text += `Caption:\n${carouselResult.caption}\n`
+      if (carouselResult.hashtags) text += carouselResult.hashtags.map(h => '#' + h).join(' ')
+    }
+    navigator.clipboard.writeText(text)
+    alert('Carousel text copied to clipboard!')
+  }
+
   const handleDownload = async () => {
     const variantsToDownload = result?.variants.filter(v => selectedVariants.has(v.id)) || []
     for (const variant of variantsToDownload) {
@@ -285,6 +324,21 @@ export default function AdsCreationPage() {
             <Settings size={18} />
             Ad Settings
           </h2>
+
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Content Purpose (Optional)</label>
+            <PurposePicker
+              lane="ads"
+              onSelect={(purpose, hookId, frameworkId) => {
+                setFormData(prev => ({
+                  ...prev,
+                  content_purpose: purpose ?? undefined,
+                  selected_hook_id: hookId ?? undefined,
+                  selected_framework_id: frameworkId ?? undefined,
+                }))
+              }}
+            />
+          </div>
 
           <div className={layout.formGroup}>
             <label className={layout.label}>Product / Offer Name (Required)</label>
@@ -400,57 +454,20 @@ export default function AdsCreationPage() {
               </div>
 
               <div className={styles.carouselStrip}>
-                {carouselResult.slides.map((slide) => {
-                  const roleColor = ROLE_COLORS[slide.role] || 'var(--color-text-muted)'
-                  const imgUrl = slideImages[slide.slide_number]
-                  const isGenImg = generatingSlide === slide.slide_number
-
-                  return (
-                    <div key={slide.slide_number} className={styles.slideCard}>
-                      <div className={styles.slideHeader}>
-                        <span
-                          className={styles.roleBadge}
-                          style={{
-                            backgroundColor: `color-mix(in srgb, ${roleColor} 20%, transparent)`,
-                            color: roleColor,
-                          }}
-                        >
-                          {slide.role.toUpperCase()}
-                        </span>
-                        <span className={styles.slideNumber}>Slide {slide.slide_number}</span>
-                      </div>
-
-                      {imgUrl ? (
-                        <div className={styles.slideImage}>
-                          <img src={imgUrl} alt={`Slide ${slide.slide_number}`} />
-                        </div>
-                      ) : (
-                        <div className={styles.slideImagePlaceholder}>
-                          <ImageIcon size={24} style={{ color: 'var(--color-text-muted)' }} />
-                          <button
-                            onClick={() => handleGenerateSlideImage(slide)}
-                            disabled={isGenImg || generatingAllImages}
-                            className={styles.slideGenBtn}
-                          >
-                            {isGenImg ? <RotateCw className="animate-spin" size={14} /> : <Sparkles size={14} />}
-                            {isGenImg ? 'Generating...' : 'Gen Image'}
-                          </button>
-                        </div>
-                      )}
-
-                      <h4 className={styles.slideHeadline}>{slide.headline}</h4>
-                      <p className={styles.slideBody}>{slide.body_text}</p>
-                      {slide.text_overlay && (
-                        <p className={styles.slideOverlay}>📝 {slide.text_overlay}</p>
-                      )}
-                      {slide.cta_text && (
-                        <div className={styles.ctaPreview}>
-                          <span className={styles.ctaLabel}>{slide.cta_text}</span>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                {carouselResult.slides.map((slide) => (
+                  <CarouselSlideCard
+                    key={slide.slide_number}
+                    slide={slide}
+                    imageUrl={slideImages[slide.slide_number]}
+                    isGeneratingImage={generatingSlide === slide.slide_number}
+                    onGenerateImage={() => handleGenerateSlideImage(slide)}
+                    onDownloadImage={() => {
+                      if (slideImages[slide.slide_number]) {
+                        handleDownloadSingleImage(slideImages[slide.slide_number] as string, slide.slide_number)
+                      }
+                    }}
+                  />
+                ))}
               </div>
 
               {carouselResult.caption && (
@@ -604,14 +621,24 @@ export default function AdsCreationPage() {
               </button>
             )}
 
-            <button
-              className={layout.actionBtn}
-              onClick={handleDownload}
-              disabled={!result || selectedVariants.size === 0}
-            >
-              <Download size={16} />
-              Download Selected
-            </button>
+            {carouselResult ? (
+              <button
+                className={layout.actionBtn}
+                onClick={handleCopyAllText}
+              >
+                <Layers size={16} />
+                Copy All Text
+              </button>
+            ) : (
+              <button
+                className={layout.actionBtn}
+                onClick={handleDownload}
+                disabled={!result || selectedVariants.size === 0}
+              >
+                <Download size={16} />
+                Download Selected
+              </button>
+            )}
 
             <div className={layout.scheduleGroup}>
               <label className={layout.label}>Schedule Date (Optional)</label>

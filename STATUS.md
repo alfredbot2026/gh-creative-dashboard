@@ -62,5 +62,23 @@
 - **P1:** `brand_identity` category doesn't exist in DB (ad generator silently gets nothing)
 - **P2:** Knowledge Used shows raw UUIDs, LLM doesn't cite which patterns it applied
 
+## Phase 2c — KB Expansion + Content Purpose Picker
+
+| Task | Feature | Status |
+|------|---------|--------|
+| KB Extract | Briar Cochran notebook → 52 new entries | ✅ Done |
+| KB Extract | Caleb Ralston notebook → 39 new entries | ✅ Done |
+| KB Extract | Sam Gaudet notebook → 57 new entries | ✅ Done |
+| TASK-028 | Content Purpose Picker + Technique Surfacing | 🔄 In progress |
+
+**KB total:** 463 entries (was 315). Hook library: 17 → ~58 entries.
+**New notebooks extracted:** Briar Cochran (Counter-Position, Perfect Video Anatomy, Trial Rails), Caleb Ralston (Brand Journey Framework, Three Levers, 75-20-5 Ratio, Four C's), Sam Gaudet (HEIT, 5 M's, CCN Fit, Lake Method, 4-on-4 Validation)
+
+## Product Vision
+**Full vision:** `specs/PRODUCT-VISION-V2.md`
+**3-part suite:** Design (Printify clone w/ AI templates) → Build (Grace's tutorials) → Sell (this dashboard)
+**Current focus:** "Sell" — content creation cycle for Grace
+**Grace testing:** Next week (build now, don't wait)
+
 ## Last Updated
-2026-03-18T14:56+08:00
+2026-03-19T09:10+08:00

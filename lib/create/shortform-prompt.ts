@@ -5,17 +5,43 @@ import type { GenerateShortFormRequest } from './types'
 export function buildShortFormPrompt(
   request: GenerateShortFormRequest,
   kbEntries: KnowledgeEntry[],
-  brand: BrandStyleGuide
+  brand: BrandStyleGuide,
+  pinnedHook?: KnowledgeEntry,
+  pinnedFramework?: KnowledgeEntry
 ): string {
-  const hookEntries = kbEntries.filter(e => e.category === 'hook_library')
-  const frameworks = kbEntries.filter(e => e.category === 'scripting_framework')
+  const hookEntries = kbEntries.filter(e => e.category === 'hook_library' && e.id !== pinnedHook?.id)
+  const frameworks = kbEntries.filter(e => e.category === 'scripting_framework' && e.id !== pinnedFramework?.id)
   const viralityEntries = kbEntries.filter(e => e.category === 'virality_science')
   const funnelEntries = kbEntries.filter(e => e.category === 'content_funnel')
   const platformEntries = kbEntries.filter(e => e.category === 'platform_intelligence')
-  const brandEntries = kbEntries.filter(e => e.is_mandatory_first_read)
+
+  const hookSection = pinnedHook
+    ? `## REQUIRED HOOK — You MUST use this exact pattern (Grace selected it)
+- **${pinnedHook.title}**: ${pinnedHook.content}
+${Array.isArray(pinnedHook.examples) && pinnedHook.examples.length > 0 ? `  Examples: ${pinnedHook.examples.slice(0, 3).join('; ')}` : ''}
+
+## Other Available Hook Patterns (secondary reference only)
+${hookEntries.slice(0, 3).map(h => {
+  const examples = typeof h.examples === 'string' ? JSON.parse(h.examples) : (h.examples || [])
+  return `- **${h.title}**: ${h.content.slice(0, 120)}...`
+}).join('\n')}`
+    : `## Available Hook Patterns (USE ONE — do not invent generic hooks)
+${hookEntries.map(h => {
+  const examples = typeof h.examples === 'string' ? JSON.parse(h.examples) : (h.examples || [])
+  return `- **${h.title}**: ${h.content}${examples.length > 0 ? `\n  Examples: ${examples.slice(0, 2).join('; ')}` : ''}`
+}).join('\n')}`
+
+  const frameworkSection = pinnedFramework
+    ? `## REQUIRED FRAMEWORK — You MUST follow this structure (Grace selected it)
+- **${pinnedFramework.title}**: ${pinnedFramework.content}
+
+## Other Scripting Frameworks (secondary reference only)
+${frameworks.slice(0, 2).map(f => `- **${f.title}**: ${f.content.slice(0, 100)}...`).join('\n')}`
+    : `## Scripting Frameworks
+${frameworks.map(f => `- **${f.title}**: ${f.content}`).join('\n')}`
 
   return `You are a content strategist for ${brand.creator_description || 'a creator'}.
-
+${request.content_purpose ? `\nContent Purpose: ${request.content_purpose.toUpperCase()} — optimize for this intent.\n` : ''}
 ## Brand Voice Rules (MANDATORY)
 - Tone: ${brand.voice_rubric.tone_descriptors.join(', ')}
 - Language: Taglish (Filipino-English mix, ~${Math.round(brand.voice_rubric.taglish_ratio.target * 100)}% Filipino)
@@ -23,14 +49,9 @@ export function buildShortFormPrompt(
 - NEVER use these words: ${brand.voice_rubric.banned_ai_words.join(', ')}
 - Example phrases that match the voice: ${brand.voice_rubric.example_phrases.slice(0, 5).join(' | ')}
 
-## Available Hook Patterns (USE ONE — do not invent generic hooks)
-${hookEntries.map(h => {
-  const examples = typeof h.examples === 'string' ? JSON.parse(h.examples) : (h.examples || [])
-  return `- **${h.title}**: ${h.content}${examples.length > 0 ? `\n  Examples: ${examples.slice(0, 2).join('; ')}` : ''}`
-}).join('\n')}
+${hookSection}
 
-## Scripting Frameworks
-${frameworks.map(f => `- **${f.title}**: ${f.content}`).join('\n')}
+${frameworkSection}
 
 ## Virality Patterns (apply where relevant)
 ${viralityEntries.map(v => `- **${v.title}**: ${v.content}`).join('\n')}

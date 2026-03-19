@@ -122,3 +122,47 @@ export async function getShortFormGenerationContext(limit: number = 25): Promise
     limit
   )
 }
+
+/**
+ * Retrieve KB entries with pinned selected hook/framework at the front.
+ * Used when Content Purpose Picker has specific selections.
+ */
+export async function getContextWithPinnedSelections(
+  lane: 'short-form' | 'ads' | 'youtube',
+  categories: string[],
+  selectedHookId?: string,
+  selectedFrameworkId?: string,
+  limit: number = 25
+): Promise<{ entries: KnowledgeEntry[], pinnedHook?: KnowledgeEntry, pinnedFramework?: KnowledgeEntry, tier: 'approved' | 'candidate' }> {
+  const supabase = await createClient()
+
+  // Fetch pinned entries if specified
+  const pinnedIds = [selectedHookId, selectedFrameworkId].filter(Boolean) as string[]
+  let pinnedHook: KnowledgeEntry | undefined
+  let pinnedFramework: KnowledgeEntry | undefined
+
+  if (pinnedIds.length > 0) {
+    const { data: pinned } = await supabase
+      .from('knowledge_entries')
+      .select('*')
+      .in('id', pinnedIds)
+    if (pinned) {
+      pinnedHook = pinned.find(e => e.id === selectedHookId)
+      pinnedFramework = pinned.find(e => e.id === selectedFrameworkId)
+    }
+  }
+
+  // Get regular context
+  const { entries, tier } = await getGenerationContext(lane, categories, limit)
+
+  // Merge: pinned entries go first, dedup rest
+  const pinnedSet = new Set(pinnedIds)
+  const rest = entries.filter(e => !pinnedSet.has(e.id))
+  const merged = [
+    ...(pinnedHook ? [pinnedHook] : []),
+    ...(pinnedFramework ? [pinnedFramework] : []),
+    ...rest,
+  ].slice(0, limit)
+
+  return { entries: merged, pinnedHook, pinnedFramework, tier }
+}

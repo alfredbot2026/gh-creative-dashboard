@@ -120,8 +120,10 @@ Be exhaustive — include every distinct framework.`,
 export function getPromptsForNotebook(notebookTitle: string): ExtractionPrompt[] {
   const title = notebookTitle.toLowerCase()
   
-  // Content/viral notebooks get most categories
-  if (title.includes('viral') || title.includes('personal brand') || title.includes('chris chung')) {
+  // Content/viral/creator strategy notebooks get most categories
+  if (title.includes('viral') || title.includes('personal brand') || title.includes('chris chung')
+    || title.includes('briar cochran') || title.includes('caleb ralston') || title.includes('sam gaudet')
+    || title.includes('content strategy') || title.includes('content systems') || title.includes('media empire')) {
     return EXTRACTION_PROMPTS.filter(p => 
       ['hook_library', 'scripting_framework', 'content_funnel', 'virality_science', 
        'platform_intelligence', 'ai_prompting'].includes(p.category)

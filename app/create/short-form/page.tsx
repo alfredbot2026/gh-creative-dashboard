@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import SceneCard from '@/components/create/SceneCard'
 import QualityBadge from '@/components/create/QualityBadge'
+import PurposePicker from '@/components/create/PurposePicker'
 import { addScriptToCalendar } from '@/app/actions/create'
-import type { GenerateShortFormRequest, GenerateShortFormResponse } from '@/lib/create/types'
+import type { GenerateShortFormRequest, GenerateShortFormResponse, ContentPurpose } from '@/lib/create/types'
 import {
   Wand2,
   Sparkles,
@@ -93,6 +94,21 @@ export default function ShortFormCreationPage() {
             <Settings size={18} />
             Script Settings
           </h2>
+
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Content Purpose (Optional)</label>
+            <PurposePicker
+              lane="short-form"
+              onSelect={(purpose, hookId, frameworkId) => {
+                setFormData(prev => ({
+                  ...prev,
+                  content_purpose: purpose ?? undefined,
+                  selected_hook_id: hookId ?? undefined,
+                  selected_framework_id: frameworkId ?? undefined,
+                }))
+              }}
+            />
+          </div>
 
           <div className={layout.formGroup}>
             <label className={layout.label}>Topic / Idea (Required)</label>

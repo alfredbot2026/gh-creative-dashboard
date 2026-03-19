@@ -1,5 +1,5 @@
 import { generateJSON } from '@/lib/llm/client'
-import { getGenerationContext, getBrandContext } from './kb-retriever'
+import { getGenerationContext, getContextWithPinnedSelections, getBrandContext } from './kb-retriever'
 import { buildShortFormPrompt } from './shortform-prompt'
 import type { GenerateShortFormRequest, GenerateShortFormResponse, ShortFormScript } from './types'
 import type { BrandStyleGuide } from '@/lib/brand/types'
@@ -7,13 +7,16 @@ import type { BrandStyleGuide } from '@/lib/brand/types'
 export async function generateShortFormScript(
   request: GenerateShortFormRequest
 ): Promise<GenerateShortFormResponse> {
-  // 1. Retrieve KB context
-  const { entries: kbEntries } = await getGenerationContext('short-form', [
-    'hook_library',
-    'scripting_framework',
-    'virality_science',
-    'brand_identity',
-  ])
+  // 1. Retrieve KB context — with pinned selections if provided
+  const hasPinned = request.selected_hook_id || request.selected_framework_id
+  const { entries: kbEntries, pinnedHook, pinnedFramework } = hasPinned
+    ? await getContextWithPinnedSelections(
+        'short-form',
+        ['hook_library', 'scripting_framework', 'virality_science', 'content_funnel', 'platform_intelligence'],
+        request.selected_hook_id,
+        request.selected_framework_id,
+      )
+    : { ...(await getGenerationContext('short-form', ['hook_library', 'scripting_framework', 'virality_science', 'content_funnel', 'platform_intelligence'])), pinnedHook: undefined, pinnedFramework: undefined }
 
   // 2. Get brand style guide
   const brandRaw = await getBrandContext()
@@ -21,7 +24,7 @@ export async function generateShortFormScript(
   const brand = brandRaw as unknown as BrandStyleGuide
 
   // 3. Build prompt
-  const prompt = buildShortFormPrompt(request, kbEntries, brand)
+  const prompt = buildShortFormPrompt(request, kbEntries, brand, pinnedHook, pinnedFramework)
 
   // 4. Call Gemini with JSON mode
   // Note: generateJSON handles stripping markdown fences and parsing

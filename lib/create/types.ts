@@ -22,12 +22,17 @@ export interface ShortFormScript {
   knowledge_entries_used: string[]  // KB entry IDs that informed this
 }
 
+export type ContentPurpose = 'educate' | 'story' | 'sell' | 'prove' | 'trend' | 'inspire'
+
 export interface GenerateShortFormRequest {
   topic: string
   angle?: string                // optional — AI picks if not provided
   platform: 'instagram-reels' | 'tiktok' | 'youtube-shorts'
   target_duration?: number      // seconds, default 30-60
   style?: 'tutorial' | 'storytelling' | 'proof' | 'mistake' | 'hook-first'
+  content_purpose?: ContentPurpose
+  selected_hook_id?: string      // KB entry id for pinned hook
+  selected_framework_id?: string // KB entry id for pinned framework
 }
 
 export interface GenerateShortFormResponse {
