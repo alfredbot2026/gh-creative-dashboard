@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import QualityBadge from '@/components/create/QualityBadge'
@@ -23,7 +24,9 @@ import {
   LayoutTemplate,
   Image as ImageIcon,
   Download,
-  Layers
+  Layers,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import layout from '@/app/create/layout.module.css'
 import styles from './page.module.css'
@@ -68,9 +71,11 @@ const CTA_LABELS: Record<string, string> = {
   CONTACT_US: 'Contact Us',
 }
 
-export default function AdsCreationPage() {
+function AdsCreationPageInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const [saving, setSaving] = useState(false)
   const [result, setResult] = useState<AdGenerationResponse | null>(null)
   const [scheduledDate, setScheduledDate] = useState('')
@@ -98,6 +103,14 @@ export default function AdsCreationPage() {
     ad_format: 'static',
     platform: 'facebook'
   })
+
+  // Pre-fill from query params (Today page suggestions)
+  useEffect(() => {
+    const topic = searchParams.get('topic')
+    const purpose = searchParams.get('purpose')
+    if (topic) setFormData(prev => ({ ...prev, product: prev.product || topic }))
+    if (purpose) setFormData(prev => ({ ...prev, content_purpose: purpose as any }))
+  }, [searchParams])
 
   const handleGenerate = async () => {
     if (!formData.product) return alert('Product Name is required')
@@ -337,16 +350,16 @@ export default function AdsCreationPage() {
   return (
     <>
       <PageHeader
-        title="Ad Copy Generator"
-        subtitle="Create high-converting ad copy and creatives tailored for your brand"
+        title="Ad"
+        subtitle="Backed by your brand knowledge"
       />
 
       <div className={layout.layout}>
         {/* Left Panel: Configuration */}
         <div className={layout.panel}>
           <h2 className={layout.panelTitle}>
-            <Settings size={18} />
-            Ad Settings
+            <Settings size={16} />
+            Settings
           </h2>
 
           <TemplatePicker
@@ -355,7 +368,7 @@ export default function AdsCreationPage() {
           />
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Content Purpose (Optional)</label>
+            <label className={layout.label}>What&apos;s the goal? <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(optional)</span></label>
             <PurposePicker
               lane="ads"
               onSelect={(purpose, hookId, frameworkId) => {
@@ -370,7 +383,7 @@ export default function AdsCreationPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Product</label>
+            <label className={layout.label}>Product <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(optional)</span></label>
             <ProductSelect
               onSelect={(product) => {
                 if (product) {
@@ -385,7 +398,7 @@ export default function AdsCreationPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Product / Offer Name (Required)</label>
+            <label className={layout.label}>What are you selling? <span style={{color:'var(--color-danger)',fontWeight:400,fontSize:'0.75rem'}}>required</span></label>
             <input
               type="text"
               className={layout.input}
@@ -396,16 +409,33 @@ export default function AdsCreationPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Offer Details</label>
+            <label className={layout.label}>Key details <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(optional)</span></label>
             <textarea
               className={layout.input}
-              rows={3}
-              placeholder="e.g. Complete paper crafting course - ₱2,997, includes 3 bonuses"
+              rows={2}
+              placeholder="e.g. ₱2,997 — includes 3 bonuses, limited slots"
               value={formData.offer_details}
               onChange={e => setFormData({ ...formData, offer_details: e.target.value })}
             />
           </div>
 
+          {/* More Options */}
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.375rem',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--color-text-muted)', fontSize: '0.75rem',
+              fontWeight: 500, padding: '0.25rem 0', marginBottom: '0.5rem',
+              fontFamily: 'inherit',
+            }}
+          >
+            {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showAdvanced ? 'Hide' : 'More'} options
+          </button>
+
+          {showAdvanced && <>
           <div className={layout.formGroup}>
             <label className={layout.label}>Objective</label>
             <select
@@ -473,8 +503,9 @@ export default function AdsCreationPage() {
               <option value="instagram">Instagram</option>
             </select>
           </div>
+          </>}
 
-          {/* Image Style Toggle */}
+          {/* Image Style Toggle — always visible for static */}
           {formData.ad_format === 'static' && (
             <StyleModeToggle
               value={styleMode}
@@ -489,8 +520,8 @@ export default function AdsCreationPage() {
             onClick={handleGenerate}
             disabled={loading || !formData.product}
           >
-            {loading ? <RotateCw className="animate-spin" size={18} /> : <Wand2 size={18} />}
-            {loading ? 'Generating...' : formData.ad_format === 'carousel' ? 'Generate Carousel' : 'Generate Ad Variants'}
+            {loading ? <RotateCw className="animate-spin" size={18} /> : <Sparkles size={18} />}
+            {loading ? 'Creating...' : formData.ad_format === 'carousel' ? '✨ Create Carousel' : '✨ Create Ad'}
           </button>
         </div>
 
@@ -774,5 +805,13 @@ export default function AdsCreationPage() {
         </div>
       </div>
     </>
+  )
+}
+
+export default function AdsCreationPage() {
+  return (
+    <Suspense>
+      <AdsCreationPageInner />
+    </Suspense>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import SceneCard from '@/components/create/SceneCard'
 import QualityBadge from '@/components/create/QualityBadge'
@@ -19,17 +19,21 @@ import {
   Clock,
   Hash,
   BookOpen,
-  LayoutTemplate
+  LayoutTemplate,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import layout from '@/app/create/layout.module.css'
 import styles from './page.module.css'
 
-export default function ShortFormCreationPage() {
+function ShortFormCreationPageInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [result, setResult] = useState<GenerateShortFormResponse | null>(null)
   const [scheduledDate, setScheduledDate] = useState('')
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState<GenerateShortFormRequest>({
@@ -39,6 +43,19 @@ export default function ShortFormCreationPage() {
     target_duration: 45,
     angle: ''
   })
+
+  // Pre-fill from query params (Today page suggestions)
+  useEffect(() => {
+    const topic = searchParams.get('topic')
+    const purpose = searchParams.get('purpose')
+    if (topic || purpose) {
+      setFormData(prev => ({
+        ...prev,
+        ...(topic ? { topic } : {}),
+        ...(purpose ? { content_purpose: purpose as ContentPurpose } : {}),
+      }))
+    }
+  }, [searchParams])
 
   const handleGenerate = async () => {
     if (!formData.topic && !formData.content_purpose) return alert('Enter a topic or select a content purpose')
@@ -85,16 +102,16 @@ export default function ShortFormCreationPage() {
   return (
     <>
       <PageHeader
-        title="Short-form Script Generator"
-        subtitle="Create research-backed scripts optimized for retention and brand voice"
+        title="Short-form Script"
+        subtitle="Backed by your brand knowledge"
       />
 
       <div className={layout.layout}>
         {/* Left Panel: Configuration */}
         <div className={layout.panel}>
           <h2 className={layout.panelTitle}>
-            <Settings size={18} />
-            Script Settings
+            <Settings size={16} />
+            Settings
           </h2>
 
           <TemplatePicker
@@ -103,7 +120,7 @@ export default function ShortFormCreationPage() {
           />
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Content Purpose (Optional)</label>
+            <label className={layout.label}>What&apos;s the vibe? <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(optional)</span></label>
             <PurposePicker
               lane="short-form"
               onSelect={(purpose, hookId, frameworkId) => {
@@ -118,7 +135,7 @@ export default function ShortFormCreationPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Product (Optional)</label>
+            <label className={layout.label}>Product <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(optional)</span></label>
             <ProductSelect
               onSelect={(product) => {
                 if (product) {
@@ -142,18 +159,40 @@ export default function ShortFormCreationPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Topic / Idea {!formData.content_purpose ? '(Required)' : '(Optional — AI will pick based on purpose)'}</label>
+            <label className={layout.label}>
+              What&apos;s the idea?{' '}
+              <span style={{color:'var(--color-text-muted)',fontWeight:400}}>
+                {formData.content_purpose ? '(optional)' : '(required)'}
+              </span>
+            </label>
             <textarea
               className={layout.input}
               rows={3}
-              placeholder="e.g. 3 common mistakes when scaling FB ads"
+              placeholder="e.g. How I made my first sale using paper flowers"
               value={formData.topic}
               onChange={e => setFormData({ ...formData, topic: e.target.value })}
             />
           </div>
 
+          {/* Advanced Options */}
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.375rem',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--color-text-muted)', fontSize: '0.75rem',
+              fontWeight: 500, padding: '0.25rem 0', marginBottom: '0.5rem',
+              fontFamily: 'inherit',
+            }}
+          >
+            {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showAdvanced ? 'Hide' : 'More'} options
+          </button>
+
+          {showAdvanced && <>
           <div className={layout.formGroup}>
-            <label className={layout.label}>Creative Angle (Optional)</label>
+            <label className={layout.label}>Angle <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(optional)</span></label>
             <input
               type="text"
               className={layout.input}
@@ -192,7 +231,7 @@ export default function ShortFormCreationPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Target Duration: {formData.target_duration}s</label>
+            <label className={layout.label}>Duration: {formData.target_duration}s</label>
             <div className={layout.sliderContainer}>
               <input
                 type="range"
@@ -205,14 +244,15 @@ export default function ShortFormCreationPage() {
               />
             </div>
           </div>
+          </>}
 
           <button
             className={layout.generateBtn}
             onClick={handleGenerate}
-            disabled={loading || !formData.topic}
+            disabled={loading || (!formData.topic && !formData.content_purpose)}
           >
-            {loading ? <RotateCw className="animate-spin" size={18} /> : <Wand2 size={18} />}
-            {loading ? 'Generating...' : 'Generate Script'}
+            {loading ? <RotateCw className="animate-spin" size={18} /> : <Sparkles size={18} />}
+            {loading ? 'Creating...' : '✨ Create Script'}
           </button>
         </div>
 
@@ -357,5 +397,13 @@ export default function ShortFormCreationPage() {
         </div>
       </div>
     </>
+  )
+}
+
+export default function ShortFormCreationPage() {
+  return (
+    <Suspense>
+      <ShortFormCreationPageInner />
+    </Suspense>
   )
 }
