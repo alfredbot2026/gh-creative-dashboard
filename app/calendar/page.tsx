@@ -17,8 +17,46 @@ import {
     updateContentItem,
     deleteContentItem,
 } from '@/app/actions/content'
-import { Calendar as CalendarIcon, Plus, Trash2, Sparkles, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar as CalendarIcon, Plus, Trash2, Sparkles, Loader2, ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react'
 import styles from './page.module.css'
+
+/* Content Mix Suggestion Banner */
+function ContentMixBanner() {
+    const [suggestions, setSuggestions] = useState<{ purpose: string; label: string; reason: string }[]>([])
+    const [totalPosts, setTotalPosts] = useState(0)
+
+    useEffect(() => {
+        fetch('/api/calendar/suggest?days=7')
+            .then(r => r.json())
+            .then(data => {
+                if (data.suggestions) setSuggestions(data.suggestions)
+                if (data.total_posts != null) setTotalPosts(data.total_posts)
+            })
+            .catch(() => {})
+    }, [])
+
+    if (suggestions.length === 0) return null
+
+    return (
+        <div className={styles.mixBanner}>
+            <div className={styles.mixBannerIcon}><Lightbulb size={16} /></div>
+            <div className={styles.mixBannerContent}>
+                <strong>Content Mix Suggestion</strong>
+                <span className={styles.mixBannerText}>
+                    {totalPosts === 0
+                        ? "No posts this week yet! Start with: "
+                        : "Your mix could use more: "}
+                    {suggestions.map((s, i) => (
+                        <span key={s.purpose}>
+                            {i > 0 && ', '}
+                            <a href={`/create/short-form`} className={styles.mixLink}>{s.label}</a>
+                        </span>
+                    ))}
+                </span>
+            </div>
+        </div>
+    )
+}
 
 /* Map content types to CSS class names */
 const typeColorMap: Record<string, string> = {
@@ -279,6 +317,8 @@ export default function CalendarPage() {
                     </div>
                 }
             />
+
+            <ContentMixBanner />
 
             {/* Two-week grid */}
             {weeks.map((weekDays, weekIndex) => (
