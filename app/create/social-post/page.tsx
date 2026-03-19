@@ -80,8 +80,8 @@ export default function SocialPostPage() {
   return (
     <>
       <PageHeader
-        title="Social Post Generator"
-        subtitle="FB/IG feed captions with hook patterns, brand voice, and image concepts"
+        title="Social Post"
+        subtitle="Backed by your brand knowledge"
       />
 
       <div className={layout.layout}>
@@ -92,7 +92,7 @@ export default function SocialPostPage() {
           <TemplatePicker lane="short-form" onSelect={(p) => setFormData(prev => ({ ...prev, ...p as any }))} />
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Content Purpose (Optional)</label>
+            <label>What's the vibe? (optional)</label>
             <PurposePicker
               lane="short-form"
               onSelect={(purpose, hookId, frameworkId) => setFormData(prev => ({
@@ -110,7 +110,7 @@ export default function SocialPostPage() {
           </div>
 
           <div className={layout.formGroup}>
-            <label className={layout.label}>Topic / Idea (Optional)</label>
+            <label className={layout.label}>What is the idea? (optional)</label>
             <textarea
               className={layout.input}
               rows={2}
@@ -145,7 +145,7 @@ export default function SocialPostPage() {
             disabled={loading}
           >
             <Wand2 size={16} />
-            {loading ? 'Generating...' : 'Generate Post'}
+            {loading ? 'Creating...' : '✨ Create Post'}
           </button>
         </div>
 

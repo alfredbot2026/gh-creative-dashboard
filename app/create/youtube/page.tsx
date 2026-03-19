@@ -146,7 +146,7 @@ export default function YouTubeScriptPage() {
   return (
     <>
       <PageHeader
-        title="YouTube Script Generator"
+        title="YouTube Script"
         subtitle="Create complete video scripts with hooks, chapters, SEO, and thumbnail concepts"
       />
 
