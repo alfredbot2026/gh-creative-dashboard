@@ -59,7 +59,9 @@ export default function SettingsPage() {
     const [products, setProducts] = useState<ProductData[]>([])
     const [editingProduct, setEditingProduct] = useState<ProductData | null>(null)
     const [showProductForm, setShowProductForm] = useState(false)
-    const [persona, setPersona] = useState({ character_name: 'Grace', backstory: '', appearance: '', voice_preset: 'warm_empowering', custom_voice_notes: '' })
+    const [persona, setPersona] = useState<{ character_name: string; backstory: string; appearance: string; voice_preset: string; custom_voice_notes: string; avatar_url?: string }>({ character_name: 'Grace', backstory: '', appearance: '', voice_preset: 'warm_empowering', custom_voice_notes: '' })
+    const [uploadingAvatar, setUploadingAvatar] = useState(false)
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
     const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
     const [error, setError] = useState<string | null>(null)
@@ -78,7 +80,17 @@ export default function SettingsPage() {
                 ])
                 if (existingProfile) setProfile(existingProfile)
                 if (existingProducts) setProducts(existingProducts)
-                if (existingPersona) setPersona({ ...persona, ...existingPersona })
+                if (existingPersona) {
+                    setPersona({ ...persona, ...existingPersona })
+                    // Load avatar preview if exists
+                    if (existingPersona.avatar_url) {
+                        const sb2 = createBrowserClient()
+                        const parts = existingPersona.avatar_url.replace('ad-creatives/', '').split('/')
+                        const objPath = parts.join('/')
+                        const { data: signedData } = await sb2.storage.from('ad-creatives').createSignedUrl(objPath, 3600)
+                        if (signedData?.signedUrl) setAvatarPreview(signedData.signedUrl)
+                    }
+                }
                 if (existingBrand) {
                     // merge in case of missing nested keys
                     setBrandStyle({
@@ -465,6 +477,45 @@ export default function SettingsPage() {
                             Appearance / Visual Description (for AI image generation)
                             <textarea className={styles.textarea} rows={2} value={persona.appearance} onChange={e => setPersona({ ...persona, appearance: e.target.value })} placeholder="e.g. Filipino woman, 30s, warm smile, casual-professional style" />
                         </label>
+                        <div className={styles.label}>
+                            Reference Photo (used by AI for consistent character)
+                            {persona.avatar_url && avatarPreview && (
+                                <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                                    <img src={avatarPreview} alt="Reference" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 'var(--radius-md)', border: '2px solid var(--color-border)' }} />
+                                </div>
+                            )}
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    style={{ fontSize: '0.75rem' }}
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0]
+                                        if (!file) return
+                                        setUploadingAvatar(true)
+                                        try {
+                                            const fd = new FormData()
+                                            fd.append('avatar', file)
+                                            const res = await fetch('/api/persona/avatar', { method: 'POST', body: fd })
+                                            if (!res.ok) throw new Error((await res.json()).error || 'Upload failed')
+                                            const data = await res.json()
+                                            setPersona(prev => ({ ...prev, avatar_url: data.avatar_url }))
+                                            setAvatarPreview(data.signed_url)
+                                            setStatus('saved')
+                                            setTimeout(() => setStatus('idle'), 2000)
+                                        } catch (err: any) {
+                                            alert(err.message)
+                                        } finally {
+                                            setUploadingAvatar(false)
+                                        }
+                                    }}
+                                />
+                                {uploadingAvatar && <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Uploading...</span>}
+                            </div>
+                            <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.35rem' }}>
+                                Upload a clear photo. AI will use this as a style reference for consistent character generation. JPG/PNG/WebP, max 10MB.
+                            </p>
+                        </div>
                     </section>
                     <section className={styles.section}>
                         <h2 className={styles.sectionTitle}>Voice Preset</h2>

@@ -87,6 +87,19 @@ export async function generateAdImage(
     throw new Error('Brand style guide not found. Please configure it in Settings before generating images.')
   }
 
+  // 1b. Load brand persona for reference image (if creator_featured)
+  let personaAvatarPath: string | null = null
+  if (request.style === 'creator_featured') {
+    const { data: persona } = await supabase
+      .from('brand_persona')
+      .select('avatar_url, appearance')
+      .limit(1)
+      .maybeSingle()
+    if (persona?.avatar_url) {
+      personaAvatarPath = persona.avatar_url
+    }
+  }
+
   // 2. Build full prompt
   const brandPrefix = buildBrandPrefix(brand as BrandStyleGuide, request.style)
   const fullPrompt = `${brandPrefix} ${request.prompt}`
@@ -99,9 +112,14 @@ export async function generateAdImage(
 
   try {
     // 4. Download reference images if provided
-    if (request.reference_images && request.reference_images.length > 0) {
+    const allRefImages = [...(request.reference_images || [])]
+    // Inject persona avatar as reference for creator_featured style
+    if (personaAvatarPath) {
+      allRefImages.unshift(personaAvatarPath)
+    }
+    if (allRefImages.length > 0) {
       localRefPaths = await Promise.all(
-        request.reference_images.map((refPath) =>
+        allRefImages.map((refPath) =>
           downloadFromStorage(supabase, refPath, tempDir)
         )
       )
