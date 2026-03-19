@@ -6,6 +6,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import SceneCard from '@/components/create/SceneCard'
 import QualityBadge from '@/components/create/QualityBadge'
 import PurposePicker from '@/components/create/PurposePicker'
+import ProductSelect from '@/components/create/ProductSelect'
 import { addScriptToCalendar } from '@/app/actions/create'
 import type { GenerateShortFormRequest, GenerateShortFormResponse, ContentPurpose } from '@/lib/create/types'
 import {
@@ -106,6 +107,30 @@ export default function ShortFormCreationPage() {
                   selected_hook_id: hookId ?? undefined,
                   selected_framework_id: frameworkId ?? undefined,
                 }))
+              }}
+            />
+          </div>
+
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Product (Optional)</label>
+            <ProductSelect
+              onSelect={(product) => {
+                if (product) {
+                  setFormData(prev => ({
+                    ...prev,
+                    topic: prev.topic || product.name,
+                    product_context: {
+                      name: product.name,
+                      description: product.description,
+                      price: product.price,
+                      offer_details: product.offer_details,
+                      target_audience: product.target_audience,
+                      usps: product.usps,
+                    },
+                  }))
+                } else {
+                  setFormData(prev => ({ ...prev, product_context: undefined }))
+                }
               }}
             />
           </div>

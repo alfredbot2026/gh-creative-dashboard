@@ -33,6 +33,14 @@ export interface GenerateShortFormRequest {
   content_purpose?: ContentPurpose
   selected_hook_id?: string      // KB entry id for pinned hook
   selected_framework_id?: string // KB entry id for pinned framework
+  product_context?: {
+    name: string
+    description?: string
+    price?: string
+    offer_details?: string
+    target_audience?: string
+    usps?: string[]
+  }
 }
 
 export interface GenerateShortFormResponse {

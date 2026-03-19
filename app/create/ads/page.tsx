@@ -7,6 +7,7 @@ import QualityBadge from '@/components/create/QualityBadge'
 import { addAdToCalendar } from '@/app/actions/create'
 import type { AdGenerationRequest, AdGenerationResponse, AdVariant, ContentPurpose } from '@/lib/create/ad-types'
 import PurposePicker from '@/components/create/PurposePicker'
+import ProductSelect from '@/components/create/ProductSelect'
 import type { CarouselGenerationResponse, CarouselSlide } from '@/lib/create/carousel-types'
 import CarouselSlideCard from '@/components/create/CarouselSlideCard'
 import {
@@ -336,6 +337,21 @@ export default function AdsCreationPage() {
                   selected_hook_id: hookId ?? undefined,
                   selected_framework_id: frameworkId ?? undefined,
                 }))
+              }}
+            />
+          </div>
+
+          <div className={layout.formGroup}>
+            <label className={layout.label}>Product</label>
+            <ProductSelect
+              onSelect={(product) => {
+                if (product) {
+                  setFormData(prev => ({
+                    ...prev,
+                    product: product.name,
+                    offer_details: product.offer_details || prev.offer_details,
+                  }))
+                }
               }}
             />
           </div>

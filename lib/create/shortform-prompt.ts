@@ -62,6 +62,15 @@ ${funnelEntries.map(f => `- **${f.title}**: ${f.content}`).join('\n')}
 ## Platform Intelligence (${request.platform})
 ${platformEntries.map(p => `- **${p.title}**: ${p.content}`).join('\n')}
 
+${request.product_context ? `## Product Context
+Product: ${request.product_context.name}
+${request.product_context.price ? `Price: ${request.product_context.price}` : ''}
+${request.product_context.offer_details ? `What's included: ${request.product_context.offer_details}` : ''}
+${request.product_context.target_audience ? `Target customer: ${request.product_context.target_audience}` : ''}
+${request.product_context.usps?.length ? `Key selling points: ${request.product_context.usps.join(', ')}` : ''}
+
+Incorporate this product naturally. ${request.content_purpose === 'sell' ? 'This is a sales-focused piece — highlight the offer.' : "Don't make it a hard sell unless the purpose is 'sell'."}
+` : ''}
 ## Task
 ${request.topic
   ? `Create a short-form script for: "${request.topic}"`

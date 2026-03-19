@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { upsertBusinessProfile, getBusinessProfile, BusinessProfileData } from '@/app/actions/settings'
 import { upsertBrandStyleGuide, getBrandStyleGuide } from '@/app/actions/brand'
+import { listProducts, upsertProduct, deleteProduct, ProductData } from '@/app/actions/products'
 import type { BrandStyleGuide, VoiceRubric, CaptionRules } from '@/lib/brand/types'
 import PageHeader from '@/components/ui/PageHeader'
 import { Save, Plus, X, CheckCircle, AlertCircle } from 'lucide-react'
@@ -51,10 +52,13 @@ const EMPTY_BRAND_STYLE: Partial<BrandStyleGuide> = {
 }
 
 export default function SettingsPage() {
-    const [activeTab, setActiveTab] = useState<'business' | 'brand'>('business')
+    const [activeTab, setActiveTab] = useState<'business' | 'brand' | 'products'>('business')
 
     const [profile, setProfile] = useState<BusinessProfileData>(EMPTY_PROFILE)
     const [brandStyle, setBrandStyle] = useState<Partial<BrandStyleGuide>>(EMPTY_BRAND_STYLE)
+    const [products, setProducts] = useState<ProductData[]>([])
+    const [editingProduct, setEditingProduct] = useState<ProductData | null>(null)
+    const [showProductForm, setShowProductForm] = useState(false)
 
     const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
     const [error, setError] = useState<string | null>(null)
@@ -63,11 +67,13 @@ export default function SettingsPage() {
     useEffect(() => {
         async function load() {
             try {
-                const [existingProfile, existingBrand] = await Promise.all([
+                const [existingProfile, existingBrand, existingProducts] = await Promise.all([
                     getBusinessProfile(),
-                    getBrandStyleGuide().catch(() => null)
+                    getBrandStyleGuide().catch(() => null),
+                    listProducts().catch(() => [])
                 ])
                 if (existingProfile) setProfile(existingProfile)
+                if (existingProducts) setProducts(existingProducts)
                 if (existingBrand) {
                     // merge in case of missing nested keys
                     setBrandStyle({
@@ -204,6 +210,12 @@ export default function SettingsPage() {
                 >
                     Brand Style Guide
                 </button>
+                <button 
+                    className={`${styles.tab} ${activeTab === 'products' ? styles.tabActive : ''}`}
+                    onClick={() => setActiveTab('products')}
+                >
+                    Products
+                </button>
             </div>
 
             {/* Success / Error messages */}
@@ -329,6 +341,99 @@ export default function SettingsPage() {
                             onUpdate={updateAvoidListItem} 
                             onRemove={removeFromAvoidList} 
                         />
+                    </section>
+                </div>
+            )}
+
+            {activeTab === 'products' && (
+                <div className={styles.formGrid}>
+                    <section className={styles.section}>
+                        <div className={styles.listHeader}>
+                            <h2 className={styles.sectionTitle}>Your Products</h2>
+                            <button className={styles.addButton} onClick={() => { setEditingProduct({ name: '' }); setShowProductForm(true) }}>
+                                <Plus size={14} /> Add Product
+                            </button>
+                        </div>
+
+                        {(showProductForm && editingProduct) && (
+                            <div className={styles.section} style={{ marginTop: '1rem', padding: '1rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}>
+                                <label className={styles.label}>
+                                    Product Name *
+                                    <input type="text" className={styles.input} value={editingProduct.name} onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })} placeholder="e.g. Papers to Profits Course" />
+                                </label>
+                                <label className={styles.label}>
+                                    Price
+                                    <input type="text" className={styles.input} value={editingProduct.price || ''} onChange={e => setEditingProduct({ ...editingProduct, price: e.target.value })} placeholder="e.g. ₱1,300" />
+                                </label>
+                                <label className={styles.label}>
+                                    Type
+                                    <select className={styles.input} value={editingProduct.product_type || 'physical'} onChange={e => setEditingProduct({ ...editingProduct, product_type: e.target.value })}>
+                                        <option value="physical">Physical Product</option>
+                                        <option value="digital">Digital Product</option>
+                                        <option value="course">Course</option>
+                                        <option value="service">Service</option>
+                                    </select>
+                                </label>
+                                <label className={styles.label}>
+                                    Description
+                                    <textarea className={styles.textarea} rows={2} value={editingProduct.description || ''} onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })} placeholder="Brief product description" />
+                                </label>
+                                <label className={styles.label}>
+                                    Offer Details (what's included, bonuses)
+                                    <textarea className={styles.textarea} rows={3} value={editingProduct.offer_details || ''} onChange={e => setEditingProduct({ ...editingProduct, offer_details: e.target.value })} placeholder="e.g. Includes templates, tutorials, Canva designs, community access" />
+                                </label>
+                                <label className={styles.label}>
+                                    Target Audience
+                                    <textarea className={styles.textarea} rows={2} value={editingProduct.target_audience || ''} onChange={e => setEditingProduct({ ...editingProduct, target_audience: e.target.value })} placeholder="e.g. Moms aged 25-45 who want to start a home business" />
+                                </label>
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                                    <button className={styles.saveButton} onClick={async () => {
+                                        if (!editingProduct.name) return
+                                        try {
+                                            const saved = await upsertProduct(editingProduct)
+                                            setProducts(prev => {
+                                                const idx = prev.findIndex(p => p.id === saved.id)
+                                                if (idx >= 0) { const next = [...prev]; next[idx] = saved; return next }
+                                                return [...prev, saved]
+                                            })
+                                            setShowProductForm(false)
+                                            setEditingProduct(null)
+                                        } catch (err) { alert(err instanceof Error ? err.message : 'Save failed') }
+                                    }}>
+                                        <Save size={14} /> Save Product
+                                    </button>
+                                    <button className={styles.addButton} onClick={() => { setShowProductForm(false); setEditingProduct(null) }}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            {products.map(p => (
+                                <div key={p.id} style={{ padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <strong style={{ fontSize: '0.875rem' }}>{p.name}</strong>
+                                            {p.price && <span style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>{p.price}</span>}
+                                            {p.product_type && <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'var(--color-surface-elevated)', color: 'var(--color-text-muted)' }}>{p.product_type}</span>}
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                            <button className={styles.addButton} onClick={() => { setEditingProduct(p); setShowProductForm(true) }}>Edit</button>
+                                            <button className={styles.removeButton} onClick={async () => {
+                                                if (!confirm(`Delete "${p.name}"?`)) return
+                                                await deleteProduct(p.id!)
+                                                setProducts(prev => prev.filter(x => x.id !== p.id))
+                                            }}><X size={14} /></button>
+                                        </div>
+                                    </div>
+                                    {p.offer_details && <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.35rem' }}>{p.offer_details}</p>}
+                                </div>
+                            ))}
+                            {products.length === 0 && !showProductForm && (
+                                <span className={styles.emptyList}>No products yet. Add your first product to auto-fill content generators.</span>
+                            )}
+                        </div>
                     </section>
                 </div>
             )}
