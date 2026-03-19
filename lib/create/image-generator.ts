@@ -154,17 +154,52 @@ export async function generateAdImage(
       args.push('-i', refPath)
     }
 
-    // 6. Execute via uv (no shell — execFile)
-    const { stdout, stderr } = await execFileAsync('uv', args, {
-      env: { ...process.env },
-      timeout: 180_000, // 3 min timeout (extra time for multi-reference identity lock)
-    })
+    // 6. Execute via uv with retry logic (Gemini 503s during peak hours)
+    const RETRY_DELAYS = [0, 5_000, 15_000, 30_000] // immediate, 5s, 15s, 30s
+    let lastError: Error | null = null
 
-    if (stderr && stderr.trim()) {
-      console.warn('[image-generator] stderr:', stderr.trim())
+    for (let attempt = 0; attempt < RETRY_DELAYS.length; attempt++) {
+      if (attempt > 0) {
+        console.log(`[image-generator] Retry ${attempt}/${RETRY_DELAYS.length - 1} after ${RETRY_DELAYS[attempt] / 1000}s delay...`)
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt]))
+      }
+
+      try {
+        const { stdout, stderr } = await execFileAsync('uv', args, {
+          env: { ...process.env },
+          timeout: 180_000, // 3 min timeout per attempt
+        })
+
+        if (stderr && stderr.trim()) {
+          // Check if it's a 503/UNAVAILABLE error — retry
+          if (stderr.includes('503') || stderr.includes('UNAVAILABLE') || stderr.includes('overloaded')) {
+            lastError = new Error(`Gemini 503: ${stderr.trim()}`)
+            console.warn(`[image-generator] Attempt ${attempt + 1} got 503, ${attempt < RETRY_DELAYS.length - 1 ? 'retrying...' : 'giving up.'}`)
+            continue
+          }
+          console.warn('[image-generator] stderr:', stderr.trim())
+        }
+        if (stdout) {
+          console.log('[image-generator] stdout:', stdout.trim())
+        }
+
+        // Success — break out of retry loop
+        lastError = null
+        break
+      } catch (err: any) {
+        const errMsg = err.stderr || err.message || String(err)
+        if (errMsg.includes('503') || errMsg.includes('UNAVAILABLE') || errMsg.includes('overloaded')) {
+          lastError = new Error(`Gemini unavailable (attempt ${attempt + 1}): ${errMsg.substring(0, 200)}`)
+          console.warn(`[image-generator] Attempt ${attempt + 1} failed with 503`)
+          continue
+        }
+        // Non-503 error — don't retry
+        throw err
+      }
     }
-    if (stdout) {
-      console.log('[image-generator] stdout:', stdout.trim())
+
+    if (lastError) {
+      throw new Error(`Image generation failed after ${RETRY_DELAYS.length} attempts. Gemini is currently overloaded — try again in a few minutes. Last error: ${lastError.message.substring(0, 200)}`)
     }
 
     // 7. Verify output file exists

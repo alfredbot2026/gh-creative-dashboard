@@ -231,7 +231,12 @@ export default function AdsCreationPage() {
 
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error || 'Image generation failed')
+        const msg = err.error || 'Image generation failed'
+        // User-friendly error for Gemini overload
+        if (msg.includes('overloaded') || msg.includes('503') || msg.includes('UNAVAILABLE')) {
+          throw new Error('🔄 AI image service is busy right now. It automatically retried 4 times. Try again in a few minutes, or switch to "My Photo (UGC)" mode to use your own photo instead!')
+        }
+        throw new Error(msg)
       }
 
       const data = await res.json()
