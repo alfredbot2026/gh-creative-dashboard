@@ -177,6 +177,8 @@ export async function getContentTypeContext(
   else if (contentType === 'story') categories = ['scripting_framework', 'virality_science']
   else if (contentType === 'prove') categories = ['cro_patterns', 'ad_creative']
   else if (contentType === 'sell') categories = ['ad_creative', 'cro_patterns', 'content_funnel']
+  else if (contentType === 'trend') categories = ['virality_science', 'platform_intelligence', 'hook_library']
+  else if (contentType === 'inspire') categories = ['scripting_framework', 'content_funnel', 'virality_science']
 
   const validLane = lane === 'social_media' ? 'short-form' : lane
   const { entries, tier } = await getGenerationContext(validLane as 'short-form' | 'ads' | 'youtube', categories, limit - 5)

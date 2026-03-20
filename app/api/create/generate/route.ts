@@ -47,6 +47,8 @@ function buildSystemPrompt(
     story: 'Relatability — Grace\'s real home life, family, creative process',
     prove: 'Proof — student results, real receipts, real transformations',
     sell: 'Objection Busting + Education — addressing doubts and showing the path',
+    trend: 'Trend Jacking — ride a trending audio, format, or topic and tie it back to paper crafting / P2P',
+    inspire: 'Inspiration & Motivation — uplift fellow moms, share mindset shifts, celebrate small wins in the creative business journey',
   }
 
   let platformRules = ''

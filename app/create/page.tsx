@@ -7,7 +7,7 @@ import styles from './create.module.css'
 
 type Step = 'select' | 'loading' | 'results'
 type Platform = 'reels' | 'tiktok' | 'facebook-post' | 'facebook-ad' | 'youtube' | 'carousel' | 'static-image'
-type ContentType = 'educate' | 'story' | 'prove' | 'sell'
+type ContentType = 'educate' | 'story' | 'prove' | 'sell' | 'trend' | 'inspire'
 
 // Platforms that support image generation
 const VISUAL_PLATFORMS: Platform[] = ['facebook-ad', 'static-image', 'carousel', 'facebook-post']
@@ -42,6 +42,8 @@ const CONTENT_TYPES: { id: ContentType; label: string }[] = [
   { id: 'story', label: 'Tell a story' },
   { id: 'prove', label: 'Show proof' },
   { id: 'sell', label: 'Promote & sell' },
+  { id: 'trend', label: 'Ride a trend' },
+  { id: 'inspire', label: 'Inspire & motivate' },
 ]
 
 function CreatePageInner() {
