@@ -1,41 +1,36 @@
 # GH Creative Dashboard — STATUS
 
-## Current: Standing by for next task
-**Status:** IDLE — TASK-034 QA PASS, pipeline clear
-
-## Last Completed: TASK-034 — Loom & Petal Redesign + 3-Variant Generation
-**Status:** ✅ QA PASS
-**Started:** 2026-03-20 08:45 Manila
-**Completed:** 2026-03-20 14:57 Manila
+## Current: TASK-035 — Image Consistency Tier 3 (Multi-Turn + Anchor Chain)
+**Status:** DISPATCHED to Blackwidow
+**Started:** 2026-03-20 19:56 Manila
 **Track:** DEFAULT (Blackwidow → Bruce)
 
 ### What
-Full UI redesign from "Calm Creative" to "Loom & Petal" (Editorial Nurture) design system:
-1. Replace all CSS tokens with GH brand colors (Dusty Mauve, Sage Teal, Soft Pink)
-2. Typography: Noto Serif (display) + Plus Jakarta Sans (body) — kill Inter + Fira Code
-3. Rebuild Create page as tap-only selection (no typing): Platform → Content Type → "Create 3 Variants"
-4. New unified `/api/create/generate` endpoint returning 3 variants per request
-5. KB-driven content types mapping to funnel stages
-6. Restyle all pages: Home, Library, Settings, Login
+Full rewrite of image generation system for ~9/10 character consistency:
+1. Model upgrade to `gemini-3.1-flash-image-preview` (Nano Banana 2)
+2. Multi-turn conversation via `ai.chats.create()` — lock Grace's identity in Turn 1
+3. Golden anchor image — generated once, reused across all sessions
+4. Fix reference image access (local fallback for broken Supabase storage)
+5. Google's recommended prompt formula: `[Reference] + [Instruction] + [Scene]`
+6. Test route for experimentation
 
 ### Why
-- Rob approved the Stitch-generated "Loom & Petal" design direction
-- Current UI scored 23/50 on Nielsen's heuristics
-- Grace (target user) needs tap-only flow, not text input
-- Brand colors (from real brand guide) were never integrated
-- 3 variants gives Grace choice without decision fatigue
+- Current app sends identity lock TEXT but ZERO reference photos (Supabase signed URLs broken)
+- One-shot approach scores 5/10 consistency — production apps use multi-turn conversations
+- Rob approved Tier 3 (full anchor+chain approach)
 
 ### Who
-- **Blackwidow** — implementation (6 waves)
+- **Blackwidow** — implementation (5 waves)
 - **Bruce** — QA after completion
 
 ### Expected Outcome
-Fully redesigned app matching Stitch mockups. Create flow: 3 taps → 3 content variants. All pages styled with Loom & Petal tokens. Build passes, deploys clean.
+3 variant images per generation all look like the same person (Grace). Anchor image persisted and reused. Test route works for experimentation.
 
 ## Previous Completed
+- TASK-034: Loom & Petal Redesign + 3-Variant Generation (QA PASS)
 - TASK-033: Phase 3 complete
-- Design critique: 23/50 score
+- Design critique: 23/50 score → redesign
 - Light mode conversion
-- Text-only nav (Attio/Linear style)
+- Text-only nav
 - Purpose-first Create flow
-- Stitch design system generated ("Loom & Petal")
+- Stitch design system generated

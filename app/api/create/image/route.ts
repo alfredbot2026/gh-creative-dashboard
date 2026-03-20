@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getOrCreateSession } from '@/lib/create/session-manager'
 import { generateImage } from '@/lib/create/image-generator-api'
 import type { ImageGenerationRequest } from '@/lib/create/image-types'
 
@@ -39,7 +40,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await generateImage(body)
+    // For creator-featured/lifestyle images, use multi-turn session for consistency
+    if (body.style === 'creator_featured' || body.style === 'lifestyle') {
+      try {
+        const session = await getOrCreateSession(user.id)
+        const imageBuffer = await session.generateScene(body.prompt)
+        const base64 = imageBuffer.toString('base64')
+        const dataUrl = `data:image/png;base64,${base64}`
+
+        return NextResponse.json({
+          image_url: dataUrl,
+          storage_path: '',
+          prompt_used: body.prompt,
+          model: 'gemini-3.1-flash-image-preview',
+        })
+      } catch (sessionErr) {
+        console.warn('[POST /api/create/image] Multi-turn session failed, falling back to single-shot:', sessionErr)
+        // Fall through to single-shot below
+      }
+    }
+
+    // Fallback: single-shot generation (faceless quotes, product shots, or session failure)
+    const result = await generateImage(body, user.id)
     return NextResponse.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Image generation failed'

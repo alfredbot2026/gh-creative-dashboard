@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { generateJSON } from '@/lib/llm/client'
 import { getContentTypeContext } from '@/lib/create/kb-retriever'
 import { generateImage } from '@/lib/create/image-generator-api'
+import { getOrCreateSession } from '@/lib/create/session-manager'
 import { createClient } from '@/lib/supabase/server'
 
 interface GenerateRequest {
@@ -179,6 +180,7 @@ IMPORTANT RULES:
 - Use Taglish naturally (mix of Filipino and English, like real PH social media)
 - Content must be about PAPER CRAFTING / PAPER PRODUCTS business specifically
 - Visual directions must be things Grace can film at home (her desk, printer, paper products, journals, stickers)
+- IMAGE PROMPT RULE: If generating an "imagePrompt", DO NOT describe Grace's face, body, or hair. Do not use words like "long hair", "ponytail", or "young girl". Just say "Grace" or "Filipino woman" and focus the prompt entirely on her ACTION (e.g., cutting stickers, packing orders) and the SETTING. The image generator has strict reference photos it will use for her identity.
 - Never sound like a generic online business guru
 - Never use "passive income" — this is ACTIVE, hands-on, creative work
 - Reference real things: Canva, Shopee, her printer, ₱1,300 starter kit, actual paper products
@@ -213,6 +215,14 @@ export async function POST(req: Request) {
     if (!platform || !contentType) {
       return NextResponse.json({ error: 'Missing platform or contentType' }, { status: 400 })
     }
+
+    // Get user ID for image upload (optional — image gen works without auth for text-only)
+    let userId: string | undefined
+    try {
+      const supabase = await createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      userId = user?.id
+    } catch { /* no auth session — image gen will skip upload */ }
 
     // 1. Get KB context (frameworks + hooks — the HOW)
     const laneMap: Record<string, 'short-form' | 'ads' | 'youtube' | 'social_media'> = {
@@ -276,40 +286,60 @@ Generate ${variants} distinct variants now. Remember: every variant must be spec
 
     let finalVariants = result.data.variants
 
-    // Generate images if requested
+    // Generate images if requested — use multi-turn session for consistency
     if (generateImages) {
-      const imagePromises = finalVariants.map(async (variant: any) => {
+      // Try multi-turn session first (all variants in same session = same identity)
+      let session = null
+      if (userId) {
+        try {
+          session = await getOrCreateSession(userId)
+        } catch (sessionErr) {
+          console.warn('[Generate API] Multi-turn session init failed, falling back to single-shot:', sessionErr)
+        }
+      }
+
+      // Sequential generation — NOT parallel — to maintain multi-turn context
+      for (let i = 0; i < finalVariants.length; i++) {
+        const variant = finalVariants[i]
         const imagePrompt = variant.content?.imagePrompt
-        if (!imagePrompt) return variant
+        if (!imagePrompt) continue
 
         try {
-          // Determine aspect ratio based on platform
-          const aspectMap: Record<string, '1:1' | '4:5' | '16:9' | '9:16'> = {
-            'facebook-ad': '1:1',
-            'static-image': '1:1',
-            'carousel': '1:1',
-            'facebook-post': '4:5',
-          }
+          if (session) {
+            // Multi-turn: generate within session for consistency
+            const imageBuffer = await session.generateScene(imagePrompt)
+            const base64 = imageBuffer.toString('base64')
+            finalVariants[i] = {
+              ...variant,
+              imageUrl: `data:image/png;base64,${base64}`,
+              imageStoragePath: '',
+            }
+          } else {
+            // Fallback: single-shot generation
+            const aspectMap: Record<string, '1:1' | '4:5' | '16:9' | '9:16'> = {
+              'facebook-ad': '1:1',
+              'static-image': '1:1',
+              'carousel': '1:1',
+              'facebook-post': '4:5',
+            }
 
-          const imageResult = await generateImage({
-            prompt: imagePrompt,
-            style: 'creator_featured',
-            aspect_ratio: aspectMap[platform] || '1:1',
-          })
+            const imageResult = await generateImage({
+              prompt: imagePrompt,
+              style: 'creator_featured',
+              aspect_ratio: aspectMap[platform] || '1:1',
+            }, userId)
 
-          return {
-            ...variant,
-            imageUrl: imageResult.image_url,
-            imageStoragePath: imageResult.storage_path,
+            finalVariants[i] = {
+              ...variant,
+              imageUrl: imageResult.image_url,
+              imageStoragePath: imageResult.storage_path,
+            }
           }
         } catch (imgErr) {
           console.error(`[Generate API] Image gen failed for variant ${variant.number}:`, imgErr)
           // Return variant without image — don't fail the whole request
-          return variant
         }
-      })
-
-      finalVariants = await Promise.all(imagePromises)
+      }
     }
 
     return NextResponse.json({

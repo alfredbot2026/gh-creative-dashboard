@@ -6,10 +6,11 @@
  */
 import { randomUUID } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
+import { getGraceReferenceImages } from './reference-images'
 import type { ImageGenerationRequest, ImageGenerationResponse } from './image-types'
 import type { BrandStyleGuide } from '@/lib/brand/types'
 
-const GEMINI_MODEL = 'gemini-3-pro-image-preview'
+const GEMINI_MODEL = 'gemini-3.1-flash-image-preview'
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 const MAX_RETRIES = 4
 const RETRY_DELAYS = [0, 5000, 15000, 30000]
@@ -39,23 +40,37 @@ async function callGeminiImageAPI(
   // Build the content parts
   const parts: any[] = []
 
-  // Add reference images as inline data
+  // Add reference images as inline data (supports both URLs and data: URIs)
   for (const url of referenceImageUrls) {
     try {
-      const imgResponse = await fetch(url)
-      if (imgResponse.ok) {
-        const buffer = await imgResponse.arrayBuffer()
-        const base64 = Buffer.from(buffer).toString('base64')
-        const mimeType = imgResponse.headers.get('content-type') || 'image/jpeg'
-        parts.push({
-          inlineData: {
-            mimeType,
-            data: base64,
-          }
-        })
+      if (url.startsWith('data:')) {
+        // Data URL — extract base64 directly
+        const match = url.match(/^data:([^;]+);base64,(.+)$/)
+        if (match) {
+          parts.push({
+            inlineData: {
+              mimeType: match[1],
+              data: match[2],
+            }
+          })
+        }
+      } else {
+        // Remote URL — fetch and convert
+        const imgResponse = await fetch(url)
+        if (imgResponse.ok) {
+          const buffer = await imgResponse.arrayBuffer()
+          const base64 = Buffer.from(buffer).toString('base64')
+          const mimeType = imgResponse.headers.get('content-type') || 'image/jpeg'
+          parts.push({
+            inlineData: {
+              mimeType,
+              data: base64,
+            }
+          })
+        }
       }
     } catch (e) {
-      console.warn(`Failed to fetch reference image: ${url}`, e)
+      console.warn(`Failed to load reference image: ${url.substring(0, 80)}`, e)
     }
   }
 
@@ -122,14 +137,24 @@ async function callGeminiImageAPI(
 }
 
 export async function generateImage(
-  request: ImageGenerationRequest
+  request: ImageGenerationRequest,
+  userId?: string
 ): Promise<ImageGenerationResponse> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  
+  // Use provided userId (from API route that already authed) or fall back to auth check
+  let resolvedUserId = userId
+  if (!resolvedUserId) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      resolvedUserId = user?.id || 'anonymous'
+    } catch {
+      resolvedUserId = 'anonymous'
+    }
+  }
 
   // 1. Get brand style guide
   const { data: brand } = await supabase
@@ -145,26 +170,51 @@ export async function generateImage(
     .limit(1)
     .single()
 
-  // 3. Build prompt
-  let fullPrompt = ''
+  // 3. Build prompt — Google's recommended formula:
+  // [Reference images] + [Relationship instruction] + [New scenario]
+  // Positive framing only, no negative instructions
+  let brandPrefix = ''
   if (brand) {
-    fullPrompt += buildBrandPrefix(brand as any, request.style)
+    brandPrefix = buildBrandPrefix(brand as any, request.style)
   }
-  fullPrompt += request.prompt
+  
+  let fullPrompt = ''
+  if (request.style !== 'faceless_quote' && persona) {
+    // Creator-featured/lifestyle: include Grace identity (positive framing)
+    fullPrompt = `This is Grace, a Filipina woman in her early-to-mid 30s with a round full face, soft cheeks, light-medium warm skin, black long hair, and transparent peach hexagonal glasses.
 
-  // 4. Get reference image URLs (signed)
+${brandPrefix}Generate Grace in this scene: ${request.prompt}
+
+Keep her exact appearance from the reference photos. Lifestyle photography, warm natural lighting. No text overlays or UI elements.`
+  } else {
+    fullPrompt = brandPrefix + request.prompt
+  }
+
+  // 4. Get reference image URLs — try Supabase storage, fall back to local files
   const referenceImageUrls: string[] = []
   
-  if (request.style !== 'faceless_quote' && persona) {
-    const refImages = (persona.reference_images as string[]) || []
-    if (persona.avatar_url) refImages.unshift(persona.avatar_url)
+  if (request.style !== 'faceless_quote') {
+    // Try Supabase storage first
+    if (persona) {
+      const refImages = (persona.reference_images as string[]) || []
+      if (persona.avatar_url) refImages.unshift(persona.avatar_url)
+      
+      for (const storagePath of refImages.slice(0, 2)) {
+        const { data: signedData } = await supabase.storage
+          .from('ad-creatives')
+          .createSignedUrl(storagePath, 3600)
+        if (signedData?.signedUrl) {
+          referenceImageUrls.push(signedData.signedUrl)
+        }
+      }
+    }
     
-    for (const storagePath of refImages.slice(0, 3)) {
-      const { data: signedData } = await supabase.storage
-        .from('ad-creatives')
-        .createSignedUrl(storagePath, 3600)
-      if (signedData?.signedUrl) {
-        referenceImageUrls.push(signedData.signedUrl)
+    // If no Supabase images resolved, use local reference files as data URLs
+    if (referenceImageUrls.length === 0) {
+      const localRefs = getGraceReferenceImages()
+      for (const buf of localRefs.slice(0, 2)) {
+        const base64 = buf.toString('base64')
+        referenceImageUrls.push(`data:image/jpeg;base64,${base64}`)
       }
     }
   }
@@ -177,27 +227,36 @@ export async function generateImage(
     request.aspect_ratio,
   )
 
-  // 6. Upload to Supabase Storage
-  const dateStr = new Date().toISOString().split('T')[0]
-  const filename = `${randomUUID()}.png`
-  const storagePath = `ad-creatives/${user.id}/${dateStr}/${filename}`
+  // 6. Return as base64 data URL for immediate display
+  // Storage upload deferred to save action (needs proper auth context)
+  const base64 = imageBuffer.toString('base64')
+  const dataUrl = `data:image/png;base64,${base64}`
+  
+  // Try to upload to storage (best effort — may fail without auth)
+  let storagePath = ''
+  try {
+    const dateStr = new Date().toISOString().split('T')[0]
+    const filename = `${randomUUID()}.png`
+    storagePath = `ad-creatives/${resolvedUserId}/${dateStr}/${filename}`
 
-  const { error: uploadError } = await supabase.storage
-    .from('ad-creatives')
-    .upload(storagePath, imageBuffer, {
-      contentType: 'image/png',
-      upsert: false,
-    })
+    const { error: uploadError } = await supabase.storage
+      .from('ad-creatives')
+      .upload(storagePath, imageBuffer, {
+        contentType: 'image/png',
+        upsert: false,
+      })
 
-  if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`)
-
-  // 7. Get signed URL for display
-  const { data: signedUrl } = await supabase.storage
-    .from('ad-creatives')
-    .createSignedUrl(storagePath, 3600)
+    if (uploadError) {
+      console.warn(`[Image Gen] Storage upload failed (non-fatal): ${uploadError.message}`)
+      storagePath = ''
+    }
+  } catch (e) {
+    console.warn('[Image Gen] Storage upload error (non-fatal):', e)
+    storagePath = ''
+  }
 
   return {
-    image_url: signedUrl?.signedUrl || '',
+    image_url: dataUrl,
     storage_path: storagePath,
     prompt_used: fullPrompt,
     model: GEMINI_MODEL,
