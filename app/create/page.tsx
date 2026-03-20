@@ -204,13 +204,12 @@ function CreatePageInner() {
       
       const { error: saveError } = await supabase.from('content_items').insert({
         title: variant.hook.substring(0, 200),
-        hook: variant.hook,
         content_type: contentType,
         platform,
         script_data: variant,
-        ai_generated: true,
         status: 'draft',
         user_id: user?.id,
+        tenant_id: user?.id,
       })
       
       if (saveError) throw saveError
