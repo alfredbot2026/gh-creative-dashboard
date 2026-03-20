@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { generateJSON } from '@/lib/llm/client'
-import { getContentTypeContext, getBrandContext } from '@/lib/create/kb-retriever'
+import { getContentTypeContext } from '@/lib/create/kb-retriever'
 import { createClient } from '@/lib/supabase/server'
 
 interface GenerateRequest {
@@ -10,41 +10,118 @@ interface GenerateRequest {
   variants?: number
 }
 
-function getSystemPrompt(brandContext: any, platform: string) {
+/**
+ * Pull the FULL business context: profile + persona + products.
+ * This is what tells Gemini WHAT to write about.
+ */
+async function getBusinessContext() {
+  const supabase = await createClient()
+
+  const [
+    { data: profile },
+    { data: persona },
+    { data: products },
+  ] = await Promise.all([
+    supabase.from('business_profile').select('*').limit(1).single(),
+    supabase.from('brand_persona').select('character_name, backstory, voice_preset, custom_voice_notes').limit(1).single(),
+    supabase.from('product_catalog').select('name, price, description, target_audience').eq('is_active', true),
+  ])
+
+  return { profile, persona, products }
+}
+
+function buildSystemPrompt(
+  biz: { profile: any; persona: any; products: any[] | null },
+  platform: string,
+  contentType: string,
+) {
+  const p = biz.profile
+  const persona = biz.persona
+
+  // Content pillar mapping — which pillar does this content type align with?
+  const pillarMap: Record<string, string> = {
+    educate: 'Education — how P2P works, how simple the tools are',
+    story: 'Relatability — Grace\'s real home life, family, creative process',
+    prove: 'Proof — student results, real receipts, real transformations',
+    sell: 'Objection Busting + Education — addressing doubts and showing the path',
+  }
+
   let platformRules = ''
   switch (platform) {
     case 'reels':
     case 'tiktok':
-      platformRules = 'Format each variant as short-form video. Each variant must have a "hook" and a "content" object with a "scenes" array (sceneNumber, visual, voiceover).'
+      platformRules = `Format: Short-form video script (30-60 seconds).
+Each variant must have a "hook" (the first thing said on camera) and a "content" object with a "scenes" array.
+Each scene: { "sceneNumber": 1, "visual": "what the viewer sees", "voiceover": "what Grace says" }.
+Keep it 3-4 scenes max. Visual directions must be things Grace can actually film at home — her desk, her printer, her paper products, her kids nearby.`
       break
     case 'facebook-post':
-      platformRules = 'Format each variant as a social media post. Each variant must have a "hook" and a "content" object with a "caption" string and "hashtags" array.'
+      platformRules = `Format: Facebook post.
+Each variant must have a "hook" and a "content" object with "caption" (string) and "hashtags" (array).
+Caption should be conversational Taglish — like Grace is talking to a friend. 150-300 words.`
       break
     case 'facebook-ad':
-      platformRules = 'Format each variant as an ad. Each variant must have a "hook" and a "content" object with "headline", "primaryText", and "imagePrompt" strings.'
+      platformRules = `Format: Facebook ad.
+Each variant must have a "hook" and a "content" object with "headline" (short, punchy), "primaryText" (the ad body, 100-200 words), and "imagePrompt" (what the ad image should show).
+Must include a clear CTA. Price anchoring encouraged.`
       break
     case 'youtube':
-      platformRules = 'Format each variant as a YouTube video script. Each variant must have a "hook" and a "content" object with a "sections" array (timestamp, content, visual).'
+      platformRules = `Format: YouTube video script.
+Each variant must have a "hook" and a "content" object with a "sections" array.
+Each section: { "timestamp": "0:00", "content": "what Grace says", "visual": "what the viewer sees" }.
+Target 5-8 minutes. Include a strong intro hook, value delivery, and CTA.`
       break
     case 'carousel':
-      platformRules = 'Format each variant as a carousel. Each variant must have a "hook" and a "content" object with a "slides" array (text, imagePrompt).'
+      platformRules = `Format: Instagram carousel (5-7 slides).
+Each variant must have a "hook" and a "content" object with a "slides" array.
+Each slide: { "text": "the text on the slide", "imagePrompt": "visual description" }.
+Slide 1 = hook. Last slide = CTA. Middle slides = value.`
       break
     case 'static-image':
-      platformRules = 'Format each variant as a static image. Each variant must have a "hook" and a "content" object with "headline", "subtext", and "imagePrompt" strings.'
+      platformRules = `Format: Static image post.
+Each variant must have a "hook" and a "content" object with "headline" (bold text overlay), "subtext" (supporting text), and "imagePrompt" (visual description).`
       break
   }
 
-  return `You are Grace, an expert content creator and copywriter for Graceful Homeschooling.
-Brand Guidelines:
-${brandContext?.core_identity ? JSON.stringify(brandContext.core_identity) : 'Maintain a warm, nurturing, and helpful tone. Never sound corporate or overly salesy.'}
-${brandContext?.copywriting_rules ? JSON.stringify(brandContext.copywriting_rules) : ''}
+  return `You are ${persona?.character_name || 'Grace'}, the founder of ${p?.business_name || 'Graceful Homeschooling'}.
+
+WHO YOU ARE:
+${persona?.backstory || 'Filipino mompreneur who turned paper crafting into a home-based business.'}
+
+YOUR BUSINESS:
+- Business: ${p?.business_name || 'Graceful Homeschooling'}
+- Industry: ${p?.industry || 'Home-based paper products business education'}
+- What you sell: ${(p?.products_services || []).join('; ')}
+- Target audience: ${p?.target_audience || 'Filipino stay-at-home moms'}
+
+YOUR BRAND VOICE:
+${p?.brand_voice || 'Warm, encouraging, relatable, practical'}
+${p?.notes || ''}
+
+YOUR CONTENT PILLAR FOR THIS POST:
+${pillarMap[contentType] || 'General brand content'}
+
+YOUR PRODUCTS (reference naturally, don't force):
+${(biz.products || []).map(pr => `- ${pr.name} (${pr.price}) — ${pr.description}`).join('\n')}
+
+YOUR UNIQUE SELLING POINTS:
+${(p?.unique_selling_points || []).map((u: string) => `- ${u}`).join('\n')}
+
+IMPORTANT RULES:
+- Write as Grace — first person, warm, like talking to a kapwa mommy
+- Use Taglish naturally (mix of Filipino and English, like real PH social media)
+- Content must be about PAPER CRAFTING / PAPER PRODUCTS business specifically
+- Visual directions must be things Grace can film at home (her desk, printer, paper products, journals, stickers)
+- Never sound like a generic online business guru
+- Never use "passive income" — this is ACTIVE, hands-on, creative work
+- Reference real things: Canva, Shopee, her printer, ₱1,300 starter kit, actual paper products
+
+${platformRules}
 
 You will generate exactly 3 distinct content variants.
 Each variant must use a DIFFERENT hook style drawn from the provided hook library.
-Assign a "qualityScore" (0-100) to each variant based on how well it fits the brand and the objective.
+Assign a "qualityScore" (0-100) based on brand fit, specificity to paper crafting, and Taglish naturalness.
 Also assign a "number" (1, 2, 3) and a unique "id" (string) to each variant.
-
-${platformRules}
 
 Return ONLY raw JSON matching this schema:
 {
@@ -70,7 +147,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing platform or contentType' }, { status: 400 })
     }
 
-    // 1. Get KB context
+    // 1. Get KB context (frameworks + hooks — the HOW)
     const laneMap: Record<string, 'short-form' | 'ads' | 'youtube' | 'social_media'> = {
       'reels': 'short-form',
       'tiktok': 'short-form',
@@ -83,10 +160,10 @@ export async function POST(req: Request) {
     
     const kbContext = await getContentTypeContext(laneMap[platform], contentType, 15)
     
-    // 2. Get Brand context
-    const brandContext = await getBrandContext()
+    // 2. Get Business context (profile + persona + products — the WHAT)
+    const bizContext = await getBusinessContext()
 
-    // 3. Get Product (if applicable)
+    // 3. Get specific Product (if sell mode with selection)
     let productContext = ''
     if (productId) {
       const supabase = await createClient()
@@ -97,27 +174,23 @@ export async function POST(req: Request) {
         .single()
       
       if (product) {
-        productContext = `Product Context:\nName: ${product.name}\nPrice: ${product.price}\nDescription: ${product.description || ''}\nTarget Audience: ${product.target_audience || ''}`
+        productContext = `\nFEATURED PRODUCT (make this the focus):\nName: ${product.name}\nPrice: ${product.price}\nDescription: ${product.description || ''}\nTarget Audience: ${product.target_audience || ''}`
       }
     }
 
-    // 4. Build Prompt
-    const systemPrompt = getSystemPrompt(brandContext, platform)
+    // 4. Build Prompts
+    const systemPrompt = buildSystemPrompt(bizContext, platform, contentType)
     
-    const userPrompt = `
-Objective: Create content to ${contentType}.
-Platform: ${platform}
+    const userPrompt = `Objective: Create ${contentType} content for ${platform}.
 
-Knowledge Base Frameworks & Inspiration:
-${JSON.stringify(kbContext.entries.map(e => ({ title: e.title, content: e.content })))}
+CONTENT FRAMEWORKS TO USE (choose the best structure for each variant):
+${JSON.stringify(kbContext.entries.slice(0, 8).map(e => ({ title: e.title, content: e.content?.substring(0, 500) })))}
 
-Available Hooks to Use (Choose 3 different ones for the 3 variants):
-${JSON.stringify(kbContext.hooks.map(h => ({ title: h.title, content: h.content })))}
-
+HOOK STYLES TO USE (each variant must use a DIFFERENT hook):
+${JSON.stringify(kbContext.hooks.map(h => ({ title: h.title, content: h.content?.substring(0, 300) })))}
 ${productContext}
 
-Generate ${variants} distinct variants now in the requested JSON format.
-`
+Generate ${variants} distinct variants now. Remember: every variant must be specifically about PAPER CRAFTING business, reference real things Grace does, and sound like natural Taglish.`
 
     // 5. Generate via LLM
     const result = await generateJSON<any>(systemPrompt, userPrompt)
@@ -130,7 +203,9 @@ Generate ${variants} distinct variants now in the requested JSON format.
       variants: result.data.variants,
       platform,
       contentType,
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
+      kbEntriesUsed: kbContext.entries.length,
+      hooksUsed: kbContext.hooks.length,
     })
 
   } catch (err) {
