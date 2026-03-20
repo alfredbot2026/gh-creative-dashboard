@@ -1,10 +1,26 @@
 import { createClient } from '@/lib/supabase/server'
 import type { KnowledgeEntry } from '@/lib/knowledge/types'
 
+/** Fisher-Yates shuffle */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
 /**
- * Retrieve relevant KB entries for content generation.
- * Pulls: hooks, scripting frameworks, brand identity (mandatory first-read),
- * and any lane-specific entries sorted by effectiveness_score.
+ * Tiered KB selection engine.
+ * 
+ * 1. Fetch the FULL pool of matching entries (not just top N)
+ * 2. Split into tiers by effectiveness_score:
+ *    - Tier A (>70): proven performers → always included first
+ *    - Tier B (50-70): average/unscored → randomly sampled
+ *    - Tier C (<50): underperformers → excluded
+ * 3. Enforce category diversity (max 3 per category)
+ * 4. Result: mix of best + random fresh entries every time
  */
 export async function getGenerationContext(
   lane: 'short-form' | 'ads' | 'youtube',
@@ -13,8 +29,7 @@ export async function getGenerationContext(
 ): Promise<{ entries: KnowledgeEntry[], tier: 'approved' | 'candidate' }> {
   const supabase = await createClient()
 
-  // 1. Always get mandatory first-read entries (brand identity)
-  // Prefer approved; if none exist yet, fall back to candidate so the app has KB context on first run.
+  // 1. Always get mandatory first-read entries
   const { data: mandatoryApproved } = await supabase
     .from('knowledge_entries')
     .select('*')
@@ -30,62 +45,77 @@ export async function getGenerationContext(
         .eq('review_status', 'candidate')
       ).data
 
-  // 2. Get lane-specific entries by requested categories
-  // Prefer approved; if none exist yet, fall back to candidate.
-  const { data: entriesApproved } = await supabase
+  // 2. Fetch the FULL POOL — not limited, so we can randomly sample
+  const { data: poolApproved } = await supabase
     .from('knowledge_entries')
     .select('*')
     .in('category', categories)
     .contains('lanes', [lane])
     .eq('review_status', 'approved')
-    .order('effectiveness_score', { ascending: false })
-    .limit(limit)
 
-  let tier: 'approved' | 'candidate' = 'approved'
-  let entries = entriesApproved
+  let poolTier: 'approved' | 'candidate' = 'approved'
+  let pool = poolApproved || []
   
-  if (!entriesApproved || entriesApproved.length === 0) {
-    tier = 'candidate'
+  if (pool.length === 0) {
+    poolTier = 'candidate'
     const { data } = await supabase
       .from('knowledge_entries')
       .select('*')
       .in('category', categories)
       .contains('lanes', [lane])
       .eq('review_status', 'candidate')
-      .order('effectiveness_score', { ascending: false })
-      .limit(limit)
-    entries = data
+    pool = data || []
   }
 
-  // Deduplicate (mandatory entries might overlap) and enforce category diversity
-  const MAX_PER_CATEGORY = 5
+  // 3. Split into tiers
+  const tierA: KnowledgeEntry[] = [] // score > 70 — proven winners
+  const tierB: KnowledgeEntry[] = [] // score 50-70 — average/unscored (default 50)
+  // Tier C (< 50) is excluded entirely
+
+  for (const entry of pool) {
+    const score = entry.effectiveness_score ?? 50
+    if (score > 70) tierA.push(entry)
+    else if (score >= 50) tierB.push(entry)
+    // score < 50 → excluded
+  }
+
+  // 4. Build result: mandatory → Tier A → random from Tier B
+  const MAX_PER_CATEGORY = 3
+  const mandatoryIds = new Set((mandatory || []).map(e => e.id))
   const seen = new Set<string>()
   const result: KnowledgeEntry[] = []
   const categoryCount: Record<string, number> = {}
 
-  for (const entry of [...(mandatory || []), ...(entries || [])]) {
-    if (!seen.has(entry.id)) {
-      const cat = entry.category
-      
-      // Always include mandatory first-read regardless of category count limits
-      if (entry.is_mandatory_first_read) {
-        seen.add(entry.id)
-        result.push(entry)
-        continue
-      }
-      
-      categoryCount[cat] = (categoryCount[cat] || 0) + 1
-      if (categoryCount[cat] <= MAX_PER_CATEGORY) {
-        seen.add(entry.id)
-        result.push(entry)
-      }
-      
-      if (result.length >= limit) break
-    }
+  // Helper to add with category diversity check
+  const tryAdd = (entry: KnowledgeEntry, force = false): boolean => {
+    if (seen.has(entry.id)) return false
+    const cat = entry.category
+    categoryCount[cat] = (categoryCount[cat] || 0)
+    if (!force && categoryCount[cat] >= MAX_PER_CATEGORY) return false
+    seen.add(entry.id)
+    result.push(entry)
+    categoryCount[cat]++
+    return true
   }
 
+  // Mandatory first-reads always included
+  for (const entry of (mandatory || [])) {
+    tryAdd(entry, true)
+  }
 
-  return { entries: result, tier }
+  // Tier A: include all (they've proven themselves), shuffled for variety
+  for (const entry of shuffle(tierA)) {
+    if (result.length >= limit) break
+    if (!mandatoryIds.has(entry.id)) tryAdd(entry)
+  }
+
+  // Tier B: randomly sample to fill remaining slots
+  for (const entry of shuffle(tierB)) {
+    if (result.length >= limit) break
+    if (!mandatoryIds.has(entry.id)) tryAdd(entry)
+  }
+
+  return { entries: result, tier: poolTier }
 }
 
 /**
@@ -194,7 +224,7 @@ export async function getContentTypeContext(
     .eq('category', 'hook_library')
     .contains('lanes', [validLane])
     .eq('review_status', 'approved')
-    .limit(5)
+    .limit(30)
 
   let hooks = hooksApproved || []
   if (hooks.length === 0) {
@@ -204,9 +234,12 @@ export async function getContentTypeContext(
       .eq('category', 'hook_library')
       .contains('lanes', [validLane])
       .eq('review_status', 'candidate')
-      .limit(5)
+      .limit(15)
     hooks = data || []
   }
+
+  // Shuffle hooks and take 5 — different hooks every generation
+  hooks = shuffle(hooks).slice(0, 5)
 
   return { entries, hooks, tier }
 }
