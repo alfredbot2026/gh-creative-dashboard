@@ -41,18 +41,77 @@ function buildSystemPrompt(
   const p = biz.profile
   const persona = biz.persona
 
-  // Content pillar mapping — which pillar does this content type align with?
-  const pillarMap: Record<string, string> = {
-    educate: 'Education — how P2P works, how simple the tools are',
-    story: 'Relatability — Grace\'s real home life, family, creative process',
-    prove: 'Proof — student results, real receipts, real transformations',
-    sell: 'Objection Busting + Education — addressing doubts and showing the path',
-    trend: 'Trend Jacking — ride a trending audio, format, or topic and tie it back to paper crafting / P2P',
-    inspire: 'Inspiration & Motivation — uplift fellow moms, share mindset shifts, celebrate small wins in the creative business journey',
-    debunk: 'Debunk a Myth — call out common misconceptions about paper crafting business, home-based income, or creative entrepreneurship. Use hot takes and contrarian perspectives to grab attention.',
-    process: 'Show the Process — demonstrate a specific workflow, tool, or technique Grace uses (printing, Canva design, packaging orders, setting up Shopee listings). Behind-the-scenes, educational demonstration.',
-    journey: 'Share My Journey — document Grace\'s real experience building P2P. Raw, vulnerable, personal. Share milestones, struggles, lessons learned. Build parasocial connection.',
-    announce: 'Announce Something — new product launch, restock, sale, event, milestone. Create urgency and excitement. Clear CTA.',
+  // Content type constraints — MUST constrain structure, tone, and what NOT to do
+  const contentTypeRules: Record<string, string> = {
+    educate: `CONTENT TYPE: TEACH SOMETHING
+GOAL: Viewer learns ONE specific, actionable thing about paper crafting.
+STRUCTURE: Hook with a surprising fact or "did you know" → Teach the thing step by step → Show the result → CTA
+HOOK STYLE: Educational — "The #1 mistake...", "Here's what nobody tells you about...", "3 things you need to know..."
+MUST: Include a specific technique, tool, or tip (e.g., "use 120gsm paper for stickers", "this Canva template trick")
+MUST NOT: Tell a personal backstory (save that for 'journey'). Don't pitch products directly (save for 'sell').`,
+
+    story: `CONTENT TYPE: TELL A STORY
+GOAL: Viewer feels emotionally connected to Grace through a specific moment or narrative.
+STRUCTURE: Set the scene (time, place, emotion) → Build tension or conflict → Resolution/realization → Takeaway
+HOOK STYLE: Narrative — "Last Tuesday...", "I'll never forget the day...", "Nobody saw me crying in the kitchen that night..."
+MUST: Include specific sensory details (what Grace saw, felt, heard). Use a concrete moment, not a summary of her life.
+MUST NOT: Teach a technique (save for 'educate'). Don't use comparison hooks ("X vs Y"). Don't pitch products.`,
+
+    prove: `CONTENT TYPE: SHOW PROOF
+GOAL: Viewer sees EVIDENCE that paper crafting business actually works (not just claims).
+STRUCTURE: Bold claim → Show the receipt/screenshot/result → Context of what it took → "You can do this too"
+HOOK STYLE: Evidence-based — "Here's my actual Shopee dashboard...", "This journal sold 47 copies...", "Real numbers from last month..."
+MUST: Reference specific numbers, results, student wins, or tangible outcomes. Be concrete, not vague.
+MUST NOT: Tell a generic origin story. Don't teach how to do it (save for 'educate'). Don't be hypothetical.`,
+
+    sell: `CONTENT TYPE: PROMOTE & SELL
+GOAL: Viewer takes action — clicks, buys, DMs, or signs up.
+STRUCTURE: Problem/pain point → Agitate → Present the solution (product) → Price anchor → Urgent CTA
+HOOK STYLE: Objection-busting — "You think it's too expensive?", "But I don't have time...", "What if I told you..."
+MUST: Name the specific product and price. Include a clear CTA (DM, link, comment keyword). Price anchor against something relatable.
+MUST NOT: Be subtle about selling. Don't just educate — this is a sales post. Don't tell a long backstory.`,
+
+    trend: `CONTENT TYPE: RIDE A TREND
+GOAL: Use a trending format, sound, or topic to reach NEW viewers and tie it to paper crafting.
+STRUCTURE: Trending format/hook → Unexpected paper crafting twist → "Bet you didn't expect that" → Follow CTA
+HOOK STYLE: Trend-native — Use "POV:", "Things that just make sense:", "Tell me you're a ___ without telling me", "Day in my life as..."
+MUST: The content must feel like it belongs on a For You page. Lead with the trend, THEN connect to paper crafting. Prioritize virality.
+MUST NOT: Start with paper crafting directly. Don't be educational or preachy. Don't pitch products. Keep it light and fun.`,
+
+    inspire: `CONTENT TYPE: INSPIRE & MOTIVATE
+GOAL: Viewer feels "if she can do it, I can too" — emotional uplift, not information.
+STRUCTURE: Relatable struggle → Mindset shift moment → Where Grace is now → Encouraging words for the viewer
+HOOK STYLE: Motivational — "You don't need permission...", "Stop waiting for the perfect time...", "A year from now you'll wish you started today..."
+MUST: Focus on FEELINGS and MINDSET, not business tactics. Speak directly to the viewer's self-doubt. End with empowerment.
+MUST NOT: Teach techniques. Don't show receipts or numbers (save for 'prove'). Don't sell products. This is emotional, not transactional.`,
+
+    debunk: `CONTENT TYPE: DEBUNK A MYTH
+GOAL: Viewer has a belief SHATTERED — "wait, that's not true?"
+STRUCTURE: State the myth confidently → "But here's what actually happens..." → The truth with evidence → New perspective
+HOOK STYLE: Contrarian — "Stop believing this lie about...", "Everyone says X but actually...", "This 'common advice' is WRONG..."
+MUST: Name the specific myth clearly. Provide a concrete counter-example from Grace's experience. Be bold and opinionated.
+MUST NOT: Be wishy-washy. Don't say "well, it depends." Don't tell a personal journey (save for 'journey'). Take a strong stance.`,
+
+    process: `CONTENT TYPE: SHOW THE PROCESS
+GOAL: Viewer watches Grace DO the thing — satisfying, behind-the-scenes, ASMR-adjacent.
+STRUCTURE: "Watch me..." intro → Step-by-step process → Satisfying reveal of finished product → "Want to learn how?"
+HOOK STYLE: Process-driven — "Watch me turn ₱15 of paper into...", "The most satisfying part of my day...", "How I make 50 sticker sheets in one afternoon..."
+MUST: Focus on VISUALS — hands working, printer running, cutting, packaging. This is a "show don't tell" format. Minimal talking, maximum visual satisfaction.
+MUST NOT: Tell a story. Don't get emotional. Don't pitch products. Let the process speak for itself.`,
+
+    journey: `CONTENT TYPE: SHARE MY JOURNEY
+GOAL: Viewer feels like they KNOW Grace personally — raw, vulnerable, real.
+STRUCTURE: "X years ago..." → Specific low moment → Turning point → Where I am now → What I learned
+HOOK STYLE: Personal narrative — "3 years ago I was just a...", "I never planned to start a business...", "The moment everything changed was..."
+MUST: Be deeply personal and specific. Name real dates, places, emotions. This is memoir-style, not motivational poster.
+MUST NOT: Teach anything. Don't show numbers (save for 'prove'). Don't sell. Don't give advice. Just share the story authentically.`,
+
+    announce: `CONTENT TYPE: ANNOUNCE SOMETHING
+GOAL: Viewer feels FOMO — "I need to act NOW before I miss this."
+STRUCTURE: Big reveal → What it is → Why it matters → Limited availability/deadline → How to get it
+HOOK STYLE: Announcement — "It's finally here!", "I've been keeping a secret...", "Mark your calendars...", "Only X spots left..."
+MUST: Create genuine urgency (date, limited quantity, or exclusive access). Be specific about what's being announced.
+MUST NOT: Be vague. Don't bury the announcement in a story. Lead with the news. Keep it exciting and fast-paced.`,
   }
 
   let platformRules = ''
@@ -107,8 +166,7 @@ YOUR BRAND VOICE:
 ${p?.brand_voice || 'Warm, encouraging, relatable, practical'}
 ${p?.notes || ''}
 
-YOUR CONTENT PILLAR FOR THIS POST:
-${pillarMap[contentType] || 'General brand content'}
+${contentTypeRules[contentType] || 'General brand content'}
 
 YOUR PRODUCTS (reference naturally, don't force):
 ${(biz.products || []).map(pr => `- ${pr.name} (${pr.price}) — ${pr.description}`).join('\n')}
@@ -198,7 +256,7 @@ export async function POST(req: Request) {
       ? `\nIMAGE GENERATION: For each variant, include an "imagePrompt" field in the content object. This should be a detailed visual description for AI image generation. Describe: the scene, Grace's appearance, products visible, lighting, composition. The image should feel like a real photo from Grace's home/studio.`
       : ''
 
-    const userPrompt = `Objective: Create ${contentType} content for ${platform}.
+    const userPrompt = `Objective: Create "${contentType}" content for ${platform}. Follow the ${contentType.toUpperCase()} content type rules STRICTLY — the hook style, structure, MUST and MUST NOT constraints.
 ${topicContext}
 CONTENT FRAMEWORKS TO USE (choose the best structure for each variant):
 ${JSON.stringify(kbContext.entries.slice(0, 8).map(e => ({ title: e.title, content: e.content?.substring(0, 500) })))}
