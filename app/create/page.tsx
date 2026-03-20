@@ -329,7 +329,7 @@ function CreatePageInner() {
       </div>
 
       <div className={styles.section}>
-        <label className={styles.sectionLabel}>Content Type</label>
+        <label className={styles.sectionLabel}>What's the goal?</label>
         <div className={styles.chipsContainer}>
           {CONTENT_TYPES.map((c) => (
             <button
