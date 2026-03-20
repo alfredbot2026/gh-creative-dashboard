@@ -66,9 +66,6 @@ async function callGeminiImageAPI(
     contents: [{ parts }],
     generationConfig: {
       responseModalities: ['TEXT', 'IMAGE'],
-      imageConfig: {
-        outputImageCount: 1,
-      },
     },
   }
 
