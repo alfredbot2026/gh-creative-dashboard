@@ -173,19 +173,21 @@ function CreatePageInner() {
   }
 
   function handleCopy(variant: Variant) {
-    // Basic text extraction for clipboard
-    let text = `Hook: ${variant.hook}\n\n`
+    let text = ''
     
     if (variant.content.scenes) {
-      text += variant.content.scenes.map((s: any) => `Scene ${s.sceneNumber}:\nVisual: ${s.visual}\nAudio: ${s.voiceover}`).join('\n\n')
+      text = `${variant.hook}\n\n`
+      text += variant.content.scenes.map((s: any) => `Scene ${s.sceneNumber}:\nVisual: ${s.visual}\nVoiceover: ${s.voiceover}`).join('\n\n')
     } else if (variant.content.headline) {
-      text += `Headline: ${variant.content.headline}\nCopy: ${variant.content.primaryText || variant.content.subtext}\nImage Idea: ${variant.content.imagePrompt}`
+      text = `${variant.content.headline}\n\n${variant.content.primaryText || variant.content.subtext}`
     } else if (variant.content.caption) {
-      text += `Caption: ${variant.content.caption}\nHashtags: ${variant.content.hashtags?.join(' ')}`
+      text = `${variant.content.caption}`
+      if (variant.content.hashtags) text += `\n\n${variant.content.hashtags.join(' ')}`
     } else if (variant.content.sections) {
+      text = `${variant.hook}\n\n`
       text += variant.content.sections.map((s: any) => `[${s.timestamp}] ${s.content}`).join('\n\n')
     } else if (variant.content.slides) {
-      text += variant.content.slides.map((s: any, i: number) => `Slide ${i+1}:\nText: ${s.text}\nVisual: ${s.imagePrompt}`).join('\n\n')
+      text += variant.content.slides.map((s: any, i: number) => `Slide ${i+1}: ${s.text}`).join('\n\n')
     }
 
     navigator.clipboard.writeText(text)
@@ -221,7 +223,12 @@ function CreatePageInner() {
     }
   }
 
-  function renderVariantContent(content: any) {
+  function renderVariantContent(content: any, variant: Variant) {
+    const hasImage = !!variant.imageUrl
+    const imageRequested = isVisualPlatform && generateImages
+    const imageFailed = imageRequested && !hasImage
+
+    // Scenes (Reels, TikTok, YouTube Shorts)
     if (content.scenes) {
       return (
         <div className={styles.variantDetails}>
@@ -236,25 +243,52 @@ function CreatePageInner() {
       )
     }
     
+    // Headline + copy (Static Image, Facebook Ad)
     if (content.headline) {
       return (
         <div className={styles.variantDetails}>
-          <div className={styles.contentBlock}><strong>Headline:</strong> {content.headline}</div>
-          <div className={styles.contentBlock}><strong>Copy:</strong> {content.primaryText || content.subtext}</div>
-          <div className={styles.contentBlock}><em>Image Idea: {content.imagePrompt}</em></div>
+          {hasImage && (
+            <div className={styles.variantImage}>
+              <img src={variant.imageUrl} alt={content.headline} />
+            </div>
+          )}
+          {imageFailed && (
+            <div className={styles.imagePlaceholder}>
+              <ImageIcon size={24} />
+              <span>Image unavailable right now</span>
+              <span className={styles.placeholderHint}>Gemini image generation works best in the morning (PH time)</span>
+            </div>
+          )}
+          <div className={styles.headlineBlock}>{content.headline}</div>
+          <div className={styles.copyBlock}>{content.primaryText || content.subtext}</div>
         </div>
       )
     }
 
+    // Caption + hashtags (Facebook Post)
     if (content.caption) {
       return (
         <div className={styles.variantDetails}>
-          <div className={styles.contentBlock}>{content.caption}</div>
-          <div className={styles.contentBlock}><em>{content.hashtags?.join(' ')}</em></div>
+          {hasImage && (
+            <div className={styles.variantImage}>
+              <img src={variant.imageUrl} alt="Post image" />
+            </div>
+          )}
+          {imageFailed && (
+            <div className={styles.imagePlaceholder}>
+              <ImageIcon size={24} />
+              <span>Image unavailable right now</span>
+            </div>
+          )}
+          <div className={styles.copyBlock}>{content.caption}</div>
+          {content.hashtags && (
+            <div className={styles.hashtagBlock}>{content.hashtags.join(' ')}</div>
+          )}
         </div>
       )
     }
 
+    // Sections (YouTube)
     if (content.sections) {
       return (
         <div className={styles.variantDetails}>
@@ -269,14 +303,14 @@ function CreatePageInner() {
       )
     }
     
+    // Slides (Carousel)
     if (content.slides) {
       return (
         <div className={styles.variantDetails}>
           {content.slides.map((s: any, i: number) => (
-            <div key={i} className={styles.sceneRow}>
-              <div className={styles.sceneMeta}>Slide {i+1}</div>
-              <div className={styles.sceneAudio}>{s.text}</div>
-              <div className={styles.sceneVisual}>[{s.imagePrompt}]</div>
+            <div key={i} className={styles.slideCard}>
+              <div className={styles.slideNumber}>Slide {i + 1}</div>
+              <div className={styles.slideText}>{s.text}</div>
             </div>
           ))}
         </div>
@@ -314,10 +348,11 @@ function CreatePageInner() {
 
   if (step === 'results') {
     const platformLabel = PLATFORMS.find(p => p.id === platform)?.label || 'Content'
+    const isVisualResult = VISUAL_PLATFORMS.includes(platform)
     return (
       <div className={styles.page}>
         <div className={styles.resultsHeader}>
-          <h1 className={styles.pageTitle}>Your {platformLabel} Scripts</h1>
+          <h1 className={styles.pageTitle}>Your {platformLabel} {isVisualResult ? 'Creatives' : 'Scripts'}</h1>
           <span className={styles.resultsBadge}>3 variants · {CONTENT_TYPES.find(c => c.id === contentType)?.label}</span>
         </div>
 
@@ -333,13 +368,7 @@ function CreatePageInner() {
               
               <h2 className={styles.hookText}>{variant.hook}</h2>
               
-              {variant.imageUrl && (
-                <div className={styles.variantImage}>
-                  <img src={variant.imageUrl} alt={`Variant ${variant.number}`} />
-                </div>
-              )}
-              
-              {renderVariantContent(variant.content)}
+              {renderVariantContent(variant.content, variant)}
 
               <div className={styles.cardActions}>
                 <button className={styles.btnOutline} onClick={() => handleCopy(variant)}>
