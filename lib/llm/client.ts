@@ -182,10 +182,46 @@ export async function generateJSON<T>(
         cleaned = cleaned.replace(/^```\w*\n?/, '').replace(/\n?```$/, '')
     }
 
+    // Try direct parse first
     try {
         const data = JSON.parse(cleaned) as T
         return { data, provider: response.provider, model: response.model }
     } catch {
+        // Try extracting the first complete JSON object/array
+        const jsonStart = cleaned.indexOf('{')
+        const jsonArrayStart = cleaned.indexOf('[')
+        const start = jsonStart === -1 ? jsonArrayStart : 
+                      jsonArrayStart === -1 ? jsonStart :
+                      Math.min(jsonStart, jsonArrayStart)
+        
+        if (start >= 0) {
+            // Find matching closing bracket
+            const isArray = cleaned[start] === '['
+            const openChar = isArray ? '[' : '{'
+            const closeChar = isArray ? ']' : '}'
+            let depth = 0
+            let end = -1
+            let inString = false
+            let escaped = false
+            
+            for (let i = start; i < cleaned.length; i++) {
+                const ch = cleaned[i]
+                if (escaped) { escaped = false; continue }
+                if (ch === '\\') { escaped = true; continue }
+                if (ch === '"') { inString = !inString; continue }
+                if (inString) continue
+                if (ch === openChar) depth++
+                if (ch === closeChar) { depth--; if (depth === 0) { end = i; break } }
+            }
+            
+            if (end > start) {
+                try {
+                    const data = JSON.parse(cleaned.slice(start, end + 1)) as T
+                    return { data, provider: response.provider, model: response.model }
+                } catch { /* fall through */ }
+            }
+        }
+        
         throw new Error(`Failed to parse LLM response as JSON: ${cleaned.slice(0, 200)}...`)
     }
 }
