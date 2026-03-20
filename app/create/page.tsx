@@ -82,13 +82,13 @@ function CreatePageInner() {
   const isVisualPlatform = VISUAL_PLATFORMS.includes(platform)
   
   const LOADING_PHASES = [
-    'Searching your knowledge base...',
-    'Found frameworks & hooks ✓',
-    'Writing variant 1 of 3...',
-    'Writing variant 2 of 3...',
-    'Writing variant 3 of 3...',
-    'Scoring quality...',
-    'Almost there...',
+    'Pulling inspiration from your notebooks...',
+    'Found some great hooks ✨',
+    'Writing your first draft...',
+    'Trying a different angle...',
+    'One more version, with a twist...',
+    'Making sure these sound like you...',
+    'Almost ready — just polishing...',
   ]
   
   // Phased loading messages
@@ -297,9 +297,16 @@ function CreatePageInner() {
               <span key={i} className={styles.dot} style={{ animationDelay: `${i * 200}ms` }} />
             ))}
           </div>
-          <h2 className={styles.loadingText} key={loadingPhase}>
-            {LOADING_PHASES[loadingPhase]}
-          </h2>
+          <div className={styles.loadingTextWrapper}>
+            <h2 className={styles.loadingText} key={loadingPhase}>
+              {LOADING_PHASES[loadingPhase]}
+            </h2>
+          </div>
+          {loadingPhase >= 2 && (
+            <p className={styles.loadingHint} key={`hint-${loadingPhase}`}>
+              {loadingPhase < 5 ? 'Each variant uses a different storytelling framework' : 'Your content, your voice — just better'}
+            </p>
+          )}
         </div>
       </div>
     )
