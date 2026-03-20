@@ -1,14 +1,6 @@
-/**
- * Today Page — Grace's Creative Hub
- * 
- * Answers one question: "What should I create right now?"
- * Shows: greeting, today's suggestions, this week's progress, quick create.
- */
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import {
-  ArrowRight,
-} from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 import styles from './page.module.css'
 
 function getGreeting(): string {
@@ -33,21 +25,11 @@ const CONTENT_TYPE_ICONS: Record<string, { icon: string; label: string; href: st
   'youtube': { icon: '🎬', label: 'YouTube', href: '/create?type=youtube' },
 }
 
-
-
 export default async function TodayPage() {
   const supabase = await createClient()
 
-  // Get user's name from business profile
-  const { data: profile } = await supabase
-    .from('business_profile')
-    .select('*')
-    .limit(1)
-    .single()
-
-  const userName = (profile as any)?.owner_name?.split(' ')[0]
-    || profile?.business_name?.split(' ')[0]
-    || 'there'
+  // Grace explicitly, not Graceful
+  const userName = 'Grace'
 
   // Get today's calendar items
   const todayStr = new Date().toISOString().split('T')[0]
@@ -89,7 +71,7 @@ export default async function TodayPage() {
     .eq('is_active', true)
     .limit(3)
 
-  // Build smart suggestions (combining calendar + AI recommendations)
+  // Build smart suggestions
   const suggestions = buildSuggestions(calendarSuggestions, todayItems, products)
 
   return (
@@ -97,34 +79,27 @@ export default async function TodayPage() {
       {/* Greeting */}
       <header className={styles.greeting}>
         <h1 className={styles.greetingText}>
-          {getGreeting()}, {userName} <span className={styles.wave}>👋</span>
+          {getGreeting()}, {userName}
         </h1>
         <p className={styles.date}>{getFormattedDate()}</p>
       </header>
 
       {/* Today's Content Suggestions */}
       <section className={styles.suggestions}>
-        <h2 className={styles.sectionLabel}>Today&apos;s content</h2>
+        <h2 className={styles.sectionLabel}>Suggested for you</h2>
         
         {suggestions.length > 0 ? (
           <div className={styles.suggestionCards}>
             {suggestions.map((s, i) => (
               <Link
                 key={i}
-                href={`${s.href}?topic=${encodeURIComponent(s.topic)}&purpose=${s.purpose}`}
+                href={s.href}
                 className={styles.suggestionCard}
               >
-                <div className={styles.suggestionTop}>
-                  <span className={styles.suggestionIcon}>{s.icon}</span>
-                  <span className={styles.suggestionType}>{s.typeLabel}</span>
-                </div>
                 <p className={styles.suggestionTitle}>{s.topic}</p>
                 <div className={styles.suggestionMeta}>
-                  <span className={styles.purposeChip}>{s.purposeLabel}</span>
-                  {s.platform && <span className={styles.platformChip}>{s.platform}</span>}
-                </div>
-                <div className={styles.createPrompt}>
-                  <ArrowRight size={14} />
+                  <span className={styles.suggestionType}>{s.typeLabel}</span>
+                  {s.platform && <span className={styles.platformChip}>• {s.platform}</span>}
                 </div>
               </Link>
             ))}
@@ -132,69 +107,30 @@ export default async function TodayPage() {
         ) : (
           <div className={styles.emptySuggestions}>
             <h3>Ready when you are</h3>
-            <p>
-              Hit Create below and start making content.
-              It takes less than 30 seconds.
-            </p>
+            <p>Hit Create below and start making content.</p>
           </div>
         )}
-      </section>
-
-      {/* Create button */}
-      <section className={styles.createSection}>
-        <Link href="/create" className={styles.createBtn}>
-          Create something new
-          <ArrowRight size={16} />
-        </Link>
       </section>
 
       {/* This Week */}
       {totalWeek > 0 && (
         <section className={styles.weekSection}>
           <h2 className={styles.sectionLabel}>This week</h2>
-          <div className={styles.weekCard}>
-            <div className={styles.weekStats}>
-              <div className={styles.weekStat}>
-                <span className={styles.weekNumber}>{publishedCount}</span>
-                <span className={styles.weekLabel}>published</span>
-              </div>
-              <div className={styles.weekDivider} />
-              <div className={styles.weekStat}>
-                <span className={styles.weekNumber}>{draftCount}</span>
-                <span className={styles.weekLabel}>drafts</span>
-              </div>
-              <div className={styles.weekDivider} />
-              <div className={styles.weekStat}>
-                <span className={styles.weekNumber}>{totalWeek}</span>
-                <span className={styles.weekLabel}>total</span>
-              </div>
-            </div>
-            <Link href="/calendar" className={styles.weekLink}>
-              View calendar <ArrowRight size={14} />
-            </Link>
+          <div className={styles.weekStats}>
+            <span className={styles.statText}>{publishedCount} published</span>
+            <span className={styles.statDivider}>·</span>
+            <span className={styles.statText}>{draftCount} drafts</span>
           </div>
         </section>
       )}
 
-      {/* Today's scheduled items */}
-      {todayItems && todayItems.length > 0 && (
-        <section className={styles.todayItems}>
-          <h2 className={styles.sectionLabel}>Scheduled for today</h2>
-          <div className={styles.itemsList}>
-            {todayItems.map((item) => (
-              <div key={item.id} className={styles.itemCard}>
-                <div className={styles.itemInfo}>
-                  <span className={styles.itemTitle}>{item.title}</span>
-                  <span className={styles.itemMeta}>
-                    {item.platform} • {item.content_type}
-                  </span>
-                </div>
-                <span className={`${styles.statusDot} ${item.status === 'published' ? styles.statusPublished : styles.statusDraft}`} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Create button */}
+      <section className={styles.createSection}>
+        <Link href="/create" className={styles.createBtn}>
+          Create something new <ArrowRight size={16} />
+        </Link>
+      </section>
+
     </div>
   )
 }
@@ -216,7 +152,6 @@ function buildSuggestions(
 ): Suggestion[] {
   const suggestions: Suggestion[] = []
 
-  // From calendar suggestions
   if (calendarSuggestions) {
     for (const s of calendarSuggestions.slice(0, 2)) {
       const type = s.content_type || 'short-form'
@@ -227,13 +162,12 @@ function buildSuggestions(
         purposeLabel: (s.purpose || 'educate').charAt(0).toUpperCase() + (s.purpose || 'educate').slice(1),
         icon: info.icon,
         typeLabel: info.label,
-        href: info.href,
+        href: '/create',
         platform: s.platform,
       })
     }
   }
 
-  // If no calendar suggestions, generate default ones based on products
   if (suggestions.length === 0 && products && products.length > 0) {
     const product = products[0]
     suggestions.push({
@@ -242,7 +176,7 @@ function buildSuggestions(
       purposeLabel: 'Educate',
       icon: '📱',
       typeLabel: 'Script',
-      href: '/create?type=script',
+      href: '/create',
       platform: 'Instagram',
     })
     suggestions.push({
@@ -251,12 +185,11 @@ function buildSuggestions(
       purposeLabel: 'Sell',
       icon: '🎯',
       typeLabel: 'Ad',
-      href: '/create?type=ad',
+      href: '/create',
       platform: 'Facebook',
     })
   }
 
-  // If still nothing, give generic starters
   if (suggestions.length === 0) {
     suggestions.push({
       topic: 'Share your creative process',
@@ -264,7 +197,7 @@ function buildSuggestions(
       purposeLabel: 'Story',
       icon: '📱',
       typeLabel: 'Script',
-      href: '/create?type=script',
+      href: '/create',
     })
   }
 

@@ -1,25 +1,13 @@
 'use client'
 
-/**
- * Unified Create Page — Purpose-first, format-second.
- * 
- * Grace doesn't think "I need a script vs an ad."
- * She thinks "I want to promote my course" or "I want to teach something."
- * 
- * Flow:
- * 1. What's the goal? (purpose chips)
- * 2. Any specific idea? (optional — AI suggests from KB)
- * 3. Where's it going? (platform — determines output format)
- * 4. Create → AI generates the right content for that platform
- */
-
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Film, Image as ImageIcon, LayoutTemplate, PlaySquare, Video, CheckCircle2, Copy, Save, Sparkles, RefreshCcw } from 'lucide-react'
 import styles from './create.module.css'
 
-type Platform = 'instagram-reels' | 'facebook-ad' | 'instagram-post' | 'youtube' | 'tiktok'
-type ContentPurpose = 'educate' | 'story' | 'sell' | 'prove' | 'trend' | 'inspire'
+type Step = 'select' | 'loading' | 'results'
+type Platform = 'reels' | 'tiktok' | 'facebook-post' | 'facebook-ad' | 'youtube' | 'carousel' | 'static-image'
+type ContentType = 'educate' | 'story' | 'prove' | 'sell'
 
 interface Product {
   id: string
@@ -27,55 +15,41 @@ interface Product {
   price: number | null
 }
 
-interface GeneratedResult {
-  title: string
-  content: string
-  metadata?: Record<string, unknown>
-  image_url?: string
-  quality_score?: number
+interface Variant {
+  id: string
+  number: number
+  hook: string
+  content: any
+  qualityScore: number
 }
 
-const PURPOSES: { id: ContentPurpose; label: string }[] = [
-  { id: 'educate', label: 'Teach something' },
-  { id: 'story', label: 'Share a story' },
-  { id: 'sell', label: 'Promote a product' },
-  { id: 'prove', label: 'Show results' },
-  { id: 'trend', label: 'Ride a trend' },
-  { id: 'inspire', label: 'Inspire someone' },
+const PLATFORMS: { id: Platform; label: string; desc: string; icon: any }[] = [
+  { id: 'reels', label: 'Reels / TikTok', desc: 'Short video script with scenes', icon: Video },
+  { id: 'facebook-post', label: 'Facebook Post', desc: 'Caption and hashtags', icon: LayoutTemplate },
+  { id: 'facebook-ad', label: 'Facebook Ad', desc: 'Headline, copy, and image prompt', icon: Sparkles },
+  { id: 'youtube', label: 'YouTube Video', desc: 'Full script with sections', icon: PlaySquare },
+  { id: 'carousel', label: 'Instagram Carousel', desc: 'Slide-by-slide content', icon: Film },
+  { id: 'static-image', label: 'Static Image', desc: 'Single image prompt & copy', icon: ImageIcon },
 ]
 
-const PLATFORMS: { id: Platform; label: string; description: string }[] = [
-  { id: 'instagram-reels', label: 'Reels / TikTok', description: 'Short video script with scenes' },
-  { id: 'instagram-post', label: 'Instagram Post', description: 'Caption, hashtags, image idea' },
-  { id: 'facebook-ad', label: 'Facebook Ad', description: 'Headline, copy, and image' },
-  { id: 'youtube', label: 'YouTube', description: 'Full script with timestamps' },
+const CONTENT_TYPES: { id: ContentType; label: string }[] = [
+  { id: 'educate', label: 'Teach something' },
+  { id: 'story', label: 'Tell a story' },
+  { id: 'prove', label: 'Show proof' },
+  { id: 'sell', label: 'Promote & sell' },
 ]
 
 function CreatePageInner() {
-  const searchParams = useSearchParams()
-  
-  const [purpose, setPurpose] = useState<ContentPurpose | null>(null)
-  const [platform, setPlatform] = useState<Platform>('instagram-reels')
-  const [idea, setIdea] = useState('')
+  const [step, setStep] = useState<Step>('select')
+  const [platform, setPlatform] = useState<Platform>('reels')
+  const [contentType, setContentType] = useState<ContentType>('educate')
   const [selectedProduct, setSelectedProduct] = useState<string>('')
-  
   const [products, setProducts] = useState<Product[]>([])
-  const [suggestedIdeas, setSuggestedIdeas] = useState<string[]>([])
   
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<GeneratedResult | null>(null)
+  const [results, setResults] = useState<Variant[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  // Pre-fill from query params
-  useEffect(() => {
-    const topic = searchParams.get('topic')
-    const purposeParam = searchParams.get('purpose') as ContentPurpose | null
-    if (topic) setIdea(topic)
-    if (purposeParam) setPurpose(purposeParam)
-  }, [searchParams])
-
-  // Load products
   useEffect(() => {
     const supabase = createClient()
     supabase
@@ -86,75 +60,20 @@ function CreatePageInner() {
       })
   }, [])
 
-  // Load suggestions when purpose changes
-  useEffect(() => {
-    loadSuggestions()
-  }, [purpose])
-
-  async function loadSuggestions() {
-    try {
-      const lane = platform === 'facebook-ad' ? 'ads' : platform === 'youtube' ? 'youtube' : 'short-form'
-      const res = await fetch(`/api/calendar/suggest?lane=${lane}&limit=3${purpose ? `&purpose=${purpose}` : ''}`)
-      if (res.ok) {
-        const data = await res.json()
-        if (data.suggestions) {
-          setSuggestedIdeas(data.suggestions.map((s: { topic: string }) => s.topic))
-        }
-      }
-    } catch {
-      // Non-critical
-    }
-  }
-
   async function handleGenerate() {
-    setLoading(true)
+    setStep('loading')
     setError(null)
-    setResult(null)
-
+    
     try {
-      let endpoint: string
-      let body: Record<string, unknown>
-      const productName = selectedProduct ? products.find(p => p.id === selectedProduct)?.name : undefined
-
-      if (platform === 'instagram-reels' || platform === 'tiktok') {
-        endpoint = '/api/create/short-form'
-        body = {
-          topic: idea || productName || undefined,
-          content_purpose: purpose || undefined,
-          platform: platform === 'tiktok' ? 'tiktok' : 'instagram-reels',
-          style: 'hook-first',
-          target_duration: 45,
-        }
-      } else if (platform === 'facebook-ad') {
-        endpoint = '/api/create/ad'
-        body = {
-          product_name: productName || idea || 'Featured product',
-          offer_details: idea || 'Special offer',
-          content_purpose: purpose || 'sell',
-          platform: 'facebook',
-          variants: 1,
-          generate_image: false,
-        }
-      } else if (platform === 'instagram-post') {
-        endpoint = '/api/create/social-post'
-        body = {
-          topic: idea || productName || undefined,
-          content_purpose: purpose || undefined,
-          platform: 'instagram',
-        }
-      } else {
-        endpoint = '/api/create/youtube-script'
-        body = {
-          topic: idea || productName || undefined,
-          content_purpose: purpose || undefined,
-          target_duration: 480,
-        }
-      }
-
-      const res = await fetch(endpoint, {
+      const res = await fetch('/api/create/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          platform,
+          contentType,
+          productId: selectedProduct || undefined,
+          variants: 3
+        }),
       })
 
       if (!res.ok) {
@@ -163,194 +82,236 @@ function CreatePageInner() {
       }
 
       const data = await res.json()
-      setResult(normalizeResult(data))
+      setResults(data.variants)
+      setStep('results')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setLoading(false)
+      setStep('select')
     }
   }
 
-  function normalizeResult(data: Record<string, unknown>): GeneratedResult {
-    // Script
-    if (data.scenes) {
-      const scenes = data.scenes as Array<{ scene_number: number; visual: string; voiceover: string }>
-      return {
-        title: (data.hook as string) || 'Your content',
-        content: scenes.map(s => `**Scene ${s.scene_number}:** ${s.voiceover}\n_Visual: ${s.visual}_`).join('\n\n'),
-        quality_score: data.quality_score as number,
-        metadata: data,
-      }
+  function handleCopy(variant: Variant) {
+    // Basic text extraction for clipboard
+    let text = `Hook: ${variant.hook}\n\n`
+    
+    if (variant.content.scenes) {
+      text += variant.content.scenes.map((s: any) => `Scene ${s.sceneNumber}:\nVisual: ${s.visual}\nAudio: ${s.voiceover}`).join('\n\n')
+    } else if (variant.content.headline) {
+      text += `Headline: ${variant.content.headline}\nCopy: ${variant.content.primaryText || variant.content.subtext}\nImage Idea: ${variant.content.imagePrompt}`
+    } else if (variant.content.caption) {
+      text += `Caption: ${variant.content.caption}\nHashtags: ${variant.content.hashtags?.join(' ')}`
+    } else if (variant.content.sections) {
+      text += variant.content.sections.map((s: any) => `[${s.timestamp}] ${s.content}`).join('\n\n')
+    } else if (variant.content.slides) {
+      text += variant.content.slides.map((s: any, i: number) => `Slide ${i+1}:\nText: ${s.text}\nVisual: ${s.imagePrompt}`).join('\n\n')
     }
-    // Ad
-    if (data.variants) {
-      const variants = data.variants as Array<{ headline: string; primary_text: string }>
-      const v = variants[0]
-      return {
-        title: v?.headline || 'Your ad',
-        content: v?.primary_text || '',
-        image_url: data.image_url as string,
-        quality_score: data.quality_score as number,
-        metadata: data,
-      }
-    }
-    // Social post
-    if (data.caption) {
-      return {
-        title: 'Your post',
-        content: data.caption as string,
-        metadata: data,
-      }
-    }
-    // YouTube
-    if (data.script) {
-      const script = data.script as Record<string, unknown>
-      return {
-        title: script.title as string || 'Your script',
-        content: script.hook as string || '',
-        metadata: data,
-      }
-    }
-    return { title: 'Your content', content: JSON.stringify(data, null, 2) }
+
+    navigator.clipboard.writeText(text)
+    setCopiedId(variant.id)
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
-  function handleCopy() {
-    if (result) {
-      navigator.clipboard.writeText(result.content.replace(/\*\*/g, '').replace(/_/g, ''))
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+  function renderVariantContent(content: any) {
+    if (content.scenes) {
+      return (
+        <div className={styles.variantDetails}>
+          {content.scenes.map((s: any, i: number) => (
+            <div key={i} className={styles.sceneRow}>
+              <div className={styles.sceneMeta}>Scene {s.sceneNumber}</div>
+              <div className={styles.sceneVisual}>[{s.visual}]</div>
+              <div className={styles.sceneAudio}>{s.voiceover}</div>
+            </div>
+          ))}
+        </div>
+      )
     }
+    
+    if (content.headline) {
+      return (
+        <div className={styles.variantDetails}>
+          <div className={styles.contentBlock}><strong>Headline:</strong> {content.headline}</div>
+          <div className={styles.contentBlock}><strong>Copy:</strong> {content.primaryText || content.subtext}</div>
+          <div className={styles.contentBlock}><em>Image Idea: {content.imagePrompt}</em></div>
+        </div>
+      )
+    }
+
+    if (content.caption) {
+      return (
+        <div className={styles.variantDetails}>
+          <div className={styles.contentBlock}>{content.caption}</div>
+          <div className={styles.contentBlock}><em>{content.hashtags?.join(' ')}</em></div>
+        </div>
+      )
+    }
+
+    if (content.sections) {
+      return (
+        <div className={styles.variantDetails}>
+          {content.sections.map((s: any, i: number) => (
+            <div key={i} className={styles.sceneRow}>
+              <div className={styles.sceneMeta}>{s.timestamp}</div>
+              <div className={styles.sceneAudio}>{s.content}</div>
+              <div className={styles.sceneVisual}>[{s.visual}]</div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    
+    if (content.slides) {
+      return (
+        <div className={styles.variantDetails}>
+          {content.slides.map((s: any, i: number) => (
+            <div key={i} className={styles.sceneRow}>
+              <div className={styles.sceneMeta}>Slide {i+1}</div>
+              <div className={styles.sceneAudio}>{s.text}</div>
+              <div className={styles.sceneVisual}>[{s.imagePrompt}]</div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    return null
   }
 
-  const showProductSelect = purpose === 'sell' || platform === 'facebook-ad'
+  const showProductSelect = contentType === 'sell' && platform === 'facebook-ad'
+
+  if (step === 'loading') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.skeletonCard} />
+          <div className={styles.skeletonCard} style={{ opacity: 0.7 }} />
+          <div className={styles.skeletonCard} style={{ opacity: 0.4 }} />
+          <h2 className={styles.loadingText}>Creating your content...</h2>
+        </div>
+      </div>
+    )
+  }
+
+  if (step === 'results') {
+    const platformLabel = PLATFORMS.find(p => p.id === platform)?.label || 'Content'
+    return (
+      <div className={styles.page}>
+        <div className={styles.resultsHeader}>
+          <h1 className={styles.pageTitle}>Your {platformLabel} Scripts</h1>
+          <span className={styles.resultsBadge}>3 variants · {CONTENT_TYPES.find(c => c.id === contentType)?.label}</span>
+        </div>
+
+        <div className={styles.resultsList}>
+          {results.map((variant) => (
+            <div key={variant.id} className={styles.resultCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.variantNumber}>{variant.number}</div>
+                <div className={styles.scoreBadge}>
+                  <Sparkles size={12} /> {variant.qualityScore}%
+                </div>
+              </div>
+              
+              <h2 className={styles.hookText}>{variant.hook}</h2>
+              
+              {renderVariantContent(variant.content)}
+
+              <div className={styles.cardActions}>
+                <button className={styles.btnOutline} onClick={() => handleCopy(variant)}>
+                  {copiedId === variant.id ? <CheckCircle2 size={16} /> : <Copy size={16} />}
+                  {copiedId === variant.id ? 'Copied' : 'Copy'}
+                </button>
+                <button className={styles.btnFilled}>
+                  <Save size={16} />
+                  Save to Library
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.bottomActions}>
+          <button className={styles.btnSecondary} onClick={handleGenerate}>
+            <RefreshCcw size={16} /> Create 3 More
+          </button>
+          <button className={styles.linkBtn} onClick={() => setStep('select')}>
+            Start Over
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.pageTitle}>What do you want to create?</h1>
-
-      {/* Purpose */}
-      <div className={styles.section}>
-        <div className={styles.chips}>
-          {PURPOSES.map((p) => (
-            <button
-              key={p.id}
-              className={`${styles.chip} ${purpose === p.id ? styles.chipActive : ''}`}
-              onClick={() => setPurpose(purpose === p.id ? null : p.id)}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
+      <div className={styles.header}>
+        <h1 className={styles.pageTitle}>What are you creating?</h1>
+        <p className={styles.subtitle}>Select your medium and let us handle the rest.</p>
       </div>
 
-      {/* Platform */}
-      <div className={styles.section}>
-        <label className={styles.label}>Where is this going?</label>
-        <div className={styles.platforms}>
-          {PLATFORMS.map((p) => (
-            <button
-              key={p.id}
-              className={`${styles.platformBtn} ${platform === p.id ? styles.platformActive : ''}`}
-              onClick={() => setPlatform(p.id)}
-            >
-              <span className={styles.platformLabel}>{p.label}</span>
-              <span className={styles.platformDesc}>{p.description}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {error && <div className={styles.error}>{error}</div>}
 
-      {/* Idea — optional */}
       <div className={styles.section}>
-        <label className={styles.label}>
-          Any specific idea? <span className={styles.optional}>optional</span>
-        </label>
-        <textarea
-          className={styles.textarea}
-          placeholder="Leave blank and we'll suggest something based on what's worked before..."
-          value={idea}
-          onChange={(e) => setIdea(e.target.value)}
-          rows={2}
-        />
-        
-        {suggestedIdeas.length > 0 && !idea && (
-          <div className={styles.suggestions}>
-            {suggestedIdeas.map((s, i) => (
+        <label className={styles.sectionLabel}>Select Platform</label>
+        <div className={styles.platformList}>
+          {PLATFORMS.map((p) => {
+            const isSelected = platform === p.id
+            const Icon = p.icon
+            return (
               <button
-                key={i}
-                className={styles.suggestionBtn}
-                onClick={() => setIdea(s)}
+                key={p.id}
+                className={`${styles.platformRow} ${isSelected ? styles.platformSelected : ''}`}
+                onClick={() => setPlatform(p.id)}
               >
-                {s}
+                <div className={styles.platformIconWrapper}>
+                  <Icon size={20} className={isSelected ? styles.iconSelected : styles.iconMuted} />
+                </div>
+                <div className={styles.platformInfo}>
+                  <span className={styles.platformName}>{p.label}</span>
+                </div>
+                {isSelected && <CheckCircle2 size={20} className={styles.checkIcon} />}
               </button>
-            ))}
-          </div>
-        )}
+            )
+          })}
+        </div>
       </div>
 
-      {/* Product — only when selling */}
-      {showProductSelect && products.length > 0 && (
+      <div className={styles.section}>
+        <label className={styles.sectionLabel}>Content Type</label>
+        <div className={styles.chipsContainer}>
+          {CONTENT_TYPES.map((c) => (
+            <button
+              key={c.id}
+              className={`${styles.chip} ${contentType === c.id ? styles.chipSelected : ''}`}
+              onClick={() => setContentType(c.id)}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {showProductSelect && (
         <div className={styles.section}>
-          <label className={styles.label}>Which product?</label>
+          <label className={styles.sectionLabel}>Which product?</label>
           <select
             className={styles.select}
             value={selectedProduct}
             onChange={(e) => setSelectedProduct(e.target.value)}
           >
-            <option value="">Choose a product</option>
+            <option value="">Choose a product...</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name}{p.price ? ` — ₱${p.price.toLocaleString()}` : ''}
+                {p.name} {p.price ? `— ₱${p.price}` : ''}
               </option>
             ))}
           </select>
         </div>
       )}
 
-      {/* Generate */}
-      <button
-        className={styles.generateBtn}
-        onClick={handleGenerate}
-        disabled={loading}
-      >
-        {loading ? 'Creating...' : 'Create'}
-      </button>
-
-      {/* Error */}
-      {error && <div className={styles.error}>{error}</div>}
-
-      {/* Result */}
-      {result && (
-        <div className={styles.result}>
-          <h2 className={styles.resultTitle}>{result.title}</h2>
-          
-          {result.image_url && (
-            <img src={result.image_url} alt="" className={styles.resultImage} />
-          )}
-          
-          <div className={styles.resultContent}>
-            {result.content.split('\n\n').map((p, i) => (
-              <p key={i} dangerouslySetInnerHTML={{ 
-                __html: p
-                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                  .replace(/_(.*?)_/g, '<em>$1</em>')
-              }} />
-            ))}
-          </div>
-
-          <div className={styles.resultActions}>
-            <button className={styles.actionBtn} onClick={handleCopy}>
-              {copied ? 'Copied!' : 'Copy text'}
-            </button>
-            <button className={styles.actionBtn} onClick={() => {
-              setResult(null)
-              handleGenerate()
-            }}>
-              Try again
-            </button>
-          </div>
-        </div>
-      )}
+      <div className={styles.actionSection}>
+        <button className={styles.generateBtn} onClick={handleGenerate}>
+          Create 3 Variants
+        </button>
+      </div>
     </div>
   )
 }

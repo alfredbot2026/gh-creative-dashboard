@@ -166,3 +166,41 @@ export async function getContextWithPinnedSelections(
 
   return { entries: merged, pinnedHook, pinnedFramework, tier }
 }
+
+export async function getContentTypeContext(
+  lane: 'short-form' | 'ads' | 'youtube' | 'social_media',
+  contentType: 'educate' | 'story' | 'prove' | 'sell',
+  limit: number = 25
+): Promise<{ entries: KnowledgeEntry[], hooks: KnowledgeEntry[], tier: 'approved' | 'candidate' }> {
+  let categories: string[] = []
+  if (contentType === 'educate') categories = ['content_funnel', 'scripting_framework']
+  else if (contentType === 'story') categories = ['scripting_framework', 'virality_science']
+  else if (contentType === 'prove') categories = ['cro_patterns', 'ad_creative']
+  else if (contentType === 'sell') categories = ['ad_creative', 'cro_patterns', 'content_funnel']
+
+  const validLane = lane === 'social_media' ? 'short-form' : lane
+  const { entries, tier } = await getGenerationContext(validLane as 'short-form' | 'ads' | 'youtube', categories, limit - 5)
+  
+  const supabase = await createClient()
+  const { data: hooksApproved } = await supabase
+    .from('knowledge_entries')
+    .select('*')
+    .eq('category', 'hook_library')
+    .contains('lanes', [validLane])
+    .eq('review_status', 'approved')
+    .limit(5)
+
+  let hooks = hooksApproved || []
+  if (hooks.length === 0) {
+    const { data } = await supabase
+      .from('knowledge_entries')
+      .select('*')
+      .eq('category', 'hook_library')
+      .contains('lanes', [validLane])
+      .eq('review_status', 'candidate')
+      .limit(5)
+    hooks = data || []
+  }
+
+  return { entries, hooks, tier }
+}

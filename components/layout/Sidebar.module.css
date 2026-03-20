@@ -2,92 +2,105 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 180px;
+  width: var(--sidebar-width, 180px);
   height: 100vh;
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background: var(--color-surface-low);
   display: flex;
   flex-direction: column;
   z-index: 100;
+  font-family: var(--font-body);
 }
 
-/* Brand */
 .brand {
-  padding: 1.5rem 1.25rem 1.25rem;
-}
-
-.brandEmoji {
-  display: none;
+  padding: 2rem 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .brandText {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-primary);
   letter-spacing: -0.01em;
 }
 
-/* Nav */
 .nav {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
-  padding: 0;
+  gap: 0.5rem;
+  padding: 0 1rem;
 }
 
-
-
-/* Nav items */
 .navItem {
-  display: block;
-  padding: 0.4rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   color: var(--color-text-muted);
-  font-size: 0.8125rem;
-  font-weight: 450;
+  font-size: 0.9375rem;
+  font-weight: 500;
   text-decoration: none;
-  transition: color 0.12s ease;
-  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--radius-md);
+  border-left: 3px solid transparent;
 }
 
 .navItem:hover {
-  color: var(--color-text);
+  color: var(--color-primary);
+  background: var(--color-surface-high);
 }
 
 .navItem.active {
-  color: var(--color-text);
+  color: var(--color-primary);
   font-weight: 600;
+  background: var(--bg-hover);
+  border-left-color: var(--color-primary);
 }
 
-/* Bottom section */
+.icon {
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
 .bottom {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
-  padding: 0.75rem 0;
-  border-top: 1px solid var(--color-border);
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+}
+
+.bottom .navItem {
+  color: var(--color-text-dim);
+}
+
+.bottom .navItem:hover, .bottom .navItem.active {
+  color: var(--color-primary);
 }
 
 .logoutBtn {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
-  padding: 0.4rem 1.25rem;
-  font-size: 0.8125rem;
-  font-weight: 450;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
   font-family: inherit;
-  color: var(--color-text-muted);
+  color: var(--color-text-dim);
   background: none;
   border: none;
   cursor: pointer;
   text-align: left;
-  transition: color 0.12s ease;
+  transition: all 0.2s ease;
+  border-radius: var(--radius-md);
 }
 
 .logoutBtn:hover {
   color: var(--color-danger);
+  background: var(--color-error-container);
 }
 
-/* Mobile — hide sidebar entirely, BottomNav takes over */
 @media (max-width: 768px) {
   .sidebar {
     display: none;
