@@ -9,6 +9,9 @@ type Step = 'select' | 'loading' | 'results'
 type Platform = 'reels' | 'tiktok' | 'facebook-post' | 'facebook-ad' | 'youtube' | 'carousel' | 'static-image'
 type ContentType = 'educate' | 'story' | 'prove' | 'sell'
 
+// Platforms that support image generation
+const VISUAL_PLATFORMS: Platform[] = ['facebook-ad', 'static-image', 'carousel', 'facebook-post']
+
 interface Product {
   id: string
   name: string
@@ -21,6 +24,8 @@ interface Variant {
   hook: string
   content: any
   qualityScore: number
+  imageUrl?: string
+  imageStoragePath?: string
 }
 
 const PLATFORMS: { id: Platform; label: string; desc: string; icon: any }[] = [
@@ -46,11 +51,17 @@ function CreatePageInner() {
   const [selectedProduct, setSelectedProduct] = useState<string>('')
   const [products, setProducts] = useState<Product[]>([])
   
+  const [topic, setTopic] = useState('')
+  const [showTopicInput, setShowTopicInput] = useState(false)
+  const [generateImages, setGenerateImages] = useState(false)
+  
   const [results, setResults] = useState<Variant[]>([])
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [savingId, setSavingId] = useState<string | null>(null)
+  
+  const isVisualPlatform = VISUAL_PLATFORMS.includes(platform)
 
   useEffect(() => {
     const supabase = createClient()
@@ -75,6 +86,8 @@ function CreatePageInner() {
           platform,
           contentType,
           productId: selectedProduct || undefined,
+          topic: topic.trim() || undefined,
+          generateImages: isVisualPlatform && generateImages,
           variants: 3
         }),
       })
@@ -243,6 +256,12 @@ function CreatePageInner() {
               
               <h2 className={styles.hookText}>{variant.hook}</h2>
               
+              {variant.imageUrl && (
+                <div className={styles.variantImage}>
+                  <img src={variant.imageUrl} alt={`Variant ${variant.number}`} />
+                </div>
+              )}
+              
               {renderVariantContent(variant.content)}
 
               <div className={styles.cardActions}>
@@ -342,9 +361,52 @@ function CreatePageInner() {
         </div>
       )}
 
+      {/* Optional topic/idea input */}
+      <div className={styles.section}>
+        {!showTopicInput ? (
+          <button 
+            className={styles.topicToggle} 
+            onClick={() => setShowTopicInput(true)}
+          >
+            Got a specific idea? <span className={styles.topicToggleHint}>optional</span>
+          </button>
+        ) : (
+          <>
+            <label className={styles.sectionLabel}>Topic or Idea <span className={styles.optionalBadge}>optional</span></label>
+            <textarea
+              className={styles.topicInput}
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="e.g. How to make stickers using Canva, or a story about your first Shopee sale..."
+              rows={3}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Image generation toggle — only for visual platforms */}
+      {isVisualPlatform && (
+        <div className={styles.section}>
+          <div className={styles.toggleRow}>
+            <div className={styles.toggleInfo}>
+              <span className={styles.toggleLabel}>Generate images</span>
+              <span className={styles.toggleDesc}>AI images using Grace's reference photos</span>
+            </div>
+            <button
+              className={`${styles.toggleSwitch} ${generateImages ? styles.toggleOn : ''}`}
+              onClick={() => setGenerateImages(!generateImages)}
+              role="switch"
+              aria-checked={generateImages}
+            >
+              <span className={styles.toggleKnob} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.actionSection}>
         <button className={styles.generateBtn} onClick={handleGenerate}>
-          Create 3 Variants
+          Create 3 Variants{generateImages && isVisualPlatform ? ' + Images' : ''}
         </button>
       </div>
     </div>

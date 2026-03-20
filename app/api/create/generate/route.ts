@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server'
 import { generateJSON } from '@/lib/llm/client'
 import { getContentTypeContext } from '@/lib/create/kb-retriever'
+import { generateImage } from '@/lib/create/image-generator-api'
 import { createClient } from '@/lib/supabase/server'
 
 interface GenerateRequest {
   platform: 'reels' | 'tiktok' | 'facebook-post' | 'facebook-ad' | 'youtube' | 'carousel' | 'static-image'
   contentType: 'educate' | 'story' | 'prove' | 'sell'
   productId?: string
+  topic?: string
+  generateImages?: boolean
   variants?: number
 }
 
@@ -141,7 +144,7 @@ No markdown blocks, no extra text.`
 export async function POST(req: Request) {
   try {
     const body: GenerateRequest = await req.json()
-    const { platform, contentType, productId, variants = 3 } = body
+    const { platform, contentType, productId, topic, generateImages = false, variants = 3 } = body
 
     if (!platform || !contentType) {
       return NextResponse.json({ error: 'Missing platform or contentType' }, { status: 400 })
@@ -181,14 +184,22 @@ export async function POST(req: Request) {
     // 4. Build Prompts
     const systemPrompt = buildSystemPrompt(bizContext, platform, contentType)
     
-    const userPrompt = `Objective: Create ${contentType} content for ${platform}.
+    const topicContext = topic 
+      ? `\nSPECIFIC TOPIC/IDEA (focus the content on this):\n${topic}\n`
+      : ''
 
+    const imageInstructions = generateImages
+      ? `\nIMAGE GENERATION: For each variant, include an "imagePrompt" field in the content object. This should be a detailed visual description for AI image generation. Describe: the scene, Grace's appearance, products visible, lighting, composition. The image should feel like a real photo from Grace's home/studio.`
+      : ''
+
+    const userPrompt = `Objective: Create ${contentType} content for ${platform}.
+${topicContext}
 CONTENT FRAMEWORKS TO USE (choose the best structure for each variant):
 ${JSON.stringify(kbContext.entries.slice(0, 8).map(e => ({ title: e.title, content: e.content?.substring(0, 500) })))}
 
 HOOK STYLES TO USE (each variant must use a DIFFERENT hook):
 ${JSON.stringify(kbContext.hooks.map(h => ({ title: h.title, content: h.content?.substring(0, 300) })))}
-${productContext}
+${productContext}${imageInstructions}
 
 Generate ${variants} distinct variants now. Remember: every variant must be specifically about PAPER CRAFTING business, reference real things Grace does, and sound like natural Taglish.`
 
@@ -199,8 +210,46 @@ Generate ${variants} distinct variants now. Remember: every variant must be spec
       throw new Error('LLM failed to return variants array')
     }
 
+    let finalVariants = result.data.variants
+
+    // Generate images if requested
+    if (generateImages) {
+      const imagePromises = finalVariants.map(async (variant: any) => {
+        const imagePrompt = variant.content?.imagePrompt
+        if (!imagePrompt) return variant
+
+        try {
+          // Determine aspect ratio based on platform
+          const aspectMap: Record<string, '1:1' | '4:5' | '16:9' | '9:16'> = {
+            'facebook-ad': '1:1',
+            'static-image': '1:1',
+            'carousel': '1:1',
+            'facebook-post': '4:5',
+          }
+
+          const imageResult = await generateImage({
+            prompt: imagePrompt,
+            style: 'creator_featured',
+            aspect_ratio: aspectMap[platform] || '1:1',
+          })
+
+          return {
+            ...variant,
+            imageUrl: imageResult.image_url,
+            imageStoragePath: imageResult.storage_path,
+          }
+        } catch (imgErr) {
+          console.error(`[Generate API] Image gen failed for variant ${variant.number}:`, imgErr)
+          // Return variant without image — don't fail the whole request
+          return variant
+        }
+      })
+
+      finalVariants = await Promise.all(imagePromises)
+    }
+
     return NextResponse.json({
-      variants: result.data.variants,
+      variants: finalVariants,
       platform,
       contentType,
       generatedAt: new Date().toISOString(),
