@@ -49,6 +49,8 @@ function CreatePageInner() {
   const [results, setResults] = useState<Variant[]>([])
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
+  const [savingId, setSavingId] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -63,6 +65,7 @@ function CreatePageInner() {
   async function handleGenerate() {
     setStep('loading')
     setError(null)
+    setSavedIds(new Set())
     
     try {
       const res = await fetch('/api/create/generate', {
@@ -109,6 +112,34 @@ function CreatePageInner() {
     navigator.clipboard.writeText(text)
     setCopiedId(variant.id)
     setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  async function handleSave(variant: Variant) {
+    if (savedIds.has(variant.id)) return
+    setSavingId(variant.id)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      const { error: saveError } = await supabase.from('content_items').insert({
+        title: variant.hook.substring(0, 200),
+        hook: variant.hook,
+        content_type: contentType,
+        platform,
+        script_data: variant,
+        ai_generated: true,
+        status: 'draft',
+        user_id: user?.id,
+      })
+      
+      if (saveError) throw saveError
+      setSavedIds(prev => new Set(prev).add(variant.id))
+    } catch (err) {
+      console.error('Save failed:', err)
+      setError('Failed to save — are you logged in?')
+    } finally {
+      setSavingId(null)
+    }
   }
 
   function renderVariantContent(content: any) {
@@ -219,9 +250,13 @@ function CreatePageInner() {
                   {copiedId === variant.id ? <CheckCircle2 size={16} /> : <Copy size={16} />}
                   {copiedId === variant.id ? 'Copied' : 'Copy'}
                 </button>
-                <button className={styles.btnFilled}>
-                  <Save size={16} />
-                  Save to Library
+                <button 
+                  className={styles.btnFilled} 
+                  onClick={() => handleSave(variant)}
+                  disabled={savedIds.has(variant.id) || savingId === variant.id}
+                >
+                  {savedIds.has(variant.id) ? <CheckCircle2 size={16} /> : <Save size={16} />}
+                  {savedIds.has(variant.id) ? 'Saved ✓' : savingId === variant.id ? 'Saving...' : 'Save to Library'}
                 </button>
               </div>
             </div>
