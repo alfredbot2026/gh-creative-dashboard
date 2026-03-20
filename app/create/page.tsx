@@ -7,7 +7,7 @@ import styles from './create.module.css'
 
 type Step = 'select' | 'loading' | 'results'
 type Platform = 'reels' | 'tiktok' | 'facebook-post' | 'facebook-ad' | 'youtube' | 'carousel' | 'static-image'
-type ContentType = 'educate' | 'story' | 'prove' | 'sell' | 'trend' | 'inspire'
+type ContentType = 'educate' | 'story' | 'prove' | 'sell' | 'trend' | 'inspire' | 'debunk' | 'process' | 'journey' | 'announce'
 
 // Platforms that support image generation
 const VISUAL_PLATFORMS: Platform[] = ['facebook-ad', 'static-image', 'carousel', 'facebook-post']
@@ -37,14 +37,27 @@ const PLATFORMS: { id: Platform; label: string; desc: string; icon: any }[] = [
   { id: 'static-image', label: 'Static Image', desc: 'Single image prompt & copy', icon: ImageIcon },
 ]
 
-const CONTENT_TYPES: { id: ContentType; label: string }[] = [
-  { id: 'educate', label: 'Teach something' },
-  { id: 'story', label: 'Tell a story' },
-  { id: 'prove', label: 'Show proof' },
-  { id: 'sell', label: 'Promote & sell' },
-  { id: 'trend', label: 'Ride a trend' },
-  { id: 'inspire', label: 'Inspire & motivate' },
+const CONTENT_TYPES: { id: ContentType; label: string; funnel: 'tofu' | 'mofu' | 'bofu' }[] = [
+  // TOFU — Attract new audience
+  { id: 'trend', label: 'Ride a trend', funnel: 'tofu' },
+  { id: 'inspire', label: 'Inspire & motivate', funnel: 'tofu' },
+  { id: 'journey', label: 'Share my journey', funnel: 'tofu' },
+  // MOFU — Build trust & grow followers
+  { id: 'educate', label: 'Teach something', funnel: 'mofu' },
+  { id: 'story', label: 'Tell a story', funnel: 'mofu' },
+  { id: 'debunk', label: 'Debunk a myth', funnel: 'mofu' },
+  { id: 'process', label: 'Show the process', funnel: 'mofu' },
+  // BOFU — Convert to sales
+  { id: 'prove', label: 'Show proof', funnel: 'bofu' },
+  { id: 'sell', label: 'Promote & sell', funnel: 'bofu' },
+  { id: 'announce', label: 'Announce something', funnel: 'bofu' },
 ]
+
+const FUNNEL_LABELS: Record<string, string> = {
+  tofu: 'Attract',
+  mofu: 'Build Trust',
+  bofu: 'Convert',
+}
 
 function CreatePageInner() {
   const [step, setStep] = useState<Step>('select')
@@ -332,17 +345,22 @@ function CreatePageInner() {
 
       <div className={styles.section}>
         <label className={styles.sectionLabel}>What's the goal?</label>
-        <div className={styles.chipsContainer}>
-          {CONTENT_TYPES.map((c) => (
-            <button
-              key={c.id}
-              className={`${styles.chip} ${contentType === c.id ? styles.chipSelected : ''}`}
-              onClick={() => setContentType(c.id)}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
+        {(['tofu', 'mofu', 'bofu'] as const).map((stage) => (
+          <div key={stage} className={styles.funnelGroup}>
+            <span className={styles.funnelLabel}>{FUNNEL_LABELS[stage]}</span>
+            <div className={styles.chipsContainer}>
+              {CONTENT_TYPES.filter(c => c.funnel === stage).map((c) => (
+                <button
+                  key={c.id}
+                  className={`${styles.chip} ${contentType === c.id ? styles.chipSelected : ''}`}
+                  onClick={() => setContentType(c.id)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {showProductSelect && (

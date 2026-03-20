@@ -49,6 +49,10 @@ function buildSystemPrompt(
     sell: 'Objection Busting + Education — addressing doubts and showing the path',
     trend: 'Trend Jacking — ride a trending audio, format, or topic and tie it back to paper crafting / P2P',
     inspire: 'Inspiration & Motivation — uplift fellow moms, share mindset shifts, celebrate small wins in the creative business journey',
+    debunk: 'Debunk a Myth — call out common misconceptions about paper crafting business, home-based income, or creative entrepreneurship. Use hot takes and contrarian perspectives to grab attention.',
+    process: 'Show the Process — demonstrate a specific workflow, tool, or technique Grace uses (printing, Canva design, packaging orders, setting up Shopee listings). Behind-the-scenes, educational demonstration.',
+    journey: 'Share My Journey — document Grace\'s real experience building P2P. Raw, vulnerable, personal. Share milestones, struggles, lessons learned. Build parasocial connection.',
+    announce: 'Announce Something — new product launch, restock, sale, event, milestone. Create urgency and excitement. Clear CTA.',
   }
 
   let platformRules = ''
