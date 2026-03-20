@@ -4,23 +4,12 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import styles from './Sidebar.module.css'
-import { Home, PlusCircle, Calendar, Library, Settings, LogOut } from 'lucide-react'
 
-interface NavItem {
-  href: string
-  label: string
-  icon?: any
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/create', label: 'Create', icon: PlusCircle },
-  { href: '/calendar', label: 'Calendar', icon: Calendar },
-  { href: '/library', label: 'Library', icon: Library },
-]
-
-const BOTTOM_ITEMS: NavItem[] = [
-  { href: '/settings', label: 'Settings', icon: Settings },
+const NAV_ITEMS = [
+  { href: '/', label: 'Home' },
+  { href: '/create', label: 'Create' },
+  { href: '/calendar', label: 'Calendar' },
+  { href: '/library', label: 'Library' },
 ]
 
 export default function Sidebar() {
@@ -43,37 +32,25 @@ export default function Sidebar() {
       </div>
 
       <nav className={styles.nav}>
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-            >
-              {Icon && <Icon size={18} className={styles.icon} />}
-              {item.label}
-            </Link>
-          )
-        })}
+        {NAV_ITEMS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
+          >
+            {item.label}
+          </Link>
+        ))}
       </nav>
 
       <div className={styles.bottom}>
-        {BOTTOM_ITEMS.map((item) => {
-          const Icon = item.icon
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive(item.href) ? styles.active : ''}`}
-            >
-              {Icon && <Icon size={18} className={styles.icon} />}
-              {item.label}
-            </Link>
-          )
-        })}
+        <Link
+          href="/settings"
+          className={`${styles.navItem} ${isActive('/settings') ? styles.active : ''}`}
+        >
+          Settings
+        </Link>
         <button onClick={handleLogout} className={styles.logoutBtn}>
-          <LogOut size={18} className={styles.icon} />
           Log Out
         </button>
       </div>

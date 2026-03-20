@@ -128,10 +128,13 @@
 
 .chip {
   white-space: nowrap;
+  flex-shrink: 0;
   padding: 0.625rem 1.25rem;
   background: var(--color-surface-low);
   color: var(--color-text-muted);
   border-radius: var(--radius-xl);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
   font-weight: 500;
   border: none;
   min-height: 44px;
