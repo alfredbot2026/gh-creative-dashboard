@@ -292,26 +292,14 @@ function CreatePageInner() {
     return (
       <div className={styles.page}>
         <div className={styles.loadingContainer}>
-          <div className={styles.loadingProgress}>
-            <div className={styles.progressDots}>
-              {[0, 1, 2].map(i => (
-                <span key={i} className={styles.dot} style={{ animationDelay: `${i * 200}ms` }} />
-              ))}
-            </div>
-            <h2 className={styles.loadingText} key={loadingPhase}>
-              {LOADING_PHASES[loadingPhase]}
-            </h2>
-            <div className={styles.phaseIndicator}>
-              {LOADING_PHASES.slice(0, loadingPhase + 1).map((_, i) => (
-                <span key={i} className={`${styles.phaseDot} ${i <= loadingPhase ? styles.phaseDotActive : ''}`} />
-              ))}
-            </div>
+          <div className={styles.progressDots}>
+            {[0, 1, 2].map(i => (
+              <span key={i} className={styles.dot} style={{ animationDelay: `${i * 200}ms` }} />
+            ))}
           </div>
-          <div className={styles.skeletonStack}>
-            <div className={`${styles.skeletonCard} ${styles.shimmer}`} />
-            <div className={`${styles.skeletonCard} ${styles.shimmer}`} style={{ animationDelay: '400ms' }} />
-            <div className={`${styles.skeletonCard} ${styles.shimmer}`} style={{ animationDelay: '800ms' }} />
-          </div>
+          <h2 className={styles.loadingText} key={loadingPhase}>
+            {LOADING_PHASES[loadingPhase]}
+          </h2>
         </div>
       </div>
     )
