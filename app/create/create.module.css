@@ -137,12 +137,14 @@
 }
 
 .chip:active {
-  transform: scale(0.96);
+  transform: scale(0.92);
+  transition-duration: 75ms;
 }
 
 .chipSelected {
   background: var(--color-primary);
   color: var(--color-surface);
+  animation: chipSelect 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: var(--shadow-sm);
 }
 
@@ -182,14 +184,24 @@
   box-shadow: var(--shadow-md);
   transition: all 200ms ease;
   min-height: 44px;
+  animation: gentlePulse 3s infinite ease-in-out;
 }
 
 .generateBtn:hover {
   background: var(--color-primary-container);
+  animation: none;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(118, 81, 99, 0.25);
 }
 
 .generateBtn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  animation: none;
+}
+
+@keyframes gentlePulse {
+  0%, 100% { box-shadow: var(--shadow-md); }
+  50% { box-shadow: 0 4px 16px rgba(118, 81, 99, 0.2); }
 }
 
 .error {
@@ -201,33 +213,96 @@
 }
 
 /* Loading State */
+/* Loading State */
 .loadingContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding-top: 4rem;
+  gap: 2rem;
+  padding-top: 3rem;
+  animation: fadeIn 400ms ease-out;
 }
 
-.skeletonCard {
-  width: 100%;
-  height: 200px;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  animation: pulse 2s infinite ease-in-out;
+.loadingProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.98); opacity: 0.6; }
-  100% { transform: scale(1); opacity: 1; }
+.progressDots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: dotBounce 1.4s infinite ease-in-out;
+}
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
 }
 
 .loadingText {
   font-family: var(--font-display);
   color: var(--color-primary);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  text-align: center;
+  min-height: 2rem;
+  animation: textFadeIn 400ms ease-out;
+}
+
+@keyframes textFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.phaseIndicator {
+  display: flex;
+  gap: 4px;
+}
+
+.phaseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-surface-high);
+  transition: background 300ms ease, transform 300ms ease;
+}
+
+.phaseDotActive {
+  background: var(--color-primary);
+  transform: scale(1.2);
+}
+
+.skeletonStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeletonCard {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-surface-low) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.shimmer {
+  animation: shimmer 1.8s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Results State */
@@ -256,6 +331,28 @@
   border-radius: var(--radius-lg);
   padding: 2rem;
   box-shadow: var(--shadow-glow);
+  transition: transform 300ms ease, opacity 300ms ease, box-shadow 300ms ease;
+}
+
+.resultCard:hover {
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.08));
+}
+
+/* Staggered card entrance */
+.cardHidden {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.cardVisible {
+  opacity: 1;
+  transform: translateY(0);
+  animation: cardSlideUp 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .cardHeader {
@@ -564,4 +661,84 @@
   letter-spacing: 0.08em;
   color: var(--color-text-dim);
   margin-bottom: 0.375rem;
+}
+
+/* Micro-interaction keyframes */
+@keyframes chipSelect {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Platform row selection feedback */
+.platformRow {
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.platformSelected {
+  animation: platformPop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes platformPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* Button action feedback */
+.btnOutline,
+.btnFilled {
+  transition: all 200ms ease;
+}
+
+.btnOutline:active,
+.btnFilled:active {
+  transform: scale(0.95);
+  transition-duration: 75ms;
+}
+
+/* Score badge entrance */
+.scoreBadge {
+  animation: badgePop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Results header entrance */
+.resultsHeader {
+  animation: slideDown 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bottom actions entrance */
+.bottomActions {
+  animation: fadeIn 500ms ease-out 600ms both;
+}
+
+/* Topic toggle expand */
+.topicInput {
+  animation: expandIn 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes expandIn {
+  from { opacity: 0; max-height: 0; transform: scaleY(0.95); }
+  to { opacity: 1; max-height: 200px; transform: scaleY(1); }
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .chip, .chipSelected, .platformRow, .platformSelected,
+  .resultCard, .cardVisible, .generateBtn, .scoreBadge,
+  .resultsHeader, .bottomActions, .dot, .shimmer,
+  .topicInput, .loadingText, .btnOutline, .btnFilled {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
 }

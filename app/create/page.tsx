@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Film, Image as ImageIcon, LayoutTemplate, PlaySquare, Video, CheckCircle2, Copy, Save, Sparkles, RefreshCcw } from 'lucide-react'
 import styles from './create.module.css'
@@ -75,8 +75,54 @@ function CreatePageInner() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [loadingPhase, setLoadingPhase] = useState(0)
+  const [visibleCards, setVisibleCards] = useState<number[]>([])
+  const loadingTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   const isVisualPlatform = VISUAL_PLATFORMS.includes(platform)
+  
+  const LOADING_PHASES = [
+    'Searching your knowledge base...',
+    'Found frameworks & hooks ✓',
+    'Writing variant 1 of 3...',
+    'Writing variant 2 of 3...',
+    'Writing variant 3 of 3...',
+    'Scoring quality...',
+    'Almost there...',
+  ]
+  
+  // Phased loading messages
+  const startLoadingPhases = useCallback(() => {
+    setLoadingPhase(0)
+    const delays = [2000, 1500, 2500, 2500, 2000, 3000, 4000]
+    let phase = 0
+    
+    const advance = () => {
+      phase++
+      if (phase < LOADING_PHASES.length) {
+        setLoadingPhase(phase)
+        loadingTimerRef.current = setTimeout(advance, delays[phase])
+      }
+    }
+    loadingTimerRef.current = setTimeout(advance, delays[0])
+  }, [])
+  
+  const stopLoadingPhases = useCallback(() => {
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current)
+      loadingTimerRef.current = null
+    }
+  }, [])
+  
+  // Staggered card entrance
+  const staggerCards = useCallback((count: number) => {
+    setVisibleCards([])
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        setVisibleCards(prev => [...prev, i])
+      }, 200 + i * 200)
+    }
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -92,6 +138,7 @@ function CreatePageInner() {
     setStep('loading')
     setError(null)
     setSavedIds(new Set())
+    startLoadingPhases()
     
     try {
       const res = await fetch('/api/create/generate', {
@@ -107,6 +154,8 @@ function CreatePageInner() {
         }),
       })
 
+      stopLoadingPhases()
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}))
         throw new Error(errorData.error || `Generation failed (${res.status})`)
@@ -115,7 +164,9 @@ function CreatePageInner() {
       const data = await res.json()
       setResults(data.variants)
       setStep('results')
+      staggerCards(data.variants.length)
     } catch (err) {
+      stopLoadingPhases()
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setStep('select')
     }
@@ -241,10 +292,26 @@ function CreatePageInner() {
     return (
       <div className={styles.page}>
         <div className={styles.loadingContainer}>
-          <div className={styles.skeletonCard} />
-          <div className={styles.skeletonCard} style={{ opacity: 0.7 }} />
-          <div className={styles.skeletonCard} style={{ opacity: 0.4 }} />
-          <h2 className={styles.loadingText}>Creating your content...</h2>
+          <div className={styles.loadingProgress}>
+            <div className={styles.progressDots}>
+              {[0, 1, 2].map(i => (
+                <span key={i} className={styles.dot} style={{ animationDelay: `${i * 200}ms` }} />
+              ))}
+            </div>
+            <h2 className={styles.loadingText} key={loadingPhase}>
+              {LOADING_PHASES[loadingPhase]}
+            </h2>
+            <div className={styles.phaseIndicator}>
+              {LOADING_PHASES.slice(0, loadingPhase + 1).map((_, i) => (
+                <span key={i} className={`${styles.phaseDot} ${i <= loadingPhase ? styles.phaseDotActive : ''}`} />
+              ))}
+            </div>
+          </div>
+          <div className={styles.skeletonStack}>
+            <div className={`${styles.skeletonCard} ${styles.shimmer}`} />
+            <div className={`${styles.skeletonCard} ${styles.shimmer}`} style={{ animationDelay: '400ms' }} />
+            <div className={`${styles.skeletonCard} ${styles.shimmer}`} style={{ animationDelay: '800ms' }} />
+          </div>
         </div>
       </div>
     )
@@ -260,8 +327,8 @@ function CreatePageInner() {
         </div>
 
         <div className={styles.resultsList}>
-          {results.map((variant) => (
-            <div key={variant.id} className={styles.resultCard}>
+          {results.map((variant, index) => (
+            <div key={variant.id} className={`${styles.resultCard} ${visibleCards.includes(index) ? styles.cardVisible : styles.cardHidden}`}>
               <div className={styles.cardHeader}>
                 <div className={styles.variantNumber}>{variant.number}</div>
                 <div className={styles.scoreBadge}>
