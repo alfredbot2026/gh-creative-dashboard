@@ -96,7 +96,7 @@
 }
 
 .dayNumber {
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 0.875rem;
     color: var(--color-text-muted);
 }

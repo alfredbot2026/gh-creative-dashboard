@@ -6,14 +6,17 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
     margin-bottom: var(--space-xl);
 }
 
 .title {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--color-text);
+    letter-spacing: -0.02em;
 }
 
 .subtitle {

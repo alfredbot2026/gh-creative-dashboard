@@ -38,7 +38,7 @@ export default function LoginPage() {
     <div className={styles.container}>
       <div className={styles.formWrapper}>
         <h1 className={styles.title}>Welcome Back</h1>
-        <p className={styles.subtitle}>Sign in to Mission Control</p>
+        <p className={styles.subtitle}>Sign in to Creative Studio</p>
         
         {error && <div className={styles.error}>{error}</div>}
         
