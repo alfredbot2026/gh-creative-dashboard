@@ -150,7 +150,7 @@
 
 ## Phase 3 — Long-form YouTube
 **Goal:** Generate full YouTube scripts with retention optimization + SEO.
-**Status:** `NOT_STARTED`
+**Status:** `IN_PROGRESS` 🔄 — Core script gen + thumbnails + save to library shipped. Remaining: retention annotations, script quality, performance table (may be absorbed by V2).
 **Depends on:** Phase 0 (knowledge base)
 
 ### 3a. YouTube script generation API
@@ -186,9 +186,92 @@
 
 ---
 
-## Phase 4 — Learning Loop + Analytics
-**Goal:** Automated performance analysis that feeds back into the knowledge base.
+## Phase 3.5 — Learning Pipeline (FOUNDATION)
+**Goal:** Ingest Grace's historical content, classify it, build performance profile that drives V2.
+**Status:** `SPEC_READY` 📋
+**Depends on:** Phase 3 (YouTube OAuth exists), Meta API patterns exist
+**Red-team:** Tony CONDITIONAL PASS — guardrails incorporated into spec
+
+### 3.5a. Platform OAuth + Content Ingest
+- Meta OAuth flow (Instagram + Facebook) + `meta_tokens` table
+- YouTube content ingest (extend existing OAuth)
+- `content_ingest` table — all historical posts/videos with metrics
+- Settings UI: Connected Accounts panel
+
+### 3.5b. AI Content Classification
+- Classify each ingested post: hook type, structure, topic, visual style, CTA, etc.
+- Gold set validation (20-30 manually classified posts, >80% agreement required)
+- Classification uses KB vocabulary (labels match `knowledge_entries`)
+- `content_analysis` table
+
+### 3.5c. Performance Correlation + Profile
+- Cross-reference classifications with metrics
+- Build Performance Profile: ranked hooks, structures, topics, posting times
+- Confidence levels based on sample size
+- `performance_profile` table
+
+### 3.5d. Continuous Pipeline
+- Daily polling for new posts
+- Metrics refresh on schedule (volatile → stable windows)
+- Weekly profile recalculation
+- Token lifecycle management (refresh, revocation, disconnect)
+
+**Deliverables:** Performance profile generated from 500+ historical posts, continuous pipeline running.
+**Spec:** `specs/phase-3.5-learning-pipeline.md`
+
+---
+
+## Phase 4a — Content Engine V2: Core
+**Goal:** Topic intelligence, outline-first creation, block swap UI, working documents, PDF export.
 **Status:** `NOT_STARTED`
+**Depends on:** Phase 3.5 (needs performance profile data)
+
+### 4a.1 Topic Intelligence Engine
+- Smart topic suggestions on create page
+- Content mix ratios from KB + Grace's performance data
+- Topic freshness tracking (days since last coverage, per platform)
+- Seasonal awareness from historical patterns
+
+### 4a.2 Outline-first YouTube flow
+- Generate 2-3 structural approaches for user to pick
+- Outline editor: reorder, swap techniques, add/remove sections
+- Generate full script from approved outline
+
+### 4a.3 Block swap UI
+- Tap-to-swap alternatives for any content block
+- On-demand generation (not pre-generated)
+- Keep previous version for comparison
+
+### 4a.4 Working documents + PDF export
+- Content lifecycle: draft → in_progress → ready → published → analyzing
+- Cross-device: start on phone, continue on desktop
+- PDF production sheet export (practical, not pretty)
+
+**Spec:** `specs/CONTENT-ENGINE-V2-VISION.md` (section: Content Engine V2 — Creation Flows)
+
+---
+
+## Phase 4b — Content Engine V2: Visual
+**Goal:** Text overlay compositor, performance-driven overlay styles, image+text composition.
+**Status:** `NOT_STARTED`
+**Depends on:** Phase 4a, Phase 3.5
+
+**Spec:** `specs/CONTENT-ENGINE-V2-VISION.md` (section: Image Generation)
+
+---
+
+## Phase 4c — Competitive Intelligence
+**Goal:** Top creator identification, niche trend analysis, integration into suggestions.
+**Status:** `NOT_STARTED`
+**Depends on:** Phase 3.5 (same classification framework)
+
+**Spec:** `specs/CONTENT-ENGINE-V2-VISION.md` (section: Top Creator Analysis)
+
+---
+
+## Phase 4 — Learning Loop + Analytics (LEGACY — superseded by 3.5 + 4a-c)
+**Goal:** Automated performance analysis that feeds back into the knowledge base.
+**Status:** `SUPERSEDED` — Replaced by Phase 3.5 (Learning Pipeline) + Phase 4a-c (Content Engine V2)
 **Depends on:** Phases 1-3 (need performance data to learn from)
 
 ### 4a. Performance analysis engine
