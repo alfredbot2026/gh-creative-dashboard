@@ -1,0 +1,516 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #e2e8f0;
+  background: #0f172a;
+  min-height: 100vh;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 48px;
+  font-size: 18px;
+}
+
+.error { color: #ef4444; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.healthBadge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 32px;
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 13px;
+}
+
+/* Platforms */
+.platformGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.platformCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+}
+
+.connected { border-color: #22c55e33; }
+.disconnected { border-color: #ef444433; opacity: 0.6; }
+
+.platformIcon { font-size: 32px; }
+
+.platformInfo h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 2px;
+}
+
+.platformName {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.platformStat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.statNumber {
+  font-size: 24px;
+  font-weight: 700;
+  color: #818cf8;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.platformStatus {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* Pipeline Steps */
+.pipelineSteps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.step {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+  padding: 20px;
+  background: #0f172a;
+  border-radius: 10px;
+  border: 1px solid #334155;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stepIcon { font-size: 24px; }
+
+.stepHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.stepValue {
+  font-size: 36px;
+  font-weight: 700;
+  color: #818cf8;
+}
+
+.stepLabel {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.stepMeta {
+  font-size: 12px;
+  color: #475569;
+}
+
+.stepArrow {
+  font-size: 24px;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.progressBar {
+  height: 6px;
+  background: #1e293b;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #818cf8, #6366f1);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.warning {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f59e0b15;
+  border: 1px solid #f59e0b33;
+  border-radius: 8px;
+  color: #fbbf24;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Content Mix */
+.mixGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.mixCard {
+  padding: 16px;
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.mixPurpose {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 10px;
+  color: #f1f5f9;
+}
+
+.mixBars { display: flex; flex-direction: column; gap: 6px; }
+
+.mixBarRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mixBarLabel {
+  font-size: 11px;
+  color: #64748b;
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.mixBarTrack {
+  flex: 1;
+  height: 8px;
+  background: #1e293b;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mixBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.mixBarPct {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Tables */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #334155;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.table tbody tr:hover {
+  background: #1e293b44;
+}
+
+.hookName {
+  font-weight: 500;
+  color: #e2e8f0;
+  max-width: 300px;
+}
+
+.number {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: #94a3b8;
+}
+
+.capitalize { text-transform: capitalize; }
+
+/* Badges */
+.trendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.rising { background: #22c55e20; color: #4ade80; }
+.declining { background: #ef444420; color: #f87171; }
+.stable { background: #64748b20; color: #94a3b8; }
+
+.confBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.confBadge.high { background: #22c55e20; color: #4ade80; }
+.confBadge.medium { background: #f59e0b20; color: #fbbf24; }
+.confBadge.low { background: #64748b20; color: #94a3b8; }
+
+/* Posting Times */
+.timesGrid {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.timeCard {
+  min-width: 120px;
+  text-align: center;
+  padding: 16px;
+  background: #0f172a;
+  border-radius: 10px;
+  border: 1px solid #334155;
+}
+
+.timeRank {
+  font-size: 12px;
+  color: #818cf8;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.timeDay {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.timeHour {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.timeStat {
+  font-size: 13px;
+  color: #818cf8;
+  font-weight: 600;
+}
+
+.timeSample {
+  font-size: 11px;
+  color: #475569;
+}
+
+/* Posting Days */
+.daysGrid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dayCard {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px;
+  text-align: center;
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.dayName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.dayBar {
+  height: 6px;
+  background: #1e293b;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.dayBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #818cf8, #6366f1);
+  border-radius: 3px;
+}
+
+.dayStat {
+  font-size: 13px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Insights */
+.insightsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.insightCard {
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+}
+
+.insightCard.recommendation { border-left: 3px solid #818cf8; }
+.insightCard.warning { border-left: 3px solid #f59e0b; }
+.insightCard.pattern { border-left: 3px solid #22c55e; }
+.insightCard.opportunity { border-left: 3px solid #06b6d4; }
+
+.insightHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.insightType {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.insightCard h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+}
+
+.insightCard p {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* Quotas */
+.quotaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.quotaCard {
+  padding: 16px;
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.quotaName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-transform: capitalize;
+  margin-bottom: 8px;
+}
+
+.quotaBar {
+  height: 6px;
+  background: #1e293b;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.quotaFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.quotaLabel {
+  font-size: 12px;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+  .pipelineSteps { flex-direction: column; }
+  .stepArrow { transform: rotate(90deg); }
+  .header { flex-direction: column; gap: 12px; align-items: flex-start; }
+}

@@ -132,28 +132,43 @@ export async function classifyBatch(
   // Get KB vocabulary once for the whole batch
   const { hookTypes, frameworks } = await getKBVocabulary()
   
-  // Get IDs of already-classified items (fetch up to 5000 — covers Grace's full library)
-  const { data: existingAnalysis } = await supabase
-    .from('content_analysis')
-    .select('ingest_id')
-    .eq('user_id', userId)
-    .limit(5000)
-
-  const classifiedIds = new Set((existingAnalysis || []).map(e => e.ingest_id))
-
-  // Fetch unclassified items only — paginate past classified ones
-  const { data: allIngest } = await supabase
-    .from('content_ingest')
-    .select('id, caption, description, content_type, platform')
-    .eq('user_id', userId)
-    .order('published_at', { ascending: false })
-    .limit(5000)  // Fetch all, then filter — for Grace's ~1800 posts this is fine
-
-  if (!allIngest || allIngest.length === 0) {
-    return { classified: 0, skipped: 0, errors: [], remaining: 0 }
+  // Fetch ALL classified ingest IDs (paginate to handle Supabase 1000-row default cap)
+  const classifiedIds = new Set<string>()
+  let classifiedOffset = 0
+  const PAGE_SIZE = 1000
+  while (true) {
+    const { data: page } = await supabase
+      .from('content_analysis')
+      .select('ingest_id')
+      .eq('user_id', userId)
+      .range(classifiedOffset, classifiedOffset + PAGE_SIZE - 1)
+    if (!page || page.length === 0) break
+    for (const row of page) classifiedIds.add(row.ingest_id)
+    if (page.length < PAGE_SIZE) break
+    classifiedOffset += PAGE_SIZE
   }
 
-  const unclassified = allIngest.filter(i => !classifiedIds.has(i.id)).slice(0, batchSize)
+  // Fetch unclassified items — paginate content_ingest too
+  let unclassified: IngestItem[] = []
+  let ingestOffset = 0
+  while (unclassified.length < batchSize) {
+    const { data: page } = await supabase
+      .from('content_ingest')
+      .select('id, caption, description, content_type, platform')
+      .eq('user_id', userId)
+      .order('published_at', { ascending: false })
+      .range(ingestOffset, ingestOffset + PAGE_SIZE - 1)
+    if (!page || page.length === 0) break
+    const fresh = page.filter(i => !classifiedIds.has(i.id))
+    unclassified.push(...fresh)
+    if (page.length < PAGE_SIZE) break
+    ingestOffset += PAGE_SIZE
+  }
+  unclassified = unclassified.slice(0, batchSize)
+
+  if (unclassified.length === 0) {
+    return { classified: 0, skipped: 0, errors: [], remaining: 0 }
+  }
 
   if (unclassified.length === 0) {
     return { classified: 0, skipped: 0, errors: [], remaining: 0 }
