@@ -10,13 +10,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { thumbnail_concept, title, count = 3 } = await req.json()
+  const { thumbnail_concept, title, count = 3, variantIndex } = await req.json()
 
   if (!thumbnail_concept) {
     return NextResponse.json({ error: 'thumbnail_concept is required' }, { status: 400 })
   }
 
-  const variants = Math.min(count, 3)
+  // If variantIndex is provided, generate only that one thumbnail
+  const startIdx = typeof variantIndex === 'number' ? variantIndex : 0
+  const endIdx = typeof variantIndex === 'number' ? variantIndex + 1 : Math.min(count, 3)
   const results: Array<{ variant: number; image_url: string | null; error?: string }> = []
 
   // Framing variations for each thumbnail
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Generate sequentially within same session
-  for (let i = 0; i < variants; i++) {
+  for (let i = startIdx; i < endIdx; i++) {
     const scenePrompt = `YouTube thumbnail for a video titled "${title || 'Paper Crafting Business'}". 
 
 Concept: ${thumbnail_concept}

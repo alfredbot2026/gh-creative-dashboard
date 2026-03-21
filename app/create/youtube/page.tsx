@@ -136,34 +136,47 @@ export default function YouTubeScriptPage() {
   const handleGenerateThumbnails = async () => {
     if (!result) return
     setGeneratingThumbs(true)
-    setThumbProgress('Generating thumbnails...')
-    try {
-      const res = await fetch('/api/create/youtube-thumbnail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          thumbnail_concept: result.thumbnail_concept,
-          title: result.title_options[selectedTitle],
-          count: 3,
-        }),
-      })
+    setThumbnails([])
+    setSelectedThumb(0)
 
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Thumbnail generation failed')
+    // Generate thumbnails one at a time so each appears as it completes
+    for (let i = 0; i < 3; i++) {
+      setThumbProgress(`Generating thumbnail ${i + 1} of 3...`)
+      try {
+        const res = await fetch('/api/create/youtube-thumbnail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            thumbnail_concept: result.thumbnail_concept,
+            title: result.title_options[selectedTitle],
+            count: 1,
+            variantIndex: i,
+          }),
+          signal: AbortSignal.timeout(120_000), // 2 min per thumbnail
+        })
+
+        if (!res.ok) {
+          const err = await res.json()
+          throw new Error(err.error || 'Thumbnail generation failed')
+        }
+
+        const data = await res.json()
+        const thumb = data.thumbnails?.[0]
+        if (thumb) {
+          setThumbnails(prev => [...prev, thumb])
+        }
+      } catch (err: any) {
+        console.error(`Thumbnail ${i + 1} failed:`, err)
+        setThumbnails(prev => [...prev, {
+          variant: i + 1,
+          image_url: null,
+          error: err.name === 'TimeoutError' ? 'Generation timed out' : err.message,
+        }])
       }
-
-      const data = await res.json()
-      setThumbnails(data.thumbnails || [])
-      setSelectedThumb(0)
-      setThumbProgress('')
-    } catch (err: any) {
-      console.error(err)
-      alert(`Thumbnail generation failed: ${err.message}`)
-      setThumbProgress('')
-    } finally {
-      setGeneratingThumbs(false)
     }
+
+    setThumbProgress('')
+    setGeneratingThumbs(false)
   }
 
   const handleSave = async () => {
