@@ -18,6 +18,8 @@ interface IGMedia {
   thumbnail_url?: string
   timestamp: string
   permalink: string
+  like_count?: number
+  comments_count?: number
 }
 
 interface IGInsights {
@@ -36,7 +38,28 @@ interface FBPost {
   message?: string
   created_time: string
   permalink_url?: string
-  type: string
+  shares?: { count: number }
+  full_picture?: string
+}
+
+/**
+ * Get page access token from user access token.
+ * Required for reading page posts and insights.
+ */
+export async function getPageAccessToken(
+  userAccessToken: string,
+  pageId: string
+): Promise<string | null> {
+  try {
+    const data = await graphFetch<{ data: Array<{ id: string; access_token: string }> }>(
+      `${BASE_URL}/me/accounts?fields=id,access_token`,
+      userAccessToken
+    )
+    const page = data.data.find(p => p.id === pageId)
+    return page?.access_token || null
+  } catch {
+    return null
+  }
 }
 
 async function delay(ms: number): Promise<void> {
@@ -78,7 +101,7 @@ export async function fetchAllInstagramMedia(
   igUserId: string
 ): Promise<IGMedia[]> {
   const all: IGMedia[] = []
-  let url = `${BASE_URL}/${igUserId}/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,permalink&limit=100`
+  let url = `${BASE_URL}/${igUserId}/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,permalink,like_count,comments_count&limit=100`
   
   while (url) {
     const data = await graphFetch<{ data: IGMedia[]; paging?: { next?: string } }>(url, accessToken)
@@ -146,7 +169,7 @@ export async function fetchFacebookPagePosts(
   pageId: string
 ): Promise<FBPost[]> {
   const all: FBPost[] = []
-  let url = `${BASE_URL}/${pageId}/posts?fields=id,message,created_time,permalink_url,type&limit=100`
+  let url = `${BASE_URL}/${pageId}/posts?fields=id,message,created_time,permalink_url,shares,full_picture&limit=100`
   
   while (url) {
     const data = await graphFetch<{ data: FBPost[]; paging?: { next?: string } }>(url, accessToken)

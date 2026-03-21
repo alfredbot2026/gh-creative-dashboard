@@ -11,6 +11,7 @@ import {
   fetchMediaInsights,
   fetchFacebookPagePosts,
   fetchFBPostInsights,
+  getPageAccessToken,
 } from '@/lib/meta/content-client'
 
 export const maxDuration = 300  // 5 minute timeout for large ingests
@@ -54,19 +55,26 @@ export async function POST(req: NextRequest) {
 
     for (const post of posts) {
       try {
-        // Fetch insights (may return null for old posts)
+        // Basic metrics come FREE from the media listing — no extra API call
+        const basicMetrics: Record<string, number> = {
+          likes: post.like_count || 0,
+          comments: post.comments_count || 0,
+        }
+
+        // Try to get richer insights (reach, saves, plays) — may fail for old posts
         const insights = await fetchMediaInsights(accessToken, post.id, post.media_type)
 
-        const metrics = insights ? {
-          reach: insights.reach || 0,
-          impressions: insights.impressions || 0,
-          engagement: insights.engagement || 0,
-          saves: insights.saved || 0,
-          shares: insights.shares || 0,
-          likes: insights.likes || 0,
-          comments: insights.comments || 0,
-          plays: insights.plays || 0,
-        } : {}
+        const metrics = {
+          ...basicMetrics,
+          ...(insights ? {
+            reach: insights.reach || 0,
+            impressions: insights.impressions || 0,
+            engagement: insights.engagement || 0,
+            saves: insights.saved || 0,
+            shares: insights.shares || 0,
+            plays: insights.plays || 0,
+          } : {}),
+        }
 
         // Extract hashtags from caption
         const hashtags = post.caption?.match(/#\w+/g)?.map(t => t.slice(1)) || []
@@ -108,48 +116,78 @@ export async function POST(req: NextRequest) {
   }
 
   // --- Facebook Page ---
-  if (tokenData.page_id) {
+  // Discover page ID from API if not in meta_tokens
+  let pageId = tokenData.page_id
+  if (!pageId) {
     try {
-      console.log(`[Ingest] Starting Facebook ingest for page ${tokenData.page_id}`)
-      const posts = await fetchFacebookPagePosts(accessToken, tokenData.page_id)
-      console.log(`[Ingest] Found ${posts.length} Facebook posts`)
+      const pagesRes = await fetch(`https://graph.facebook.com/v21.0/me/accounts?fields=id&access_token=${accessToken}`)
+      const pagesData = await pagesRes.json()
+      pageId = pagesData.data?.[0]?.id
+      if (pageId) {
+        console.log(`[Ingest] Discovered page ID: ${pageId}`)
+      }
+    } catch (err: any) {
+      console.warn('[Ingest] Could not discover page ID:', err.message)
+    }
+  }
 
-      for (const post of posts) {
-        try {
-          const insights = await fetchFBPostInsights(accessToken, post.id)
+  if (pageId) {
+    try {
+      // Get page access token (required for reading page posts)
+      const pageToken = await getPageAccessToken(accessToken, pageId)
+      if (!pageToken) {
+        errorMessages.push('Facebook: Could not get page access token')
+      } else {
+        console.log(`[Ingest] Starting Facebook ingest for page ${pageId}`)
+        const posts = await fetchFacebookPagePosts(pageToken, pageId)
+        console.log(`[Ingest] Found ${posts.length} Facebook posts`)
 
-          const metrics = insights ? {
-            impressions: insights.impressions || 0,
-            engaged_users: insights.engaged_users || 0,
-            reactions: insights.reactions || 0,
-          } : {}
+        for (const post of posts) {
+          try {
+            // Determine content type from permalink
+            const isReel = post.permalink_url?.includes('/reel/') || false
+            const contentType = isReel ? 'reel' : post.full_picture ? 'photo' : 'status'
 
-          const record = {
-            user_id: user.id,
-            platform: 'facebook' as const,
-            platform_id: post.id,
-            platform_url: post.permalink_url || '',
-            content_type: post.type || 'status',
-            caption: post.message || '',
-            published_at: post.created_time,
-            metrics,
-            metrics_updated_at: insights ? new Date().toISOString() : null,
-            metrics_snapshot_count: insights ? 1 : 0,
-          }
+            // Get insights using page token
+            const insights = await fetchFBPostInsights(pageToken, post.id)
 
-          const { error: upsertError } = await supabase
-            .from('content_ingest')
-            .upsert(record, { onConflict: 'user_id,platform,platform_id' })
+            const metrics = {
+              shares: post.shares?.count || 0,
+              ...(insights ? {
+                impressions: insights.impressions || 0,
+                engaged_users: insights.engaged_users || 0,
+                reactions: insights.reactions || 0,
+              } : {}),
+            }
 
-          if (upsertError) {
+            const record = {
+              user_id: user.id,
+              platform: 'facebook' as const,
+              platform_id: post.id,
+              platform_url: post.permalink_url || '',
+              content_type: contentType,
+              caption: post.message || '',
+              media_url: post.full_picture || '',
+              published_at: post.created_time,
+              metrics,
+              metrics_updated_at: insights ? new Date().toISOString() : null,
+              metrics_snapshot_count: insights ? 1 : 0,
+            }
+
+            const { error: upsertError } = await supabase
+              .from('content_ingest')
+              .upsert(record, { onConflict: 'user_id,platform,platform_id' })
+
+            if (upsertError) {
+              errors++
+              errorMessages.push(`FB ${post.id}: ${upsertError.message}`)
+            } else {
+              ingested++
+            }
+          } catch (err: any) {
             errors++
-            errorMessages.push(`FB ${post.id}: ${upsertError.message}`)
-          } else {
-            ingested++
+            errorMessages.push(`FB ${post.id}: ${err.message}`)
           }
-        } catch (err: any) {
-          errors++
-          errorMessages.push(`FB ${post.id}: ${err.message}`)
         }
       }
     } catch (err: any) {
