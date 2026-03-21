@@ -89,6 +89,17 @@ export default function ContentBrowser() {
               className={`${styles.card} ${selectedId === item.id ? styles.selected : ''}`}
               onClick={() => loadDetail(item.id)}
             >
+              <div className={styles.cardRow}>
+                {item.media_url && (
+                  <div className={styles.thumbWrap}>
+                    {item.media_url.includes('.mp4') || item.media_url.includes('video') ? (
+                      <div className={styles.videoThumb}>▶️</div>
+                    ) : (
+                      <img src={item.media_url} alt="" className={styles.thumb} loading="lazy" />
+                    )}
+                  </div>
+                )}
+                <div className={styles.cardContent}>
               <div className={styles.cardHeader}>
                 <span className={styles.platformBadge}>{platformIcon(item.platform)} {item.platform}</span>
                 <span className={styles.date}>{new Date(item.published_at).toLocaleDateString()}</span>
@@ -130,6 +141,8 @@ export default function ContentBrowser() {
                   <span className={styles.confLabel}>{Math.round(item.confidence_avg * 100)}% conf</span>
                 </div>
               )}
+                </div>{/* end cardContent */}
+              </div>{/* end cardRow */}
             </div>
           ))}
 
@@ -160,6 +173,17 @@ export default function ContentBrowser() {
                   </a>
                 )}
               </div>
+
+              {/* Media */}
+              {detail.media_url && (
+                <div className={styles.detailMedia}>
+                  {detail.media_url.includes('.mp4') || detail.media_url.includes('video') ? (
+                    <video src={detail.media_url} controls className={styles.detailVideo} />
+                  ) : (
+                    <img src={detail.media_url} alt="" className={styles.detailImage} />
+                  )}
+                </div>
+              )}
 
               {/* Content */}
               <section className={styles.detailSection}>

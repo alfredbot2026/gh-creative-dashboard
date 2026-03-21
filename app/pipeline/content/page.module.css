@@ -85,6 +85,41 @@
 .card:hover { border-color: #475569; }
 .card.selected { border-color: #818cf8; background: #1e293b; box-shadow: 0 0 0 1px #818cf8; }
 
+.cardRow {
+  display: flex;
+  gap: 12px;
+}
+
+.thumbWrap {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.videoThumb {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: linear-gradient(135deg, #1e293b, #334155);
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
 .cardHeader {
   display: flex;
   align-items: center;
@@ -232,6 +267,28 @@
   margin-left: auto;
 }
 .extLink:hover { text-decoration: underline; }
+
+/* Detail Media */
+.detailMedia {
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.detailImage {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+}
+
+.detailVideo {
+  width: 100%;
+  max-height: 400px;
+  display: block;
+  background: #000;
+}
 
 .detailSection {
   margin-bottom: 24px;
