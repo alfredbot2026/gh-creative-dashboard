@@ -86,3 +86,17 @@ Stores analytics data from Meta Ads and links back to the generated content.
 - **`lib/create/image-types.ts`:** (TASK-016) Type definitions for `ImageStyle`, `AspectRatio`, `ImageGenerationRequest`, `ImageGenerationResponse`.
 - **`lib/create/image-generator.ts`:** (TASK-016) Loads brand style guide, builds brand-prefixed prompt, downloads optional reference images from storage, shells out to nano-banana-pro via `uv run` (execFile), uploads output PNG to `ad-creatives` bucket, returns public URL.
 - **`app/api/create/ad/route.ts`:** API endpoint for ad copy generation. Validates requests, invokes the generator, and persists variants to the `content_items` table.
+
+### `meta_tokens` (migration 013)
+Stores Meta (Instagram/Facebook) OAuth 2.0 access tokens.
+- **RLS enabled**: Policy restricts users to manage their own tokens `USING (user_id = auth.uid())`
+- **Columns**: `id`, `user_id`, `access_token`, `token_expires_at`, `ig_user_id`, `page_id`, `page_name`, `ig_username`, `scopes`, `created_at`, `updated_at`.
+
+### Meta OAuth Routes Added (TASK-041)
+- `GET /api/meta/connect` — Redirects to Meta OAuth consent screen with CSRF protection (cookie-based).
+- `GET /api/meta/callback` — Exchanges short-lived tokens for long-lived tokens and saves to `meta_tokens` table.
+- `POST /api/meta/disconnect` — Removes the token from Supabase and purges Meta content (optional).
+
+### Connect Accounts UI (TASK-041)
+- `components/settings/ConnectedAccounts.tsx` — Shows connection status for both Meta and YouTube, allowing connect/disconnect. Rendered under the 'Connected Accounts' tab in `/settings`.
+- `app/actions/connections.ts` — Server action to safely fetch external connection statuses for the UI.

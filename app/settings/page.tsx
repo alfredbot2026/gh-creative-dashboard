@@ -13,6 +13,7 @@ import type { BrandStyleGuide, VoiceRubric, CaptionRules } from '@/lib/brand/typ
 import PageHeader from '@/components/ui/PageHeader'
 import { Save, Plus, X, CheckCircle, AlertCircle } from 'lucide-react'
 import styles from './page.module.css'
+import ConnectedAccounts from '@/components/settings/ConnectedAccounts'
 
 /* Default empty profile */
 const EMPTY_PROFILE: BusinessProfileData = {
@@ -52,7 +53,7 @@ const EMPTY_BRAND_STYLE: Partial<BrandStyleGuide> = {
 }
 
 export default function SettingsPage() {
-    const [activeTab, setActiveTab] = useState<'business' | 'brand' | 'products' | 'persona'>('business')
+    const [activeTab, setActiveTab] = useState<'business' | 'brand' | 'products' | 'persona' | 'accounts'>('business')
 
     const [profile, setProfile] = useState<BusinessProfileData>(EMPTY_PROFILE)
     const [brandStyle, setBrandStyle] = useState<Partial<BrandStyleGuide>>(EMPTY_BRAND_STYLE)
@@ -248,6 +249,12 @@ export default function SettingsPage() {
                     onClick={() => setActiveTab('persona')}
                 >
                     Brand Persona
+                </button>
+                <button
+                    className={`${styles.tab} ${activeTab === 'accounts' ? styles.tabActive : ''}`}
+                    onClick={() => setActiveTab('accounts')}
+                >
+                    Connected Accounts
                 </button>
             </div>
 
@@ -572,6 +579,8 @@ export default function SettingsPage() {
                     </section>
                 </div>
             )}
+
+            {activeTab === 'accounts' && <ConnectedAccounts />}
         </>
     )
 }
