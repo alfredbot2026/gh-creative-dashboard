@@ -1,74 +1,57 @@
 # GH Creative Dashboard — STATUS
 
-## Current: Phase 3.5 Learning Pipeline COMPLETE → Awaiting Phase 4a
-**Updated:** 2026-03-21 17:30 Manila
+**Last Updated:** 2026-03-21 23:30 PHT
 
----
+## Current Phase: Phase 3.5 COMPLETE + Content Insights UI COMPLETE
 
-## Phase 3.5 Learning Pipeline — ✅ COMPLETE
+### What's Done
+- ✅ Phase 3.5: Learning Pipeline (all 9 tasks — Lead implemented directly)
+  - Meta OAuth + Connected Accounts
+  - Meta content ingest (IG + FB page posts via page token)
+  - YouTube content ingest (playlist-based)
+  - Classification prompt + gold set + validator
+  - Batch classification (10 posts per LLM call)
+  - Performance correlation engine
+  - Profile API + insights + recommendations
+  - Pipeline orchestrator + cron
+  - Quota tracker + token health + disconnect
+- ✅ Video Deep Analysis pipeline (Gemini watches YouTube URLs directly)
+- ✅ Content Insights UI (4 waves):
+  - Wave 1: `/insights` — library with platform tabs, filters, tiers, search
+  - Wave 2: `/insights/[id]` — post detail with scores, transcript, hook, retention, tips
+  - Wave 3: `/insights/topics` — 44 topic clusters with performance data
+  - Wave 4: Dashboard insights — auto-generated patterns + hook performance cards
+- ✅ Meta ingest fix: IG metrics from media listing + FB page posts via page token
+- ✅ Pipeline dashboard (`/pipeline`) + content browser (`/pipeline/content`)
 
-All 9 tasks shipped in one session. Build passing. Committed to `main` (latest: `ca0e72e`).
+### Running Overnight
+- 🔄 Video deep analysis cron (`gh-video-deep-analysis`): 103/1,003 YouTube videos analyzed, every 15 min
+- Expected completion: ~8 AM March 22
 
-| Task | Description | Status |
-|------|-------------|--------|
-| TASK-041 | Meta OAuth + Connected Accounts UI | ✅ Done |
-| TASK-042 | Meta content ingest + content_ingest table | ✅ Done |
-| TASK-043 | YouTube content ingest (playlist-based, quota-safe) | ✅ Done |
-| TASK-044 | Classification prompt + gold set + validator | ✅ Done |
-| TASK-045 | Batch classification + content_analysis table | ✅ Done |
-| TASK-046 | Performance correlation engine + performance_profile table | ✅ Done |
-| TASK-047 | Profile API + insights + recommendations | ✅ Done |
-| TASK-048 | Pipeline orchestrator + cron | ✅ Done |
-| TASK-049 | Quota tracker + token health + YouTube disconnect | ✅ Done |
+### Data Summary
+| Platform | Posts | Metrics | Deep Analyzed |
+|----------|-------|---------|---------------|
+| YouTube | 1,003 | views, likes, comments, duration, analytics (87 with CTR/retention) | 103 (10%) |
+| Instagram | 812 | likes, comments (reach/saves may be partial) | — |
+| Facebook | 2,147 | shares, impressions, engaged_users, reactions | — |
+| **Total** | **3,962** | | 103 |
 
-### New DB migrations (apply to Supabase before running pipeline):
-- `013_meta_tokens.sql`
-- `014_content_ingest.sql`
-- `015_content_analysis.sql`
-- `016_performance_profile.sql`
+### Key Insights Discovered (from 103 analyzed videos)
+- "Curiosity Gap" hooks = 3.1x more views than "Tutorial Preview"
+- Tuesday = best posting day, Thursday = worst
+- Average quality score = 7.6/10
+- Top topic: Passive Income & Side Hustle (114.7K avg views)
+- Language: 60-70% Filipino / 30-40% English (Taglish)
+- Production style: casual consistently outperforms polished
 
-### New env vars needed in Vercel:
-- `META_APP_ID`
-- `META_APP_SECRET`
-- `META_REDIRECT_URI` = `https://your-domain/api/meta/callback`
-- `CRON_SECRET` (for pipeline cron protection)
+### Blocked / Pending
+- IG insights (reach/saves/plays) — rate limited, only basic metrics (likes/comments) saved
+- Cross-post deduplication (IG ↔ FB reels) — not yet built
+- Reclassification using deep analysis transcripts — after batch completes
+- Rob reference photos for image consistency >7/10
 
-### To run the pipeline:
-1. Apply 4 migrations to Supabase
-2. Go to Settings → Connected Accounts → Connect Instagram + YouTube
-3. `POST /api/ingest/youtube` (pulls all videos)
-4. `POST /api/ingest/meta` (pulls all IG/FB posts)
-5. `POST /api/classify/all` (classifies all ingested content)
-6. `POST /api/profile/generate` (builds performance profile)
-7. `GET /api/profile/insights` (view ranked insights)
-
----
-
-## Phase 3 YouTube — IN PROGRESS
-
-| Task | Description | Status |
-|------|-------------|--------|
-| TASK-036 | Thumbnail Generation | ✅ Tested (fixed timeout bug) |
-| TASK-037 | Save to Library | ✅ Tested |
-| TASK-038 | Retention Annotations | ⏳ Deferred (may absorb into V2) |
-| TASK-039 | YouTube Performance Table | ⏳ Deferred |
-| TASK-040 | Script Quality Polish | ⏳ Deferred |
-
----
-
-## Image Consistency — Code Complete, Blocked on Refs
-
-- TASK-035 code complete: multi-turn sessions, anchor chain, Nano Banana 2
-- Rob to provide 6-angle Grace reference photos for 9+/10 target
-- Current best: ~7.5/10 with 3 ref photos
-
----
-
-## Next Phase
-
-**Phase 4a: Content Engine V2 Core** — waiting on Rob's go-ahead
-- Topic Intelligence Engine
-- Outline-first YouTube flow
-- Block swap UI
-- Working documents + PDF export
-- Spec: `specs/CONTENT-ENGINE-V2-VISION.md`
+### Next Up (Rob decides)
+- Phase 4a: Content Engine V2 Core
+- Cross-post deduplication
+- Reclassify all content with transcript data
+- Retention curves (YouTube Analytics API)

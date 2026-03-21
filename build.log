@@ -1,0 +1,125 @@
+
+> gh-creative-dashboard@0.1.0 build
+> next build
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /home/rob/.openclaw/workspace-coding/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /home/rob/.openclaw/workspace-coding/active/gh-creative-dashboard/package-lock.json
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 13.8s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/85) ...
+  Generating static pages using 7 workers (21/85) 
+  Generating static pages using 7 workers (42/85) 
+  Generating static pages using 7 workers (63/85) 
+✓ Generating static pages using 7 workers (85/85) in 1411.9ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ○ /ads
+├ ○ /analytics/short-form
+├ ƒ /api/analytics/learn
+├ ƒ /api/analyze/audit
+├ ƒ /api/analyze/status
+├ ƒ /api/analyze/video
+├ ƒ /api/calendar/suggest
+├ ƒ /api/chat
+├ ƒ /api/classify/all
+├ ƒ /api/classify/batch
+├ ƒ /api/classify/status
+├ ƒ /api/classify/validate
+├ ƒ /api/content/dashboard
+├ ƒ /api/content/library
+├ ƒ /api/content/topics
+├ ƒ /api/conversations
+├ ƒ /api/conversations/[id]
+├ ƒ /api/create/ad
+├ ƒ /api/create/carousel
+├ ƒ /api/create/carousel/images
+├ ƒ /api/create/generate
+├ ƒ /api/create/image
+├ ƒ /api/create/short-form
+├ ƒ /api/create/social-post
+├ ƒ /api/create/youtube-script
+├ ƒ /api/create/youtube-thumbnail
+├ ƒ /api/eval/score
+├ ƒ /api/generate-plan
+├ ƒ /api/ingest/meta
+├ ƒ /api/ingest/status
+├ ƒ /api/ingest/youtube
+├ ƒ /api/knowledge
+├ ƒ /api/knowledge/[id]
+├ ƒ /api/knowledge/extract
+├ ƒ /api/knowledge/generate
+├ ƒ /api/knowledge/techniques
+├ ƒ /api/meta/callback
+├ ƒ /api/meta/connect
+├ ƒ /api/meta/disconnect
+├ ƒ /api/meta/sync
+├ ƒ /api/persona/avatar
+├ ƒ /api/pipeline/content
+├ ƒ /api/pipeline/content/[id]
+├ ƒ /api/pipeline/content/[id]/analysis
+├ ƒ /api/pipeline/cron
+├ ƒ /api/pipeline/run
+├ ƒ /api/pipeline/status
+├ ƒ /api/products
+├ ƒ /api/profile/current
+├ ƒ /api/profile/generate
+├ ƒ /api/profile/insights
+├ ƒ /api/profile/recommendations
+├ ƒ /api/templates
+├ ƒ /api/test/image-consistency
+├ ƒ /api/tokens/health
+├ ƒ /api/youtube/analyze
+├ ƒ /api/youtube/callback
+├ ƒ /api/youtube/channel
+├ ƒ /api/youtube/coach/audit
+├ ƒ /api/youtube/coach/autopsy
+├ ƒ /api/youtube/coach/script
+├ ƒ /api/youtube/coach/thumbnail
+├ ƒ /api/youtube/competitors
+├ ƒ /api/youtube/competitors/[id]/videos
+├ ƒ /api/youtube/connect
+├ ƒ /api/youtube/disconnect
+├ ƒ /api/youtube/search
+├ ƒ /auth/callback
+├ ○ /calendar
+├ ○ /chat
+├ ○ /create
+├ ○ /create/ads
+├ ○ /create/short-form
+├ ○ /create/social-post
+├ ○ /create/youtube
+├ ○ /eval
+├ ○ /insights
+├ ƒ /insights/[id]
+├ ○ /insights/topics
+├ ○ /knowledge
+├ ○ /knowledge/extract
+├ ƒ /library
+├ ƒ /library/[id]
+├ ○ /login
+├ ○ /onboarding
+├ ○ /pipeline
+├ ○ /pipeline/content
+├ ○ /research
+├ ○ /settings
+├ ○ /signup
+├ ○ /upload
+└ ○ /youtube
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
