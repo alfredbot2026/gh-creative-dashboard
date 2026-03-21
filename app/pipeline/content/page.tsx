@@ -28,6 +28,7 @@ export default function ContentBrowser() {
   const [platform, setPlatform] = useState<string>('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detail, setDetail] = useState<any>(null)
+  const [analysis, setAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const limit = 20
 
@@ -45,9 +46,13 @@ export default function ContentBrowser() {
   async function loadDetail(id: string) {
     setSelectedId(id)
     setDetail(null)
-    const res = await fetch(`/api/pipeline/content/${id}`)
-    const data = await res.json()
-    setDetail(data)
+    setAnalysis(null)
+    const [detailRes, analysisRes] = await Promise.all([
+      fetch(`/api/pipeline/content/${id}`).then(r => r.json()),
+      fetch(`/api/pipeline/content/${id}/analysis`).then(r => r.json()).catch(() => null),
+    ])
+    setDetail(detailRes)
+    setAnalysis(analysisRes)
   }
 
   useEffect(() => { load(page, platform) }, [page, platform])
@@ -183,6 +188,51 @@ export default function ContentBrowser() {
                     <img src={detail.media_url} alt="" className={styles.detailImage} />
                   )}
                 </div>
+              )}
+
+              {/* Performance Analysis */}
+              {analysis && !analysis.error && (
+                <section className={styles.detailSection}>
+                  <h3>Performance Analysis</h3>
+                  <div className={`${styles.verdictBanner} ${styles[analysis.verdict]}`}>
+                    <div className={styles.verdictScore}>
+                      <span className={styles.scoreNum}>{analysis.score}</span>
+                      <span className={styles.scoreLabel}>/100</span>
+                    </div>
+                    <div className={styles.verdictText}>
+                      <strong>
+                        {analysis.verdict === 'outperformed' ? '🚀 Above Average' :
+                         analysis.verdict === 'underperformed' ? '📉 Below Average' : '➡️ Average'}
+                      </strong>
+                      <p>{analysis.summary}</p>
+                    </div>
+                  </div>
+
+                  <div className={styles.factorsList}>
+                    {analysis.factors?.map((f: any, i: number) => (
+                      <div key={i} className={`${styles.factor} ${styles[f.impact]}`}>
+                        <div className={styles.factorIcon}>
+                          {f.impact === 'positive' ? '✅' : f.impact === 'negative' ? '❌' : '➖'}
+                        </div>
+                        <div>
+                          <div className={styles.factorLabel}>{f.label}</div>
+                          <div className={styles.factorDetail}>{f.detail}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {analysis.tips?.length > 0 && (
+                    <div className={styles.tipsBox}>
+                      <strong>💡 Tips</strong>
+                      <ul>
+                        {analysis.tips.map((tip: string, i: number) => (
+                          <li key={i}>{tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </section>
               )}
 
               {/* Content */}
