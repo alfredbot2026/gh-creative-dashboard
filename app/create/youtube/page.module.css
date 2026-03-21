@@ -252,3 +252,105 @@
 .copyTagsBtn:hover {
   color: var(--color-primary);
 }
+
+/* Selected title */
+.titleSelected {
+  border-color: var(--color-primary) !important;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)) !important;
+}
+
+/* Save button states */
+.savedBtn {
+  background: var(--color-success, #22c55e) !important;
+  cursor: default !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Thumbnail grid */
+.thumbnailGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.thumbnailCard {
+  position: relative;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  border: 2px solid var(--color-border, #e5e5e5);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  aspect-ratio: 16 / 9;
+}
+
+.thumbnailCard:hover {
+  border-color: var(--color-text-muted);
+  transform: scale(1.02);
+}
+
+.thumbnailSelected {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbnailError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.thumbnailLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.65rem;
+  padding: 0.25rem 0.5rem;
+  text-align: center;
+}
+
+.regenerateBtn {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  background: none;
+  border: 1px dashed var(--color-border, #e5e5e5);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.regenerateBtn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}

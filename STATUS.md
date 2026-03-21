@@ -1,36 +1,29 @@
 # GH Creative Dashboard — STATUS
 
-## Current: TASK-035 — Image Consistency Tier 3 (Multi-Turn + Anchor Chain)
-**Status:** DISPATCHED to Blackwidow
-**Started:** 2026-03-20 19:56 Manila
-**Track:** DEFAULT (Blackwidow → Bruce)
+## Current: Phase 3 YouTube Tasks + Image Consistency Polish
+**Updated:** 2026-03-21 09:18 Manila
 
-### What
-Full rewrite of image generation system for ~9/10 character consistency:
-1. Model upgrade to `gemini-3.1-flash-image-preview` (Nano Banana 2)
-2. Multi-turn conversation via `ai.chats.create()` — lock Grace's identity in Turn 1
-3. Golden anchor image — generated once, reused across all sessions
-4. Fix reference image access (local fallback for broken Supabase storage)
-5. Google's recommended prompt formula: `[Reference] + [Instruction] + [Scene]`
-6. Test route for experimentation
+### Active Work
+1. **Blackwidow** — QA'ing TASK-035 image consistency code through Create UI flow
+2. **Lead** — Wrote Phase 3 spec + task breakdown (5 tasks)
+3. **Waiting on Rob** — Proper 6-angle reference photos of Grace for image consistency upgrade
 
-### Why
-- Current app sends identity lock TEXT but ZERO reference photos (Supabase signed URLs broken)
-- One-shot approach scores 5/10 consistency — production apps use multi-turn conversations
-- Rob approved Tier 3 (full anchor+chain approach)
+### Phase 3 Task Queue (YouTube)
+| Task | Description | Priority | Status |
+|------|-------------|----------|--------|
+| TASK-037 | Save to Library | P1 | Ready |
+| TASK-036 | Thumbnail Generation | P1 | Ready |
+| TASK-038 | Retention Annotations | P2 | Ready |
+| TASK-040 | Script Quality Polish | P2 | Ready |
+| TASK-039 | YouTube Performance Table + UI | P2 | Ready |
 
-### Who
-- **Blackwidow** — implementation (5 waves)
-- **Bruce** — QA after completion
-
-### Expected Outcome
-3 variant images per generation all look like the same person (Grace). Anchor image persisted and reused. Test route works for experimentation.
+### Image Consistency Status
+- TASK-035 code complete (multi-turn sessions, anchor chain, Nano Banana 2)
+- Waiting on Rob for proper reference photos (6 images, 3 angles, standardized lighting)
+- Will write TASK for prompt template upgrade once photos are ready
+- Current best result: 7/10 with creative director prompting (limited by reference photo quality)
 
 ## Previous Completed
+- TASK-035: Image Consistency Tier 3 — multi-turn + anchor chain (code DONE, QA in progress)
 - TASK-034: Loom & Petal Redesign + 3-Variant Generation (QA PASS)
-- TASK-033: Phase 3 complete
-- Design critique: 23/50 score → redesign
-- Light mode conversion
-- Text-only nav
-- Purpose-first Create flow
-- Stitch design system generated
+- Phase 2b complete (27 tasks shipped total)

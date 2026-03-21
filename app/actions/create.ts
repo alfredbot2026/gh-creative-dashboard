@@ -53,6 +53,79 @@ export async function addScriptToCalendar(
   return item
 }
 
+export async function saveYouTubeScript(
+  scriptResult: {
+    title_options: string[]
+    description: string
+    tags: string[]
+    thumbnail_concept: string
+    total_duration_estimate: string
+    sections: Array<{
+      name: string
+      duration: string
+      speaking_lines: string
+      visual_notes: string
+      tips?: string
+    }>
+    knowledge_used?: Array<{ title: string; category: string }>
+  },
+  selectedTitle: string,
+  params: {
+    content_purpose?: string
+    product_name?: string
+    video_type?: string
+    target_length?: string
+    topic?: string
+  },
+  thumbnailUrl?: string
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: item, error } = await supabase
+    .from('content_items')
+    .insert({
+      title: selectedTitle,
+      tenant_id: user.id,
+      user_id: user.id,
+      content_type: 'youtube',
+      platform: 'youtube',
+      script_data: {
+        ...scriptResult,
+        selected_title: selectedTitle,
+        thumbnail_url: thumbnailUrl || null,
+        generation_params: params,
+      } as any,
+      status: 'draft',
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Failed to insert YouTube script:', error)
+    throw new Error(`Failed to save to library: ${error.message}`)
+  }
+
+  // Record provenance
+  if (item && scriptResult.knowledge_used?.length) {
+    const { error: provError } = await supabase.from('generation_provenance').insert({
+      content_item_id: item.id,
+      lane: 'youtube',
+      primary_entries: scriptResult.knowledge_used.map(k => k.title),
+      auxiliary_entries: [],
+      generation_params: params,
+      pipeline_steps: [{ step: 'youtube-script-generator', model: 'gemini' }],
+    })
+
+    if (provError) {
+      console.warn('Failed to record provenance, but content was saved:', provError)
+    }
+  }
+
+  return item
+}
+
 export async function addAdToCalendar(
   variant: AdVariant,
   imageUrl: string | undefined,

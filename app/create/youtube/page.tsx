@@ -15,8 +15,12 @@ import {
   Type,
   Hash,
   BookOpen,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Save,
+  Check,
+  Loader2,
 } from 'lucide-react'
+import { saveYouTubeScript } from '@/app/actions/create'
 import layout from '@/app/create/layout.module.css'
 import styles from './page.module.css'
 
@@ -69,6 +73,14 @@ export default function YouTubeScriptPage() {
   const [copiedSection, setCopiedSection] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
+  const [selectedTitle, setSelectedTitle] = useState<number>(0)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [thumbnails, setThumbnails] = useState<Array<{ variant: number; image_url: string | null; error?: string }>>([])
+  const [selectedThumb, setSelectedThumb] = useState<number>(0)
+  const [generatingThumbs, setGeneratingThumbs] = useState(false)
+  const [thumbProgress, setThumbProgress] = useState('')
+
   const [formData, setFormData] = useState({
     topic: '',
     video_type: 'tutorial',
@@ -111,11 +123,72 @@ export default function YouTubeScriptPage() {
 
       const data = await res.json()
       setResult(data)
+      setSaved(false)
+      setSelectedTitle(0)
     } catch (err: any) {
       console.error(err)
       alert(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGenerateThumbnails = async () => {
+    if (!result) return
+    setGeneratingThumbs(true)
+    setThumbProgress('Generating thumbnails...')
+    try {
+      const res = await fetch('/api/create/youtube-thumbnail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          thumbnail_concept: result.thumbnail_concept,
+          title: result.title_options[selectedTitle],
+          count: 3,
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Thumbnail generation failed')
+      }
+
+      const data = await res.json()
+      setThumbnails(data.thumbnails || [])
+      setSelectedThumb(0)
+      setThumbProgress('')
+    } catch (err: any) {
+      console.error(err)
+      alert(`Thumbnail generation failed: ${err.message}`)
+      setThumbProgress('')
+    } finally {
+      setGeneratingThumbs(false)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!result || saved) return
+    setSaving(true)
+    try {
+      const thumbUrl = thumbnails[selectedThumb]?.image_url || undefined
+      await saveYouTubeScript(
+        result,
+        result.title_options[selectedTitle] || result.title_options[0],
+        {
+          content_purpose: formData.content_purpose,
+          product_name: formData.product_name,
+          video_type: formData.video_type,
+          target_length: formData.target_length,
+          topic: formData.topic,
+        },
+        thumbUrl || undefined
+      )
+      setSaved(true)
+    } catch (err: any) {
+      console.error(err)
+      alert(`Save failed: ${err.message}`)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -234,22 +307,40 @@ export default function YouTubeScriptPage() {
             </div>
           ) : (
             <div className={styles.scriptContainer}>
-              {/* Title Options */}
+              {/* Title Options (click to select, double-click to copy) */}
               <div className={styles.titleSection}>
                 <h3 className={styles.sectionLabel}>
                   <Type size={16} /> Title Options
+                  <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 400, marginLeft: 8 }}>Click to select for save</span>
                 </h3>
                 {result.title_options.map((title, i) => (
                   <button
                     key={i}
-                    className={styles.titleOption}
-                    onClick={() => copyToClipboard(title, `title-${i}`)}
+                    className={`${styles.titleOption} ${selectedTitle === i ? styles.titleSelected : ''}`}
+                    onClick={() => setSelectedTitle(i)}
+                    onDoubleClick={() => copyToClipboard(title, `title-${i}`)}
                   >
-                    <span>{title}</span>
-                    <Copy size={14} />
+                    <span>{selectedTitle === i ? '✓ ' : ''}{title}</span>
+                    <Copy size={14} onClick={(e) => { e.stopPropagation(); copyToClipboard(title, `title-${i}`) }} />
                     {copiedField === `title-${i}` && <span className={styles.copiedBadge}>Copied!</span>}
                   </button>
                 ))}
+
+                {/* Save to Library */}
+                <button
+                  className={`${layout.generateBtn} ${saved ? styles.savedBtn : ''}`}
+                  onClick={handleSave}
+                  disabled={saving || saved}
+                  style={{ marginTop: 12, width: '100%' }}
+                >
+                  {saved ? (
+                    <><Check size={16} /> Saved to Library</>
+                  ) : saving ? (
+                    <><Loader2 size={16} className={styles.spinning} /> Saving...</>
+                  ) : (
+                    <><Save size={16} /> Save to Library</>
+                  )}
+                </button>
               </div>
 
               {/* Duration */}
@@ -299,12 +390,61 @@ export default function YouTubeScriptPage() {
                 ))}
               </div>
 
-              {/* Thumbnail Concept */}
+              {/* Thumbnail Concept + Generation */}
               <div className={styles.thumbnailSection}>
                 <h3 className={styles.sectionLabel}>
-                  <ImageIcon size={16} /> Thumbnail Concept
+                  <ImageIcon size={16} /> Thumbnails
                 </h3>
                 <p className={styles.thumbnailText}>{result.thumbnail_concept}</p>
+
+                {thumbnails.length === 0 ? (
+                  <button
+                    className={layout.generateBtn}
+                    onClick={handleGenerateThumbnails}
+                    disabled={generatingThumbs}
+                    style={{ marginTop: 8, width: '100%' }}
+                  >
+                    {generatingThumbs ? (
+                      <><Loader2 size={16} className={styles.spinning} /> {thumbProgress || 'Generating...'}</>
+                    ) : (
+                      <><ImageIcon size={16} /> Generate 3 Thumbnails</>
+                    )}
+                  </button>
+                ) : (
+                  <div className={styles.thumbnailGrid}>
+                    {thumbnails.map((thumb, i) => (
+                      <div
+                        key={i}
+                        className={`${styles.thumbnailCard} ${selectedThumb === i ? styles.thumbnailSelected : ''}`}
+                        onClick={() => setSelectedThumb(i)}
+                      >
+                        {thumb.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={thumb.image_url}
+                            alt={`Thumbnail variant ${i + 1}`}
+                            className={styles.thumbnailImage}
+                          />
+                        ) : (
+                          <div className={styles.thumbnailError}>
+                            Failed: {thumb.error || 'Unknown error'}
+                          </div>
+                        )}
+                        <span className={styles.thumbnailLabel}>
+                          {selectedThumb === i ? '✓ Selected' : `Variant ${i + 1}`}
+                        </span>
+                      </div>
+                    ))}
+                    <button
+                      className={styles.regenerateBtn}
+                      onClick={handleGenerateThumbnails}
+                      disabled={generatingThumbs}
+                    >
+                      {generatingThumbs ? <Loader2 size={14} className={styles.spinning} /> : <Wand2 size={14} />}
+                      Regenerate All
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Description + Tags */}
