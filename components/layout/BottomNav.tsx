@@ -7,8 +7,8 @@ import styles from './BottomNav.module.css'
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/create', label: 'Create' },
+  { href: '/insights', label: 'Insights' },
   { href: '/library', label: 'Library' },
-  { href: '/settings', label: 'Settings' },
 ]
 
 export default function BottomNav() {

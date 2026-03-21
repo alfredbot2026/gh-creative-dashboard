@@ -8,6 +8,7 @@ import styles from './Sidebar.module.css'
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/create', label: 'Create' },
+  { href: '/insights', label: 'Insights' },
   { href: '/calendar', label: 'Calendar' },
   { href: '/library', label: 'Library' },
 ]
