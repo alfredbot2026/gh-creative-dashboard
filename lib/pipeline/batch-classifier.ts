@@ -9,8 +9,9 @@ import { generateContent } from '@/lib/llm/client'
 import { buildClassificationPrompt, getKBVocabulary } from './classification-prompt'
 import type { ContentClassification } from './classification-types'
 
-const CALL_DELAY_MS = 200  // 200ms between classification calls
+const CALL_DELAY_MS = 300  // 300ms between LLM calls
 const MAX_RETRIES = 3
+const POSTS_PER_LLM_CALL = 10  // Classify 10 posts per single LLM call
 
 async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -41,33 +42,75 @@ function calcConfidenceAvg(classification: ContentClassification): number {
   return confidences.reduce((a, b) => a + b, 0) / confidences.length
 }
 
+interface IngestItem {
+  id: string
+  caption: string | null
+  description: string | null
+  content_type: string
+  platform: string
+}
+
 /**
- * Classify a single content item with retries.
+ * Classify a batch of posts in a single LLM call (10 posts per call).
  */
-async function classifySingle(
-  caption: string,
-  contentType: string,
-  platform: string,
+async function classifyMulti(
+  items: IngestItem[],
   hookTypes: string[],
   frameworks: string[]
-): Promise<ContentClassification> {
-  const prompt = buildClassificationPrompt(caption, contentType, platform, hookTypes, frameworks)
+): Promise<Map<string, ContentClassification>> {
+  const postsBlock = items.map((item, i) => {
+    const text = item.platform === 'youtube'
+      ? `${item.caption || ''}\n${item.description || ''}`.slice(0, 600)
+      : (item.caption || '').slice(0, 400)
+    return `POST_${i + 1} [id:${item.id}] [platform:${item.platform}] [type:${item.content_type}]:\n${text}`
+  }).join('\n\n---\n\n')
+
+  const hookList = hookTypes.slice(0, 15).join(', ')
+  const frameworkList = frameworks.slice(0, 10).join(', ')
+
+  const systemPrompt = `You are a social media content classifier. Classify each post and respond with ONLY a JSON array — no markdown, no explanation.`
+
+  const userPrompt = `Classify each post below. Return a JSON array with one object per post in this exact format:
+[
+  {
+    "post_id": "the id from [id:xxx]",
+    "content_purpose": "educate|story|sell|inspire|prove|trend",
+    "hook_type": "one of: ${hookList}",
+    "hook_confidence": 0.0-1.0,
+    "structure_type": "one of: ${frameworkList}",
+    "structure_confidence": 0.0-1.0,
+    "visual_style": "Talking Head|B-Roll Heavy|Text Overlay|Product Demo|Voiceover|Other",
+    "emotional_tone": "Warm/Personal|Professional|Excited|Calm|Humorous|Inspirational",
+    "cta_type": "Follow|Save|Comment|Link in Bio|Subscribe|None",
+    "taglish_ratio": "English Only|80% English / 20% Filipino|50/50|Filipino Heavy",
+    "topics": ["topic1", "topic2"]
+  }
+]
+
+POSTS TO CLASSIFY:
+${postsBlock}`
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const response = await generateContent(
-        'You are a content classification AI. Respond with ONLY valid JSON, no markdown, no explanation.',
-        prompt
-      )
-      return parseClassification(response.content)
+      const response = await generateContent(systemPrompt, userPrompt)
+      let jsonStr = response.content.trim()
+      if (jsonStr.startsWith('```')) {
+        jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+      }
+      const results: Array<ContentClassification & { post_id: string }> = JSON.parse(jsonStr)
+      const map = new Map<string, ContentClassification>()
+      for (const r of results) {
+        const { post_id, ...classification } = r
+        map.set(post_id, classification as ContentClassification)
+      }
+      return map
     } catch (err: any) {
       if (attempt === MAX_RETRIES - 1) throw err
-      console.warn(`[Classifier] Retry ${attempt + 1} for classification:`, err.message)
-      await delay(1000 * (attempt + 1))  // Backoff
+      console.warn(`[Classifier] Retry ${attempt + 1}:`, err.message)
+      await delay(1000 * (attempt + 1))
     }
   }
-
-  throw new Error('Classification failed after max retries')
+  throw new Error('Multi-classification failed after max retries')
 }
 
 export interface BatchResult {
@@ -119,43 +162,46 @@ export async function classifyBatch(
   let classified = 0
   const errors: string[] = []
 
-  for (const item of unclassified) {
+  // Process in chunks of POSTS_PER_LLM_CALL — 1 LLM call per chunk
+  for (let i = 0; i < unclassified.length; i += POSTS_PER_LLM_CALL) {
+    const chunk = unclassified.slice(i, i + POSTS_PER_LLM_CALL)
+    await delay(CALL_DELAY_MS)
+
     try {
-      await delay(CALL_DELAY_MS)
+      const classificationMap = await classifyMulti(chunk, hookTypes, frameworks)
 
-      // Use caption for IG/FB, title (caption field) + description for YouTube
-      const textToClassify = item.platform === 'youtube'
-        ? `${item.caption || ''}\n\n${item.description || ''}`
-        : item.caption || ''
-
-      const classification = await classifySingle(
-        textToClassify,
-        item.content_type,
-        item.platform,
-        hookTypes,
-        frameworks
-      )
-
-      const confidenceAvg = calcConfidenceAvg(classification)
-
-      const { error: insertError } = await supabase
-        .from('content_analysis')
-        .insert({
+      // Insert all results from this chunk
+      const rows = chunk.map(item => {
+        const classification = classificationMap.get(item.id)
+        if (!classification) return null
+        return {
           user_id: userId,
           ingest_id: item.id,
           classification,
           model_used: 'gemini-3-flash-preview',
           classification_version: 1,
-          confidence_avg: confidenceAvg,
-        })
+          confidence_avg: calcConfidenceAvg(classification),
+        }
+      }).filter(Boolean)
 
-      if (insertError) {
-        errors.push(`${item.id}: DB insert failed — ${insertError.message}`)
-      } else {
-        classified++
+      if (rows.length > 0) {
+        const { error: insertError } = await supabase
+          .from('content_analysis')
+          .insert(rows)
+
+        if (insertError) {
+          errors.push(`Chunk ${i}-${i + chunk.length}: DB insert failed — ${insertError.message}`)
+        } else {
+          classified += rows.length
+        }
+      }
+
+      const missed = chunk.length - rows.length
+      if (missed > 0) {
+        errors.push(`Chunk ${i}: ${missed} posts not returned by LLM`)
       }
     } catch (err: any) {
-      errors.push(`${item.id}: ${err.message}`)
+      errors.push(`Chunk ${i}-${i + chunk.length}: ${err.message}`)
     }
   }
 
