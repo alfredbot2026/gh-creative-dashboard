@@ -17,10 +17,10 @@ export async function GET(
 
   const { id } = await params
 
-  // Get the ingested item
+  // Get the ingested item (including deep analysis)
   const { data: item, error } = await supabase
     .from('content_ingest')
-    .select('*')
+    .select('*, deep_analysis, deep_analyzed_at')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()

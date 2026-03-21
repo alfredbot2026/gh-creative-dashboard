@@ -235,6 +235,139 @@ export default function ContentBrowser() {
                 </section>
               )}
 
+              {/* Deep Video Analysis (Gemini) */}
+              {detail?.deep_analysis && !detail.deep_analysis.error && (
+                <section className={styles.detailSection}>
+                  <h3>🎬 Video Deep Analysis (AI)</h3>
+                  
+                  <div className={styles.deepScore}>
+                    <span className={styles.deepScoreNum}>{detail.deep_analysis.overall_score}</span>
+                    <span className={styles.deepScoreMax}>/10</span>
+                    <span className={styles.deepScoreLabel}>Content Quality</span>
+                  </div>
+
+                  <p className={styles.deepSummary}>{detail.deep_analysis.summary}</p>
+
+                  {/* Hook Analysis */}
+                  <div className={styles.deepBlock}>
+                    <h4>🪝 Hook Analysis</h4>
+                    <div className={styles.deepRow}>
+                      <span className={styles.deepLabel}>First 3 seconds:</span>
+                      <span>{detail.deep_analysis.hook_analysis?.first_3_seconds}</span>
+                    </div>
+                    <div className={styles.deepRow}>
+                      <span className={styles.deepLabel}>Hook type:</span>
+                      <span className={styles.deepBadge}>{detail.deep_analysis.hook_analysis?.hook_type}</span>
+                      <span className={styles.deepStrength}>Strength: {detail.deep_analysis.hook_analysis?.hook_strength}/10</span>
+                    </div>
+                    <div className={styles.deepRow}>
+                      <span className={styles.deepLabel}>Why:</span>
+                      <span>{detail.deep_analysis.hook_analysis?.why}</span>
+                    </div>
+                  </div>
+
+                  {/* Content Structure */}
+                  {detail.deep_analysis.content_structure?.length > 0 && (
+                    <div className={styles.deepBlock}>
+                      <h4>📐 Structure</h4>
+                      <div className={styles.timeline}>
+                        {detail.deep_analysis.content_structure.map((seg: any, i: number) => (
+                          <div key={i} className={styles.timelineItem}>
+                            <span className={styles.timelineTime}>{seg.timestamp}</span>
+                            <span className={`${styles.timelineType} ${styles[seg.type] || ''}`}>{seg.type}</span>
+                            <span className={styles.timelineDesc}>{seg.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Transcript */}
+                  {detail.deep_analysis.transcript && (
+                    <div className={styles.deepBlock}>
+                      <h4>📝 Transcript</h4>
+                      <p className={styles.transcript}>{detail.deep_analysis.transcript}</p>
+                    </div>
+                  )}
+
+                  {/* Retention Factors */}
+                  {detail.deep_analysis.retention_factors && (
+                    <div className={styles.deepBlock}>
+                      <h4>📊 Retention Factors</h4>
+                      <div className={styles.retentionGrid}>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Pacing</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.retention_factors.pacing}</span>
+                        </div>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Visual Variety</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.retention_factors.visual_variety}</span>
+                        </div>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Topic Changes</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.retention_factors.topic_changes}</span>
+                        </div>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Dead Air</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.retention_factors.dead_air_seconds}s</span>
+                        </div>
+                      </div>
+                      {detail.deep_analysis.retention_factors.predicted_drop_off_points?.length > 0 && (
+                        <div className={styles.dropOffs}>
+                          <strong>⚠️ Predicted Drop-off Points:</strong>
+                          <ul>
+                            {detail.deep_analysis.retention_factors.predicted_drop_off_points.map((d: any, i: number) => (
+                              <li key={i}><strong>{d.timestamp}</strong> — {d.reason}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Visual Analysis */}
+                  {detail.deep_analysis.visual_analysis && (
+                    <div className={styles.deepBlock}>
+                      <h4>🎨 Visual Analysis</h4>
+                      <div className={styles.retentionGrid}>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Style</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.visual_analysis.style}</span>
+                        </div>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Quality</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.visual_analysis.production_quality}</span>
+                        </div>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Lighting</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.visual_analysis.lighting}</span>
+                        </div>
+                        <div className={styles.retItem}>
+                          <span className={styles.retLabel}>Text Overlays</span>
+                          <span className={styles.retValue}>{detail.deep_analysis.visual_analysis.text_overlays ? 'Yes' : 'No'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tips */}
+                  {detail.deep_analysis.tips?.length > 0 && (
+                    <div className={styles.tipsBox}>
+                      <strong>💡 AI Recommendations</strong>
+                      <ul>
+                        {detail.deep_analysis.tips.map((tip: string, i: number) => (
+                          <li key={i}>{tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className={styles.deepMeta}>
+                    Analyzed: {new Date(detail.deep_analyzed_at).toLocaleString()} • Model: Gemini 3 Flash
+                  </div>
+                </section>
+              )}
+
               {/* Content */}
               <section className={styles.detailSection}>
                 <h3>Content</h3>
