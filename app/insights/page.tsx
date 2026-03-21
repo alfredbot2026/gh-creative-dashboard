@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import styles from './page.module.css'
 
 type Platform = 'all' | 'youtube' | 'instagram' | 'facebook'
@@ -92,6 +93,7 @@ export default function InsightsPage() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [total, setTotal] = useState(0)
+  const [dashboard, setDashboard] = useState<any>(null)
 
   const fetchContent = useCallback(async (p: number = 1, append = false) => {
     setLoading(true)
@@ -122,6 +124,14 @@ export default function InsightsPage() {
     setPage(1)
     fetchContent(1)
   }, [fetchContent])
+
+  // Fetch dashboard insights
+  useEffect(() => {
+    fetch('/api/content/dashboard')
+      .then(r => r.json())
+      .then(d => setDashboard(d))
+      .catch(() => {})
+  }, [])
 
   const loadMore = () => {
     const next = page + 1
@@ -161,6 +171,37 @@ export default function InsightsPage() {
             <span className={styles.statValue}>{stats.deep_analyzed}</span>
             <span className={styles.statLabel}>🔍 Analyzed</span>
           </div>
+        </div>
+      )}
+
+      {/* Dashboard Insights */}
+      {dashboard?.ready && dashboard.insights?.length > 0 && (
+        <div className={styles.insightsSection}>
+          <div className={styles.insightsHeader}>
+            <h2 className={styles.insightsTitle}>💡 Key Insights</h2>
+            <Link href="/insights/topics" className={styles.topicsLink}>
+              View Topic Analysis →
+            </Link>
+          </div>
+          <div className={styles.insightCards}>
+            {dashboard.insights.map((insight: string, i: number) => (
+              <div key={i} className={styles.insightCard}>
+                <p className={styles.insightText}>{insight}</p>
+              </div>
+            ))}
+          </div>
+          {/* Hook Performance Mini */}
+          {dashboard.hooks?.length > 0 && (
+            <div className={styles.hookGrid}>
+              {dashboard.hooks.slice(0, 4).map((h: any) => (
+                <div key={h.hook} className={styles.hookCard}>
+                  <span className={styles.hookName}>{h.hook}</span>
+                  <span className={styles.hookStat}>{formatViews(h.avg_views)} avg views</span>
+                  <span className={styles.hookCount}>{h.count} videos · {h.avg_engagement_rate}% eng</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
