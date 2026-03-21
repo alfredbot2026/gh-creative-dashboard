@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server'
  * Utility to refresh and get a valid Meta access token.
  */
 
-const APP_ID = process.env.META_APP_ID
-const APP_SECRET = process.env.META_APP_SECRET
+const APP_ID = process.env.META_APP_ID || process.env.FB_APP_ID
+const APP_SECRET = process.env.META_APP_SECRET || process.env.FB_APP_SECRET
 
 export async function refreshMetaToken(userId: string, currentToken: string): Promise<string> {
   if (!APP_ID || !APP_SECRET) {

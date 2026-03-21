@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
-const APP_ID = process.env.META_APP_ID
+const APP_ID = process.env.META_APP_ID || process.env.FB_APP_ID
 const REDIRECT_URI = process.env.META_REDIRECT_URI || 'http://localhost:3000/api/meta/callback'
 
 const SCOPES = [
