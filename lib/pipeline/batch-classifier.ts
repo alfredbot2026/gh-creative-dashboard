@@ -132,27 +132,27 @@ export async function classifyBatch(
   // Get KB vocabulary once for the whole batch
   const { hookTypes, frameworks } = await getKBVocabulary()
   
-  // Find unclassified items
-  // Get all ingest IDs, then filter out those already in content_analysis
+  // Get IDs of already-classified items (fetch up to 5000 — covers Grace's full library)
+  const { data: existingAnalysis } = await supabase
+    .from('content_analysis')
+    .select('ingest_id')
+    .eq('user_id', userId)
+    .limit(5000)
+
+  const classifiedIds = new Set((existingAnalysis || []).map(e => e.ingest_id))
+
+  // Fetch unclassified items only — paginate past classified ones
   const { data: allIngest } = await supabase
     .from('content_ingest')
     .select('id, caption, description, content_type, platform')
     .eq('user_id', userId)
     .order('published_at', { ascending: false })
-    .limit(batchSize * 2)  // Fetch extra to account for already-classified
+    .limit(5000)  // Fetch all, then filter — for Grace's ~1800 posts this is fine
 
   if (!allIngest || allIngest.length === 0) {
     return { classified: 0, skipped: 0, errors: [], remaining: 0 }
   }
 
-  // Check which are already classified
-  const ingestIds = allIngest.map(i => i.id)
-  const { data: existing } = await supabase
-    .from('content_analysis')
-    .select('ingest_id')
-    .in('ingest_id', ingestIds)
-
-  const classifiedIds = new Set((existing || []).map(e => e.ingest_id))
   const unclassified = allIngest.filter(i => !classifiedIds.has(i.id)).slice(0, batchSize)
 
   if (unclassified.length === 0) {
