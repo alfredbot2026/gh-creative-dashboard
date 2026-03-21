@@ -93,6 +93,13 @@ export default function PipelineDashboard() {
         </span>
       </div>
 
+      {/* Navigation */}
+      <div style={{ marginBottom: 16, display: 'flex', gap: 12 }}>
+        <a href="/pipeline/content" style={{ color: '#818cf8', textDecoration: 'none', fontSize: 14, padding: '8px 16px', border: '1px solid #334155', borderRadius: 8, background: '#1e293b' }}>
+          📋 Browse All Content →
+        </a>
+      </div>
+
       {/* Connected Platforms */}
       <section className={styles.section}>
         <h2>Connected Platforms</h2>
