@@ -15,17 +15,17 @@ export const dynamic = 'force-dynamic'
 
 const DELAY_MS = 500 // 500ms between calls — conservative
 
-async function getYouTubeToken(supabase: any, userId: string): Promise<string | null> {
+async function getYouTubeToken(supabase: any): Promise<string | null> {
   const { data: tokenData } = await supabase
     .from('youtube_tokens')
-    .select('access_token, refresh_token, expires_at')
-    .eq('user_id', userId)
+    .select('id, access_token, refresh_token, expires_at')
+    .limit(1)
     .single()
 
   if (!tokenData) return null
 
   // Refresh if expired
-  if (new Date(tokenData.expires_at) < new Date()) {
+  if (new Date(tokenData.expires_at) <= new Date()) {
     try {
       const refreshed = await refreshYouTubeToken(tokenData.refresh_token)
       await supabase
@@ -33,8 +33,9 @@ async function getYouTubeToken(supabase: any, userId: string): Promise<string | 
         .update({
           access_token: refreshed.access_token,
           expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
         })
-        .eq('user_id', userId)
+        .eq('id', tokenData.id)
       return refreshed.access_token
     } catch {
       return null
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
   const videoId = req.nextUrl.searchParams.get('videoId')
   if (!videoId) return NextResponse.json({ error: 'videoId required' }, { status: 400 })
 
-  const accessToken = await getYouTubeToken(supabase, user.id)
+  const accessToken = await getYouTubeToken(supabase)
   if (!accessToken) return NextResponse.json({ error: 'YouTube not connected' }, { status: 400 })
 
   // Get the video's platform_id and published_at
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
   const { batchSize = 25 } = await req.json().catch(() => ({}))
   const limit = Math.min(batchSize, 50)
 
-  const accessToken = await getYouTubeToken(supabase, user.id)
+  const accessToken = await getYouTubeToken(supabase)
   if (!accessToken) return NextResponse.json({ error: 'YouTube not connected' }, { status: 400 })
 
   // Get YouTube videos that DON'T have retention data yet, ordered by views (most viewed first)
