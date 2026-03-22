@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
           .from('content_ingest')
           .update({ metrics: updatedMetrics })
           .eq('id', video.id)
-          .eq('user_id', video.user_id || user.id)
+          .eq('user_id', userId)
         fetched++
       }
     } catch (err: any) {
