@@ -7,7 +7,7 @@
  * Stores retention data in content_ingest.metrics.retention_curve
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getCronOrUserAuth } from '@/lib/cron-auth'
 import { fetchRetentionCurve, refreshYouTubeToken } from '@/lib/youtube/content-client'
 
 export const maxDuration = 300
@@ -47,9 +47,8 @@ async function getYouTubeToken(supabase: any): Promise<string | null> {
 
 // GET: Single video retention
 export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, supabase } = await getCronOrUserAuth(req)
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const videoId = req.nextUrl.searchParams.get('videoId')
   if (!videoId) return NextResponse.json({ error: 'videoId required' }, { status: 400 })
@@ -62,7 +61,7 @@ export async function GET(req: NextRequest) {
     .from('content_ingest')
     .select('platform_id, published_at, metrics')
     .eq('id', videoId)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('platform', 'youtube')
     .single()
 
@@ -87,7 +86,7 @@ export async function GET(req: NextRequest) {
       .from('content_ingest')
       .update({ metrics: updatedMetrics })
       .eq('id', videoId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     return NextResponse.json({ cached: false, retention_curve: curve, video_id: video.platform_id })
   } catch (err: any) {
@@ -97,9 +96,8 @@ export async function GET(req: NextRequest) {
 
 // POST: Batch fetch retention for top videos
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, supabase } = await getCronOrUserAuth(req)
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { batchSize = 25 } = await req.json().catch(() => ({}))
   const limit = Math.min(batchSize, 50)
@@ -114,7 +112,7 @@ export async function POST(req: NextRequest) {
     const { data } = await supabase
       .from('content_ingest')
       .select('id, platform_id, published_at, metrics')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('platform', 'youtube')
       .order('published_at', { ascending: false })
       .range(offset, offset + 999)
@@ -170,7 +168,7 @@ export async function POST(req: NextRequest) {
   const { count: remaining } = await supabase
     .from('content_ingest')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('platform', 'youtube')
 
   return NextResponse.json({

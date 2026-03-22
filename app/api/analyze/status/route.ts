@@ -1,14 +1,16 @@
 /**
  * Video Analysis Status API
  * GET /api/analyze/status — Check deep analysis progress.
+ * Auth: User session OR CRON_SECRET bearer token.
  */
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { getCronOrUserAuth } from '@/lib/cron-auth'
 
-export async function GET() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
+export const dynamic = 'force-dynamic'
+
+export async function GET(req: NextRequest) {
+  const { userId, supabase } = await getCronOrUserAuth(req)
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -16,14 +18,14 @@ export async function GET() {
   const { count: totalYT } = await supabase
     .from('content_ingest')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('platform', 'youtube')
 
   // Count deep-analyzed
   const { count: analyzed } = await supabase
     .from('content_ingest')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('platform', 'youtube')
     .not('deep_analysis', 'is', null)
 
@@ -31,7 +33,7 @@ export async function GET() {
   const { data: latest } = await supabase
     .from('content_ingest')
     .select('deep_analyzed_at, caption')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('platform', 'youtube')
     .not('deep_analyzed_at', 'is', null)
     .order('deep_analyzed_at', { ascending: false })
@@ -48,6 +50,6 @@ export async function GET() {
     progress_percent: total > 0 ? Math.round((done / total) * 100) : 0,
     last_analyzed: latest?.deep_analyzed_at || null,
     last_analyzed_title: latest?.caption?.slice(0, 60) || null,
-    estimated_hours_remaining: Math.ceil((total - done) * 4 / 3600),  // 4s per video
+    estimated_hours_remaining: Math.ceil((total - done) * 4 / 3600),
   })
 }
