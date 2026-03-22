@@ -331,7 +331,7 @@ export async function analyzeBatch(
     .not('deep_analysis', 'is', null)
     .limit(1000)
 
-  const analyzedIds = new Set((analyzed || []).map(r => r.id))
+  const analyzedIds = new Set((analyzed || []).map((r: any) => r.id))
 
   // Get all YouTube videos, sorted by views (highest first)
   const allVideos: any[] = []
