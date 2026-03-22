@@ -45,6 +45,11 @@ interface VideoAnalytics {
   impressionClickThroughRate: number
 }
 
+export interface RetentionDataPoint {
+  elapsedRatio: number  // 0.0 to 1.0 (position in video)
+  absoluteRetention: number  // percentage of viewers still watching at this point
+}
+
 export interface YouTubeVideo {
   id: string
   title: string
@@ -232,6 +237,48 @@ async function fetchVideoAnalytics(
   } catch (err: any) {
     if (err.message?.includes('QUOTA_EXCEEDED')) throw err  // re-throw quota errors
     console.warn(`[YouTube] Analytics unavailable for ${videoId}:`, err.message)
+    return null
+  }
+}
+
+/**
+ * Fetch audience retention curve for a single video.
+ * Returns array of data points: [{elapsedRatio: 0.0, absoluteRetention: 100}, ...]
+ * Uses YouTube Analytics API (1 quota unit per call).
+ */
+export async function fetchRetentionCurve(
+  accessToken: string,
+  videoId: string,
+  publishedAt: string
+): Promise<RetentionDataPoint[] | null> {
+  try {
+    const startDate = publishedAt.split('T')[0]
+    const endDate = new Date().toISOString().split('T')[0]
+
+    const params = new URLSearchParams({
+      ids: 'channel==MINE',
+      startDate,
+      endDate,
+      metrics: 'audienceWatchRatio',
+      dimensions: 'elapsedVideoTimeRatio',
+      filters: `video==${videoId}`,
+      sort: 'elapsedVideoTimeRatio',
+    })
+
+    const data = await ytFetch<any>(
+      `${YT_ANALYTICS_URL}?${params.toString()}`,
+      accessToken
+    )
+
+    if (!data.rows || data.rows.length === 0) return null
+
+    return data.rows.map((row: any[]) => ({
+      elapsedRatio: row[0],
+      absoluteRetention: Math.round(row[1] * 10000) / 100, // Convert to percentage
+    }))
+  } catch (err: any) {
+    if (err.message?.includes('QUOTA_EXCEEDED')) throw err
+    console.warn(`[YouTube] Retention data unavailable for ${videoId}:`, err.message)
     return null
   }
 }
