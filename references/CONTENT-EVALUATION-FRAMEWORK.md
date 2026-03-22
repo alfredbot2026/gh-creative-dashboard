@@ -1,163 +1,203 @@
-# Content Evaluation Framework
-> Synthesized from KB notebooks: Viral Video Anatomy, Sam Gaudet, Caleb Ralston, Briar Cochran, Personal Brand Launch Library
-
-## Core Principle
-**The audience determines quality, not the creator.** Evaluation must be data-driven, not subjective.
+# Content Evaluation Framework — Platform-Specific
+> Synthesized from KB notebooks. Each platform has its own algorithm, metrics, and criteria.
+> Never mix frameworks across platforms.
 
 ---
 
-## 1. Scoring System: The Multiplier Tracking System
+## A. YOUTUBE LONG-FORM (>60 seconds)
 
-### How it works
-1. **Establish baseline:** Median views across last 75-90 days of content per format
-2. **Grade with multiplier:** Each piece scored as Nx the median (e.g., 65K views / 10K median = 6.5x)
-3. **Monthly audit:** Isolate top 10%, study what worked. Eliminate formats consistently below 1x
+### Algorithm Priority
+YouTube rewards **watch time** above all. A video that keeps viewers for 5+ minutes builds "trust at mass." YouTube content has a long shelf life — evergreen videos drive traffic for 1+ years.
 
-### Our implementation
-- Calculate median views per platform (YouTube, IG, FB)
-- Score every post as `views / platform_median`
-- Tier assignment: `<0.5x` = Below | `0.5-1.2x` = Average | `1.2-2x` = Above | `>2x` = Top
+### Primary Metrics (in order of importance)
+| Metric | Source | Target | What it tells you |
+|--------|--------|--------|-------------------|
+| **Watch time (minutes)** | YT Analytics | Maximize | #1 algorithm signal — total engagement |
+| **Avg view percentage** | YT Analytics | >50% | Retention quality — did they stay? |
+| **CTR** | YT Analytics | >5% good, >10% great | Thumbnail + title effectiveness |
+| **Avg view duration** | YT Analytics | >50% of length | Content holding power |
+| **Subscribers gained** | YT Analytics | Track per video | Trust conversion — did they commit? |
+| **Audience retention curve** | YT Analytics | Flat = good, cliff = problem | WHERE they leave and WHY |
 
----
+### Retention Curve Diagnosis
+- **Cliff at 0-3s:** Hook failed completely
+- **Drop at 5-10s:** Hook worked but didn't transition into value
+- **Gradual decline:** Normal — but steeper = less engaging body
+- **Spike mid-video:** Viewers rewinding = high-value moment
+- **Drop at specific point:** Identify what happened at that timestamp (topic change? tangent? dead air?)
 
-## 2. The 7 Components of Evaluation (per video)
+### Evaluation Scorecard (YouTube Long-Form)
+| Component | Weight | What to evaluate |
+|-----------|--------|-----------------|
+| **Hook** | 20% | First 10-15s. Does it set up the video's promise? Clear context for new viewers? |
+| **HEIT Structure** | 25% | Hook → Explain problem → Illustrate with story/analogy → Teach actionable lesson |
+| **Value Density** | 20% | Specific, actionable, with real numbers/examples. No filler, no jargon |
+| **Retention Design** | 15% | B-roll, screen recordings, visual changes. Curiosity stacking (resolve one gap, open another) |
+| **CTA** | 10% | Subscribe prompt + specific action (comment, link). Timed appropriately |
+| **Topic-Market Fit** | 10% | CCN: Core (buyers) + Casual (watchers) + New (never seen you). Broad TAM |
 
-### A. Hook (0-3 seconds) — CRITICAL
-**Metrics:** 3-second hold rate (target: 60%+, top: 70-80%)
-**Evaluate:**
-- Pattern Interruption: Does it break scroll autopilot? (unexpected visual, bold text, abrupt sound)
-- Curiosity Gap: Does it open a question the viewer NEEDS answered?
-- Bold Claim: Counterintuitive statement that demands attention?
-- The 3 C's: Context (new viewers understand), Contrarian take, Creates intrigue
-- Fluff check: Opens with "Hi guys" or slow build-up = FAIL
-- Triple hook: Written + Verbal + Visual hooks layered together?
+### Multiplier Scoring
+- Baseline: Median views across all long-form videos in last 90 days
+- Score: `video_views / median`
+- Tiers: `<0.5x` Below | `0.5-1x` Average | `1-2x` Above | `>2x` Top | `>5x` Viral outlier
 
-### B. Value & Content (The Body)
-**Metrics:** Average view duration, completion rate, avg view percentage
-**Evaluate:**
-- Value Compression: Maximum actionable value in minimum time
-- Specificity: Real numbers, frameworks, examples — not vague advice
-- Jargon check: Industry terms that confuse casual viewers?
-- HEIT framework: Hook → Explain → Illustrate (story/analogy) → Teach (actionable lesson)
-
-### C. Retention & Pacing
-**Metrics:** Audience retention curve, predicted drop-off points
-**Evaluate:**
-- Hook-Hold-Reward structure: Does it deliver on the promise?
-- Visual changes every 2-4 seconds (cuts, overlays, B-roll, framing shifts)
-- Curiosity stacking: Resolves one micro-gap, immediately opens another
-- Drop-off diagnosis: If viewers leave at 5-7s, hook worked but pacing failed
-
-### D. Format & Visual Style
-**Evaluate:**
-- Talking head alone = lower retention vs. mixed formats
-- Engaging formats: talking back-and-forth, props, angle changes, demonstrations
-- Vertical + good lighting + clear audio
-- Captions mandatory (90% watch on mute)
-
-### E. Emotional Resonance
-**Evaluate using STEPPS framework:**
-- High-arousal emotions (awe, anger, anxiety, excitement) = SHARED
-- Low-arousal emotions (sadness, contentment) = NOT shared
-- Does it speak to Hopes, Dreams, Fears, Blockers of the target audience?
-
-### F. CTA (Call to Action)
-**Evaluate:**
-- Exists? (many videos have none)
-- Type matches purpose:
-  - Storytelling → Follow CTA
-  - Educational → Freebie/Offer CTA
-  - Selling → Comment/Link CTA
-- Timing: End only, or woven into content?
-
-### G. Topic & Audience Fit
-**Evaluate using CCN framework:**
-- Core audience (buyers): Does this serve them?
-- Casual audience (watchers): Does this engage them?
-- New audience (never seen you): Is this accessible?
-- Total Addressable Market: Is the topic broad enough?
+### What's unique to YouTube
+- Dense, technical, lecture-style content works here (fails on IG)
+- Trust builds over longer watch times → higher monetization potential
+- A creator on YouTube makes ~5x more than same audience on IG (same niche, same price)
+- Content lifespan: months to years (not days)
 
 ---
 
-## 3. Key Metrics Hierarchy
+## B. INSTAGRAM REELS / SHORT-FORM (<60 seconds)
 
-### Primary (algorithmic weight)
-| Metric | Source | What it means |
-|--------|--------|---------------|
-| **Watch time** | YouTube Analytics | Total time watched — #1 algorithm signal |
-| **Avg view percentage** | YouTube Analytics | % of video watched — retention quality |
-| **3-second hold rate** | YouTube Analytics (intro retention) | Hook effectiveness |
-| **Sends per reach** | IG Insights | Shareability — highest algorithm weight |
-| **Saves** | IG Insights | Value indicator — "I need this later" |
+### Algorithm Priority
+Instagram's algorithm evaluates: **watch time, shares per view, saves per view** (per Adam Mosseri).
+Two sub-algorithms:
+- **Connected reach** (your followers): evaluates on **likes + retention**
+- **Unconnected reach** (discovery): evaluates on **shares + retention**
 
-### Secondary (audience building)
-| Metric | Source | What it means |
-|--------|--------|---------------|
-| **Followers added per video** | Platform analytics | THE most important metric (not views) |
-| **View-to-follower rate** | Calculated | 1% = banger, 0.5% = good, 0.1% = decent |
-| **View velocity** | Early hours data | How fast views accumulate — viral predictor |
-| **Comments** | Basic metrics | Conversation starter |
-| **CTR** | YouTube Analytics | Thumbnail + title effectiveness |
+### Primary Metrics (in order of importance)
+| Metric | Source | Target | What it tells you |
+|--------|--------|--------|-------------------|
+| **Sends per reach** | IG Insights | Maximize | #1 algorithm signal — shareability |
+| **Saves per reach** | IG Insights | Maximize | Value indicator — "I need this later" |
+| **Completion rate** | IG Insights | >60% | Did they watch the whole thing? |
+| **3-second hold rate** | IG Insights | >60%, top: 70-80% | Hook effectiveness |
+| **Watch time** | IG Insights | Maximize total | 30s Reel watched fully > 15s Reel watched fully |
+| **Followers added** | IG Analytics | Track per Reel | Conversion — 1% = banger, 0.5% = good |
 
-### Vanity (track but don't optimize for)
-- Total views (without context)
-- Likes (easy engagement, low signal)
-- Impressions (reach ≠ impact)
+### Evaluation Scorecard (Instagram Reels)
+| Component | Weight | What to evaluate |
+|-----------|--------|-----------------|
+| **Hook (0-3s)** | 30% | Pattern interrupt, curiosity gap, bold claim. Triple hook: written + verbal + visual. NO "Hi guys" |
+| **Value Compression** | 20% | Max actionable value in min time. Specific, not fluffy. No jargon |
+| **Retention Design** | 20% | Visual changes every 2-4s. Jump cuts, text overlays, B-roll. Curiosity stacking |
+| **Shareability** | 15% | Communal language ("me and the boys"), relatable concepts, high-arousal emotion |
+| **CTA** | 10% | Follow CTA for story content, Freebie/Offer for educational, Comment for engagement |
+| **Production** | 5% | Captions (90% watch muted), clean audio, vertical, good lighting |
 
----
+### Short-Form Specific Techniques
+- **Audio sweetening:** Speed up 1.05x + slight pitch up = subconsciously prevents boredom
+- **Floating text stickers:** Visual hook that keeps watching without verbal intro
+- **Comment farming:** Passive visual anomalies drive comments (not rage bait)
+- **Reply with question:** Doubles comment count
+- **A/B hook testing:** 10-20 variations, same video, different 3-second hooks (Trial Reels)
+- **Re-loop:** Add "But..." near end to loop retention
 
-## 4. Content Mix: 70/20/10 Rule
+### Reel Anatomy (from KB)
+1. **Hook** (Pain + Benefit + Curiosity)
+2. **Super Hook** (second sentence — credibility/social proof)
+3. **Curiosity Gap** (open a loop)
+4. **Climax** (deliver the value)
+5. **Re-loop** ("But..." to retain)
+6. **CTA** (Follow/Save/Share)
 
-- **70% Proven formats** — Topics + formats that reliably hit >1x multiplier
-- **20% Iterations** — Tweaks to proven content (new hook, different CTA, adjusted pacing)
-- **10% Experiments** — Completely new formats. Flops are expected and celebrated.
-
----
-
-## 5. Evaluation Process
-
-### Per-Video Scorecard
-For each video, score 1-10 on:
-1. **Hook Strength** — Pattern interrupt + curiosity gap + triple hook
-2. **Value Density** — Actionable, specific, jargon-free
-3. **Retention Design** — Pacing, visual variety, curiosity stacking
-4. **Emotional Trigger** — High-arousal emotion present?
-5. **CTA Effectiveness** — Right type, right timing
-6. **Production Quality** — Audio, lighting, captions, format
-7. **Topic-Market Fit** — CCN coverage, TAM size
-
-**Overall Score = weighted average** (Hook 25%, Value 20%, Retention 20%, Emotion 10%, CTA 10%, Production 5%, Topic 10%)
-
-### Monthly Content Audit
-1. Sort all content by multiplier (views / median)
-2. Isolate top 10% — what do they have in common?
-3. Isolate bottom 10% — what went wrong?
-4. Check content mix: Is it 70/20/10?
-5. Identify one pattern to double down on, one to eliminate
+### Multiplier Scoring
+- Baseline: Median views across all Reels in last 90 days
+- Score: `reel_views / median`
+- Same tiers as YouTube
 
 ---
 
-## 6. What We're Missing (vs what we have)
+## C. YOUTUBE SHORTS
 
-### Have ✅
-- Views, likes, comments (YouTube + IG basic)
-- Deep analysis: transcript, hook type, pacing, visual style, topics
-- Content purpose classification
-- Gemini-generated score + tips
+### Algorithm Priority
+Similar to IG Reels but YouTube-specific. YouTube Shorts algorithm favors:
+- Completion rate
+- Swipe-away rate (inverse of retention)
+- Subscriber conversion
 
-### Need ❌ (actual data, not AI predictions)
-- **YouTube audience retention curve** (actual drop-off graph, not predicted)
-- **3-second hold rate** (intro retention from YouTube Analytics)
-- **Sends per reach** (IG — requires insights API)
-- **Saves** (IG — rate limited, need retry)
-- **Followers added per video** (both platforms)
-- **View velocity** (first 24h/48h view trajectory)
-- **CTR** (YouTube — have for 87 videos, need for all)
-- **Multiplier score** (need to calculate from median)
+### Primary Metrics
+| Metric | Source | Target | What it tells you |
+|--------|--------|--------|-------------------|
+| **Views** | YT Analytics | Track | Reach |
+| **Watch time** | YT Analytics | Maximize | Engagement depth |
+| **Subscribers gained** | YT Analytics | Track per Short | Trust conversion |
+| **Swipe-away rate** | YT Analytics | Minimize | Content quality signal |
 
-### Evaluation Gap
-Our current Gemini analysis uses a generic 1-10 score. It should instead use this KB framework:
-- Replace generic score with the 7-component weighted scorecard
-- Replace "predicted drop-off" with actual retention data
-- Add multiplier scoring (vs platform median)
-- Add view-to-follower conversion tracking
+### Evaluation
+Use the same scorecard as Instagram Reels but:
+- Subscriber conversion matters more than sends/saves (YouTube values commitment over sharing)
+- Shorts can funnel to long-form (IG Reels cannot)
+- Shorts don't get CTR/impressions data the same way
+
+### Multiplier Scoring
+- Separate median from long-form YouTube
+- Shorts and long-form should NEVER share a baseline
+
+---
+
+## D. FACEBOOK POSTS / REELS
+
+### Algorithm Priority
+Limited KB data on Facebook-specific algorithm. Based on available metrics:
+- **Shares** = primary viral signal (equivalent to sends on IG)
+- **Reactions** (not just likes — love, haha, wow, angry carry more weight)
+- **Engaged users** = people who clicked, commented, shared
+- **Comments with replies** = conversation depth
+
+### Primary Metrics
+| Metric | Source | Target | What it tells you |
+|--------|--------|--------|-------------------|
+| **Shares** | FB Insights | Maximize | Viral distribution signal |
+| **Reactions (by type)** | FB Insights | Track | Emotional resonance |
+| **Engaged users** | FB Insights | Maximize | Active audience |
+| **Impressions** | FB Insights | Track | Reach |
+| **Comments** | FB Insights | Track | Conversation quality |
+
+### Cross-Post Context
+Grace's IG Reels are mostly cross-posted from Facebook. For cross-posted content:
+- Compare performance on BOTH platforms for same content
+- If a Reel does 10x on FB but 1x on IG, the audience difference is the insight
+- Deduplication needed to avoid double-counting in aggregate stats
+
+### Multiplier Scoring
+- Separate median for FB posts
+- Separate by content type (Reel vs image post vs text post)
+
+---
+
+## E. UNIVERSAL: The Multiplier Tracking System
+
+### How to calculate (per platform, per format)
+```
+1. Collect all posts from last 90 days for [platform] [format]
+2. Sort by primary metric (views for YT, reach for IG, impressions for FB)
+3. Find the MEDIAN (not average — outliers skew average)
+4. Score each post: metric_value / median = Nx multiplier
+5. Tier: <0.5x Below | 0.5-1x Average | 1-2x Above | >2x Top | >5x Viral
+```
+
+### Monthly Audit Process
+1. Sort all content by multiplier
+2. Top 10% → What do they have in common? (topic, hook type, format, time posted)
+3. Bottom 10% → What went wrong? (weak hook, wrong topic, poor retention)
+4. Content mix check: Is it 70% proven / 20% iteration / 10% experiment?
+5. Action: Double down on one winning pattern, eliminate one losing pattern
+
+---
+
+## F. WHAT WE NEED TO PULL (Data Gaps)
+
+### YouTube (have partial, need complete)
+- [ ] Audience retention curve per video (YouTube Analytics audienceRetention report)
+- [ ] CTR + impressions for all videos (have for 87, need for all)
+- [ ] Subscribers gained per video
+- [ ] Avg view duration + avg view percentage for all
+
+### Instagram (have basic, need insights)
+- [ ] Sends per reach (shares via DM)
+- [ ] Saves per reach
+- [ ] Completion rate (for Reels)
+- [ ] 3-second hold rate
+- [ ] Followers gained per post (if available via API)
+
+### Facebook (have basic)
+- [ ] Reaction breakdown by type (love/wow/angry — not just total)
+- [ ] Share count (have this ✅)
+- [ ] Comment replies / conversation depth
+
+### Cross-Platform
+- [ ] Cross-post deduplication (IG ↔ FB same content)
+- [ ] Comparative performance (same content, different platform)
