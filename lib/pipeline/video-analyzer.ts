@@ -21,7 +21,13 @@ export interface VideoDeepAnalysis {
   cta: CTAAnalysis
   topics: string[]
   content_purpose: string
-  overall_score: number  // 1-10 content quality assessment
+  overall_score?: number  // Legacy v1 — 1-10 content quality assessment
+  scorecard?: Record<string, any>  // v2 — weighted component scores
+  heit_analysis?: Record<string, any>  // v2 long-form — HEIT structure
+  audience_fit?: Record<string, any>  // v2 long-form — CCN audience fit
+  reel_anatomy?: Record<string, any>  // v2 short-form — Reel structure
+  shareability_factors?: Record<string, any>  // v2 short-form — shareability
+  retention_analysis?: Record<string, any>  // v2 long-form — retention details
   summary: string  // Plain language summary of why this video works/doesn't
   tips: string[]  // Actionable improvement tips
 }
@@ -386,7 +392,8 @@ export async function analyzeBatch(
         errors.push(`${videoId}: DB update failed — ${updateError.message}`)
       } else {
         analyzedCount++
-        console.log(`[VideoAnalyzer] ✅ ${videoId} — score: ${analysis.overall_score}/10`)
+        const score = analysis.scorecard?.weighted_total ?? analysis.overall_score ?? '?'
+        console.log(`[VideoAnalyzer] ✅ ${videoId} — score: ${score}/10`)
       }
     } catch (err: any) {
       if (err.message?.includes('429') || err.message?.includes('RATE_LIMIT')) {
