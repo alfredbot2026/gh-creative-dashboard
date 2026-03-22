@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   const { batchSize = 25 } = await req.json().catch(() => ({}))
 
   try {
-    const result = await analyzeBatch(userId, Math.min(batchSize, 50))
+    const result = await analyzeBatch(userId, Math.min(batchSize, 50), supabase)
     return NextResponse.json(result)
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

@@ -306,11 +306,14 @@ export interface BatchAnalysisResult {
  */
 export async function analyzeBatch(
   userId: string,
-  batchSize: number = 25
+  batchSize: number = 25,
+  externalSupabase?: any
 ): Promise<BatchAnalysisResult> {
-  // Dynamic import to avoid issues in non-server contexts
-  const { createClient } = await import('@/lib/supabase/server')
-  const supabase = await createClient()
+  let supabase = externalSupabase
+  if (!supabase) {
+    const { createClient } = await import('@/lib/supabase/server')
+    supabase = await createClient()
+  }
 
   // Get YouTube videos that haven't been deep-analyzed yet
   // Paginate to handle >1000 rows
