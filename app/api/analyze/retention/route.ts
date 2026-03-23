@@ -117,13 +117,16 @@ export async function POST(req: NextRequest) {
       .order('published_at', { ascending: false })
       .range(offset, offset + 999)
 
-    if (!data || data.length === 0) break
+    if (!data || data.length === 0) { console.log(`[Retention] No data at offset ${offset}`); break }
 
+    let pageWithout = 0
     for (const v of data) {
       if (!v.metrics?.retention_curve && allVideos.length < limit) {
         allVideos.push(v)
+        pageWithout++
       }
     }
+    console.log(`[Retention] Page offset=${offset}: ${data.length} rows, ${pageWithout} without retention`)
     if (data.length < 1000) break
     offset += 1000
   }
@@ -140,10 +143,13 @@ export async function POST(req: NextRequest) {
   let errors: string[] = []
   let quotaExhausted = false
 
+  console.log(`[Retention] Processing ${toProcess.length} videos`)
   for (const video of toProcess) {
     try {
       await new Promise(r => setTimeout(r, DELAY_MS))
+      console.log(`[Retention] Fetching curve for ${video.platform_id}`)
       const curve = await fetchRetentionCurve(accessToken, video.platform_id, video.published_at)
+      console.log(`[Retention] Result for ${video.platform_id}: ${curve ? curve.length + ' points' : 'null/empty'}`)
 
       if (curve) {
         const updatedMetrics = { ...video.metrics, retention_curve: curve }
@@ -153,6 +159,15 @@ export async function POST(req: NextRequest) {
           .eq('id', video.id)
           .eq('user_id', userId)
         fetched++
+      } else {
+        // Mark as "no data available" so we don't retry forever
+        const updatedMetrics = { ...video.metrics, retention_curve: 'no_data' }
+        await supabase
+          .from('content_ingest')
+          .update({ metrics: updatedMetrics })
+          .eq('id', video.id)
+          .eq('user_id', userId)
+        console.log(`[Retention] No data for ${video.platform_id} — marked as no_data`)
       }
     } catch (err: any) {
       if (err.message?.includes('QUOTA_EXCEEDED') || err.message?.includes('429')) {
