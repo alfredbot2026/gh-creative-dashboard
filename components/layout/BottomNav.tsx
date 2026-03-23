@@ -7,6 +7,7 @@ import styles from './BottomNav.module.css'
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/create', label: 'Create' },
+  { href: '/structures', label: 'Structures' },
   { href: '/insights', label: 'Insights' },
   { href: '/library', label: 'Library' },
 ]
