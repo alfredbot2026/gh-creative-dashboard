@@ -54,7 +54,7 @@ const GOAL_GROUPS: { funnel: Funnel; label: string; goals: { id: ContentGoal; la
 // Flat list for lookups
 const ALL_GOALS = GOAL_GROUPS.flatMap(g => g.goals)
 
-const VIDEO_PLATFORMS: Platform[] = ['reels', 'youtube']
+const STRUCTURE_PLATFORMS: Platform[] = ['reels', 'youtube', 'facebook-ad', 'carousel', 'static-image']
 
 const LOADING_MESSAGES = [
   'Pulling from your knowledge base...',
@@ -116,9 +116,12 @@ function CreateWizard() {
   const filteredStructures = structures.filter(s => {
     if (platform === 'reels') return s.content_type === 'reel'
     if (platform === 'youtube') return s.content_type === 'youtube'
-    if (platform === 'facebook-ad') return s.content_type === 'ad'
+    if (platform === 'facebook-ad' || platform === 'carousel' || platform === 'static-image') return s.content_type === 'ad'
+    if (platform === 'facebook-post') return s.content_type === 'story'
     return false
   })
+
+  const hasStructures = STRUCTURE_PLATFORMS.includes(platform) || filteredStructures.length > 0
 
   const goTo = (next: WizardStep, dir: 'forward' | 'back' = 'forward') => {
     setDirection(dir)
@@ -234,7 +237,7 @@ function CreateWizard() {
   }
 
   const stepIndex = ['mode', 'platform', 'goal', 'structure', 'topic'].indexOf(step)
-  const totalSteps = VIDEO_PLATFORMS.includes(platform) ? 5 : 4
+  const totalSteps = hasStructures ? 5 : 4
   const progressPct = stepIndex >= 0 ? ((stepIndex + 1) / totalSteps) * 100 : 0
 
   return (
@@ -310,7 +313,7 @@ function CreateWizard() {
                       className={`${styles.optionCard} ${goal === g.id ? styles.optionSelected : ''}`}
                       onClick={() => {
                         setGoal(g.id)
-                        setTimeout(() => goTo(VIDEO_PLATFORMS.includes(platform) ? 'structure' : 'topic'), 150)
+                        setTimeout(() => goTo(hasStructures ? 'structure' : 'topic'), 150)
                       }}
                     >
                       {g.label}
@@ -369,7 +372,7 @@ function CreateWizard() {
       {/* === TOPIC === */}
       {step === 'topic' && (
         <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
-          <button className={styles.backBtn} onClick={() => goTo(VIDEO_PLATFORMS.includes(platform) ? 'structure' : 'goal', 'back')}>
+          <button className={styles.backBtn} onClick={() => goTo(hasStructures ? 'structure' : 'goal', 'back')}>
             <ArrowLeft size={16} /> Back
           </button>
           <h1 className={styles.stepTitle}>What&apos;s it about?</h1>
