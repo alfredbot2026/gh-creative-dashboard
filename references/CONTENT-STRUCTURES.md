@@ -5,6 +5,60 @@
 
 ---
 
+## TIMING RULES (Universal Clock)
+
+### Short-Form (Reels / Shorts / TikTok)
+
+| Second | Element | Rule | Source |
+|--------|---------|------|--------|
+| 0-0.1s | First frame | NO dead space. Even 0.1s black = 5x fewer views | Personal Brand Launch |
+| 0-1s | Written hook | 3-6 word text overlay on screen | Cochran |
+| 0-3s | Verbal hook | Decides who watches. Transition ON second 3 ("X-factor") | Chung |
+| 0-3s | Visual hook | 3-6 cuts/shots (high performers). 1 static shot = low performer | Personal Brand Launch |
+| 3-5s | Super Hook | ONE line establishing credibility immediately after hook | Chung, Cochran |
+| 5-7s | Context | 1-2 sentences background (time, place, situation) | Chung |
+| Every 2s | Scene changes | New shot or angle every 2 seconds | Personal Brand Launch |
+| Every 7-10s | Re-hooks | Attention resets: "But here's where it gets crazy..." | Chung |
+| Middle | Value | Actionable content must be deliverable in <30 seconds | Personal Brand Launch |
+| End | CTA | Natural next step, not hard pitch | Chung, all |
+
+**Ideal Lengths:**
+- 🔥 **30-60s** — Sweet spot for educational/story (gets followers)
+- ❌ **7-15s** — Only trends/aesthetic (gets views, not followers)
+- ⚡ **8s** — B-roll lead magnets (Cochran DM funnel method)
+
+**Text Overlay Rules (Cochran):**
+- 3-6 word visual hook at the START (acts as thumbnail for short-form)
+- Less than 33% "functional words" (this, I, you, he, in, on, at, and, but) — they kill retention
+- Test first 3 seconds 10-20 times to find the winning hook
+
+**Post-Production:**
+- 1.1x speed in CapCut (Chung) — snappier without sounding unnatural
+- 1.05x speed + slight pitch increase (Cochran) — subconscious anti-boredom
+- Trim ALL dead space between sentences (every millisecond counts)
+
+### Long-Form (YouTube)
+
+| Window | Element | Rule | Source |
+|--------|---------|------|--------|
+| 0-15s | Hook window | 15-20s MAX to capture attention | Ralston |
+| 0-60s | 4 C's intro | Call out → Credibility → Compass → Core Learning | Ralston |
+| First 60s | Value front-load | Deliver first useful nugget HERE. Viewer assumes rest = equally dense | Ralston |
+| First 30s | Retention metric | The make-or-break window — track this to decide if format works | Ralston |
+| Ongoing | Value/minute | Optimize for value per minute, even per sentence | Ralston |
+| Ongoing | Open loops | Sprinkle value throughout, use tension + open loops to keep watching | Ralston |
+
+**Ideal Lengths:**
+- **15-30 min** — Standard: ONE concept, FIVE stories/examples
+- **25 min+** — Deep dives/masterclass (anything less isn't credible)
+
+**Pacing (Ralston - educational):**
+- Do NOT use "retention editing hacks" (graphics every 13s) — they distract from learning
+- The greatest retention hack IS learning — if they're learning, they stay
+- Track first 30s retention to validate intro format
+
+---
+
 ## HOOK ARCHITECTURES
 
 ### The Triple Hook (Chris Chung)
