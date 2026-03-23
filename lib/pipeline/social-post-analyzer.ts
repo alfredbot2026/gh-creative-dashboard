@@ -10,10 +10,82 @@
  * - Known metrics (for context, not for scoring — scoring is content quality)
  */
 import { GoogleGenAI } from '@google/genai'
+import { writeFile, unlink } from 'fs/promises'
+import { join } from 'path'
+import { tmpdir } from 'os'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const MODEL = 'gemini-3-flash-preview'
 const DELAY_BETWEEN_CALLS_MS = 4000  // 4s = safe under 15 RPM
+
+/**
+ * Download a video from Meta CDN and upload to Gemini File API.
+ * Returns the Gemini file URI for use in analysis prompts.
+ */
+async function downloadAndUploadVideo(
+  mediaUrl: string,
+  ai: InstanceType<typeof GoogleGenAI>
+): Promise<string | null> {
+  const tmpPath = join(tmpdir(), `reel_${Date.now()}.mp4`)
+  try {
+    // Download from Meta CDN
+    const res = await fetch(mediaUrl)
+    if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+    const buffer = Buffer.from(await res.arrayBuffer())
+    await writeFile(tmpPath, buffer)
+
+    // Upload to Gemini File API
+    const file = await ai.files.upload({
+      file: tmpPath,
+      config: { mimeType: 'video/mp4' }
+    })
+
+    // Wait for processing
+    let uploadedFile = file
+    let retries = 0
+    while (uploadedFile.state === 'PROCESSING' && retries < 15) {
+      await delay(2000)
+      uploadedFile = await ai.files.get({ name: uploadedFile.name! })
+      retries++
+    }
+
+    if (uploadedFile.state !== 'ACTIVE') {
+      console.warn(`[SocialAnalyzer] Video upload state: ${uploadedFile.state}`)
+      return null
+    }
+
+    return uploadedFile.uri || null
+  } catch (err: any) {
+    console.warn(`[SocialAnalyzer] Video download/upload failed: ${err.message}`)
+    return null
+  } finally {
+    // Cleanup temp file
+    try { await unlink(tmpPath) } catch {}
+  }
+}
+
+/**
+ * Fetch the actual video URL from Meta Graph API.
+ * Works for both IG and FB media.
+ */
+async function getMetaMediaUrl(
+  platformId: string,
+  accessToken: string
+): Promise<{ mediaUrl: string | null; thumbnailUrl: string | null }> {
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v22.0/${platformId}?fields=media_url,thumbnail_url&access_token=${accessToken}`
+    )
+    if (!res.ok) return { mediaUrl: null, thumbnailUrl: null }
+    const data = await res.json()
+    return {
+      mediaUrl: data.media_url || null,
+      thumbnailUrl: data.thumbnail_url || null,
+    }
+  } catch {
+    return { mediaUrl: null, thumbnailUrl: null }
+  }
+}
 
 export interface SocialPostAnalysis {
   hook_analysis: {
@@ -260,7 +332,10 @@ export async function analyzeSocialPost(
   caption: string,
   platform: 'instagram' | 'facebook',
   mediaType: string,
-  imageUrl?: string | null
+  options?: {
+    videoFileUri?: string | null  // Gemini File API URI (uploaded video)
+    thumbnailUrl?: string | null
+  }
 ): Promise<SocialPostAnalysis> {
   if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not configured')
 
@@ -273,23 +348,23 @@ export async function analyzeSocialPost(
 
   const parts: any[] = []
   
-  // Add image if available and accessible
-  if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
-    try {
-      parts.push({
-        fileData: {
-          fileUri: imageUrl,
-          mimeType: 'image/*',
-        },
-      })
-    } catch {
-      // Image not accessible, continue with text only
-    }
+  // Add video if uploaded to Gemini (best quality analysis)
+  if (options?.videoFileUri) {
+    parts.push({
+      fileData: {
+        fileUri: options.videoFileUri,
+        mimeType: 'video/mp4',
+      },
+    })
   }
 
   // Caption text
   const captionText = caption || '(no caption)'
-  parts.push({ text: `CAPTION:\n${captionText}\n\nMEDIA TYPE: ${mediaType}\nPLATFORM: ${platform}\n\n${prompt}` })
+  const contextNote = options?.videoFileUri 
+    ? 'Analyze BOTH the video content AND the caption below.'
+    : 'Analyze the caption below. No video available — evaluate based on text only.'
+  
+  parts.push({ text: `${contextNote}\n\nCAPTION:\n${captionText}\n\nMEDIA TYPE: ${mediaType}\nPLATFORM: ${platform}\n\n${prompt}` })
 
   const response = await ai.models.generateContent({
     model: MODEL,
@@ -323,16 +398,30 @@ export async function analyzeSocialBatch(
   batchSize: number = 20,
   externalSupabase?: any
 ): Promise<SocialBatchResult> {
+  if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not configured')
+
   let supabase = externalSupabase
   if (!supabase) {
     const { createClient } = await import('@/lib/supabase/server')
     supabase = await createClient()
   }
 
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+
+  // Get Meta access token for video downloads
+  const { data: tokenRow } = await supabase
+    .from('meta_tokens')
+    .select('access_token')
+    .eq('user_id', userId)
+    .limit(1)
+    .single()
+  
+  const metaToken = tokenRow?.access_token || null
+
   // Get posts that haven't been deep-analyzed yet
   const allPosts: any[] = []
   let offset = 0
-  const needed = batchSize * 2 // fetch extra to filter
+  const needed = batchSize * 3 // fetch extra to filter
   
   while (allPosts.length < needed) {
     const { data: page } = await supabase
@@ -350,37 +439,60 @@ export async function analyzeSocialBatch(
     offset += 1000
   }
 
-  // Skip posts with empty/null captions (nothing to analyze)
-  const withCaptions = allPosts.filter(p => p.caption && p.caption.trim().length > 5)
-  const noCaptions = allPosts.length - withCaptions.length
-
   // Sort by engagement (highest first)
-  const sorted = withCaptions.sort((a, b) => {
+  const sorted = allPosts.sort((a: any, b: any) => {
     const aEng = (a.metrics?.likes || 0) + (a.metrics?.comments || 0) + (a.metrics?.shares || 0)
     const bEng = (b.metrics?.likes || 0) + (b.metrics?.comments || 0) + (b.metrics?.shares || 0)
     return bEng - aEng
   }).slice(0, batchSize)
 
   if (sorted.length === 0) {
-    return { analyzed: 0, errors: [], skipped: noCaptions, remaining: 0, quota_used: 0 }
+    return { analyzed: 0, errors: [], skipped: 0, remaining: 0, quota_used: 0 }
   }
 
   let analyzedCount = 0
-  let skipped = noCaptions
+  let skipped = 0
   const errors: string[] = []
 
   for (const post of sorted) {
     try {
-      const imageUrl: string | null = null  // IG/FB media URLs are auth-gated, can't send to Gemini
       const mediaType = post.content_type || 'unknown'
+      const isVideo = ['VIDEO', 'REEL', 'reel', 'video'].includes(mediaType)
+      const hasCaption = post.caption && post.caption.trim().length > 5
 
-      console.log(`[SocialAnalyzer] Analyzing ${platform} ${post.platform_id} (${post.caption?.slice(0, 40)}...)`)
+      // Skip posts with no caption AND no video (nothing to analyze)
+      if (!hasCaption && !isVideo) {
+        skipped++
+        // Mark as analyzed with minimal data so we don't re-process
+        await supabase
+          .from('content_ingest')
+          .update({
+            deep_analysis: { skipped: true, reason: 'no caption and not a video' },
+            deep_analyzed_at: new Date().toISOString(),
+          })
+          .eq('id', post.id)
+        continue
+      }
+
+      console.log(`[SocialAnalyzer] Analyzing ${platform} ${post.platform_id} (${isVideo ? 'VIDEO' : 'IMAGE'}: ${(post.caption || '').slice(0, 40)}...)`)
+
+      // For videos: download from Meta and upload to Gemini
+      let videoFileUri: string | null = null
+      if (isVideo && metaToken) {
+        const { mediaUrl } = await getMetaMediaUrl(post.platform_id, metaToken)
+        if (mediaUrl) {
+          videoFileUri = await downloadAndUploadVideo(mediaUrl, ai)
+          if (videoFileUri) {
+            console.log(`[SocialAnalyzer] 📹 Video uploaded to Gemini`)
+          }
+        }
+      }
 
       const analysis = await analyzeSocialPost(
-        post.caption,
+        post.caption || '',
         platform as 'instagram' | 'facebook',
         mediaType,
-        imageUrl
+        { videoFileUri }
       )
 
       const score = analysis.scorecard?.weighted_total ?? '?'
@@ -394,14 +506,14 @@ export async function analyzeSocialBatch(
         .eq('id', post.id)
 
       analyzedCount++
-      console.log(`[SocialAnalyzer] ✅ ${post.platform_id} — score: ${score}/10`)
+      console.log(`[SocialAnalyzer] ✅ ${post.platform_id} — score: ${score}/10 ${videoFileUri ? '(with video)' : '(caption only)'}`)
 
-      // Rate limit delay
+      // Rate limit delay (extra time for video uploads)
       if (analyzedCount < sorted.length) {
-        await delay(DELAY_BETWEEN_CALLS_MS)
+        await delay(videoFileUri ? DELAY_BETWEEN_CALLS_MS * 2 : DELAY_BETWEEN_CALLS_MS)
       }
     } catch (err: any) {
-      if (err.message?.includes('429') || err.message?.includes('RATE_LIMIT')) {
+      if (err.message?.includes('429') || err.message?.includes('RATE_LIMIT') || err.message?.includes('Resource has been exhausted')) {
         console.warn(`[SocialAnalyzer] Rate limited. Stopping batch.`)
         errors.push(`Rate limited after ${analyzedCount} posts`)
         break
