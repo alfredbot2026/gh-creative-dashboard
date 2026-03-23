@@ -45,35 +45,26 @@ interface Technique {
 }
 
 const TYPE_TABS = [
-  { key: 'all', label: 'All', emoji: '📚' },
-  { key: 'reel', label: 'Reels', emoji: '🎬' },
-  { key: 'youtube', label: 'YouTube', emoji: '▶️' },
-  { key: 'ad', label: 'Ads', emoji: '📢' },
-  { key: 'story', label: 'Stories', emoji: '📖' },
+  { key: 'all', label: 'All' },
+  { key: 'reel', label: 'Reels' },
+  { key: 'youtube', label: 'YouTube' },
+  { key: 'ad', label: 'Ads' },
+  { key: 'story', label: 'Stories' },
 ]
 
 const TECHNIQUE_TABS = [
-  { key: 'all', label: 'All', emoji: '🧰' },
-  { key: 'hook', label: 'Hooks', emoji: '🪝' },
-  { key: 'retention', label: 'Retention', emoji: '🧲' },
-  { key: 'algorithm', label: 'Algorithm', emoji: '⚡' },
-  { key: 'production', label: 'Production', emoji: '🎥' },
-  { key: 'strategy', label: 'Strategy', emoji: '🎯' },
+  { key: 'all', label: 'All' },
+  { key: 'hook', label: 'Hooks' },
+  { key: 'retention', label: 'Retention' },
+  { key: 'algorithm', label: 'Algorithm' },
+  { key: 'production', label: 'Production' },
+  { key: 'strategy', label: 'Strategy' },
 ]
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner: '#2d8a4e',
   intermediate: '#c17a2f',
   advanced: '#ba1a1a',
-}
-
-const PURPOSE_EMOJI: Record<string, string> = {
-  educate: '📖',
-  sell: '💰',
-  inspire: '✨',
-  story: '📝',
-  prove: '🏆',
-  trend: '📈',
 }
 
 function formatDuration(min: number | null, max: number | null): string {
@@ -145,13 +136,13 @@ export default function StructuresPage() {
           className={`${styles.modeBtn} ${viewMode === 'structures' ? styles.modeBtnActive : ''}`}
           onClick={() => setViewMode('structures')}
         >
-          📐 Structures
+          Structures
         </button>
         <button
           className={`${styles.modeBtn} ${viewMode === 'techniques' ? styles.modeBtnActive : ''}`}
           onClick={() => setViewMode('techniques')}
         >
-          🧰 Techniques
+          Techniques
         </button>
       </div>
 
@@ -170,7 +161,6 @@ export default function StructuresPage() {
               else setTechniqueCategory(tab.key)
             }}
           >
-            <span className={styles.tabEmoji}>{tab.emoji}</span>
             {tab.label}
           </button>
         ))}
@@ -198,8 +188,8 @@ export default function StructuresPage() {
             <Link href={`/structures/${s.slug}`} key={s.id} className={styles.card}>
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>
-                  {s.is_cutting_edge && <span className={styles.cuttingEdge}>⭐</span>}
                   {s.name}
+                  {s.is_cutting_edge && <span className={styles.cuttingEdge}>New</span>}
                 </h3>
                 <span
                   className={styles.difficultyBadge}
@@ -229,7 +219,7 @@ export default function StructuresPage() {
                   {formatDuration(s.ideal_length_min, s.ideal_length_max)}
                 </span>
                 <span className={styles.cardMeta}>
-                  {s.purpose.map(p => PURPOSE_EMOJI[p] || '').join(' ')}
+                  {s.purpose.join(', ')}
                 </span>
                 <span className={styles.cardSource}>{s.source_creator}</span>
               </div>
@@ -248,8 +238,8 @@ export default function StructuresPage() {
             <div key={t.id} className={styles.techniqueCard}>
               <div className={styles.techniqueHeader}>
                 <h3 className={styles.techniqueTitle}>
-                  {t.is_cutting_edge && <span className={styles.cuttingEdge}>⭐</span>}
                   {t.name}
+                  {t.is_cutting_edge && <span className={styles.cuttingEdge}>New</span>}
                 </h3>
                 <span className={styles.categoryBadge}>{t.category}</span>
               </div>

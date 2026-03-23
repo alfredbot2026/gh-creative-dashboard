@@ -93,7 +93,7 @@
   color: white;
   border-color: var(--color-accent);
 }
-.tabEmoji { font-size: 0.9rem; }
+
 
 /* Search */
 .searchBar { margin-bottom: var(--space-md); }
@@ -164,7 +164,19 @@
   align-items: center;
   gap: 6px;
 }
-.cuttingEdge { font-size: 0.9rem; }
+.cuttingEdge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-accent);
+  background: var(--color-surface-low);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-accent);
+  margin-left: 6px;
+  vertical-align: middle;
+}
 .difficultyBadge {
   font-family: var(--font-body);
   font-size: 0.7rem;

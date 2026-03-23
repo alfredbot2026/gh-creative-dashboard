@@ -38,19 +38,19 @@ interface Structure {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  reel: '🎬 Reel',
-  youtube: '▶️ YouTube',
-  ad: '📢 Ad',
-  story: '📖 Story',
+  reel: 'Reel',
+  youtube: 'YouTube',
+  ad: 'Ad',
+  story: 'Story',
 }
 
 const PURPOSE_LABELS: Record<string, string> = {
-  educate: '📖 Educate',
-  sell: '💰 Sell',
-  inspire: '✨ Inspire',
-  story: '📝 Story',
-  prove: '🏆 Prove',
-  trend: '📈 Trend',
+  educate: 'Educate',
+  sell: 'Sell',
+  inspire: 'Inspire',
+  story: 'Story',
+  prove: 'Prove',
+  trend: 'Trend',
 }
 
 const DIFFICULTY_COLORS: Record<string, string> = {
@@ -103,7 +103,6 @@ export default function StructureDetailPage() {
       <div className={styles.header}>
         <div className={styles.headerRow}>
           <h1 className={styles.title}>
-            {structure.is_cutting_edge && <span>⭐</span>}
             {structure.name}
           </h1>
         </div>
