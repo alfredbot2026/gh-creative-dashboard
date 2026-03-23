@@ -1,13 +1,31 @@
 import { generateJSON } from '@/lib/llm/client'
 import { getGenerationContext, getContextWithPinnedSelections, getBrandContext } from './kb-retriever'
-import { buildShortFormPrompt } from './shortform-prompt'
+import { buildShortFormPrompt, buildStructureAwareShortFormPrompt } from './shortform-prompt'
+import { buildStructurePromptSection, buildStructureOutputHint } from './structure-prompt'
 import type { GenerateShortFormRequest, GenerateShortFormResponse, ShortFormScript } from './types'
 import type { BrandStyleGuide } from '@/lib/brand/types'
+import { createClient } from '@supabase/supabase-js'
+
+async function fetchStructure(slug: string) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const { data } = await supabase
+    .from('content_structures')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+  return data
+}
 
 export async function generateShortFormScript(
   request: GenerateShortFormRequest
 ): Promise<GenerateShortFormResponse> {
-  // 1. Retrieve KB context — with pinned selections if provided
+  // 1. If structure_slug provided, fetch structure for structure-aware generation
+  const structure = request.structure_slug ? await fetchStructure(request.structure_slug) : null
+
+  // 2. Retrieve KB context — with pinned selections if provided
   const hasPinned = request.selected_hook_id || request.selected_framework_id
   const { entries: kbEntries, pinnedHook, pinnedFramework } = hasPinned
     ? await getContextWithPinnedSelections(
@@ -18,13 +36,20 @@ export async function generateShortFormScript(
       )
     : { ...(await getGenerationContext('short-form', ['hook_library', 'scripting_framework', 'virality_science', 'content_funnel', 'platform_intelligence'])), pinnedHook: undefined, pinnedFramework: undefined }
 
-  // 2. Get brand style guide
+  // 3. Get brand style guide
   const brandRaw = await getBrandContext()
   if (!brandRaw) throw new Error('Brand style guide not configured. Go to /settings first.')
   const brand = brandRaw as unknown as BrandStyleGuide
 
-  // 3. Build prompt
-  const prompt = buildShortFormPrompt(request, kbEntries, brand, pinnedHook, pinnedFramework)
+  // 4. Build prompt — structure-aware if structure provided
+  let prompt: string
+  if (structure) {
+    const structureSection = buildStructurePromptSection(structure)
+    const outputHint = buildStructureOutputHint(structure)
+    prompt = buildStructureAwareShortFormPrompt(request, kbEntries, brand, structureSection, outputHint)
+  } else {
+    prompt = buildShortFormPrompt(request, kbEntries, brand, pinnedHook, pinnedFramework)
+  }
 
   // 4. Call Gemini with JSON mode
   // Note: generateJSON handles stripping markdown fences and parsing

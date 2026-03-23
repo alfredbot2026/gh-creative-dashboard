@@ -110,3 +110,82 @@ Rules:
 - Caption must follow brand voice rules
 - Use Taglish naturally — not forced`
 }
+
+/**
+ * Structure-aware prompt builder.
+ * When a structure is selected, it REPLACES the generic framework section
+ * and forces the AI to output scenes matching the structure's blocks.
+ */
+export function buildStructureAwareShortFormPrompt(
+  request: GenerateShortFormRequest,
+  kbEntries: KnowledgeEntry[],
+  brand: BrandStyleGuide,
+  structureSection: string,
+  outputHint: string
+): string {
+  const viralityEntries = kbEntries.filter(e => e.category === 'virality_science')
+  const funnelEntries = kbEntries.filter(e => e.category === 'content_funnel')
+
+  return `You are a content strategist for ${brand.creator_description || 'a creator'}.
+${request.content_purpose ? `\nContent Purpose: ${request.content_purpose.toUpperCase()} — optimize for this intent.\n` : ''}
+## Brand Voice Rules (MANDATORY)
+- Tone: ${brand.voice_rubric.tone_descriptors.join(', ')}
+- Language: Taglish (Filipino-English mix, ~${Math.round(brand.voice_rubric.taglish_ratio.target * 100)}% Filipino)
+- Formality: ${brand.voice_rubric.formality_levels[request.platform] || 'conversational'}
+- NEVER use these words: ${brand.voice_rubric.banned_ai_words.join(', ')}
+- Example phrases that match the voice: ${brand.voice_rubric.example_phrases.slice(0, 5).join(' | ')}
+
+${structureSection}
+
+## Virality Patterns (apply where relevant)
+${viralityEntries.map(v => `- **${v.title}**: ${v.content}`).join('\n')}
+
+## Content Funnel Context
+${funnelEntries.map(f => `- **${f.title}**: ${f.content}`).join('\n')}
+
+${request.product_context ? `## Product Context
+- Product: ${request.product_context.name}
+- Description: ${request.product_context.description || 'N/A'}
+- Price: ${request.product_context.price || 'N/A'}
+- Offer: ${request.product_context.offer_details || 'N/A'}
+- Target audience: ${request.product_context.target_audience || 'N/A'}
+- USPs: ${request.product_context.usps?.join(', ') || 'N/A'}` : ''}
+
+## Task
+Create a ${request.platform} script about: "${request.topic}"
+${request.angle ? `Creative angle: ${request.angle}` : ''}
+
+## Output — JSON with structure-mapped scenes
+${outputHint}
+
+Return a JSON object with:
+{
+  "title": "video title",
+  "scenes": [
+    {
+      "block_id": "the structure block id",
+      "block_label": "the structure block label",
+      "timing": "the block timing",
+      "script_text": "what's said/shown — the actual content for this block",
+      "visual_direction": "camera angle, movement, b-roll notes",
+      "on_screen_text": "text overlay for this block (if applicable)",
+      "production_notes": "editing/production notes"
+    }
+  ],
+  "total_duration_seconds": ${request.target_duration || 45},
+  "topic": "${request.topic}",
+  "angle": "the creative angle",
+  "cta": "call to action",
+  "hashtags": [],
+  "caption_draft": "ready-to-post caption in Taglish",
+  "structure_used": "name of the structure"
+}
+
+Rules:
+- Follow the structure EXACTLY — one scene per block, in order
+- Total duration should match structure's ideal length
+- Each scene must have visual direction (this is a shooting script)
+- Caption must follow brand voice rules
+- Use Taglish naturally — not forced
+- Apply virality patterns where they naturally fit within the structure`
+}

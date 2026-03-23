@@ -31,6 +31,7 @@ export interface GenerateShortFormRequest {
   target_duration?: number      // seconds, default 30-60
   style?: 'tutorial' | 'storytelling' | 'proof' | 'mistake' | 'hook-first'
   content_purpose?: ContentPurpose
+  structure_slug?: string        // Content structure to follow (overrides framework selection)
   selected_hook_id?: string      // KB entry id for pinned hook
   selected_framework_id?: string // KB entry id for pinned framework
   product_context?: {

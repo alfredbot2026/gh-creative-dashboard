@@ -83,3 +83,105 @@
   color: var(--color-primary);
   font-size: 0.875rem;
 }
+
+/* Structure Picker */
+.selectedStructure {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-low);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+}
+.selectedStructureInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.selectedStructureInfo strong {
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+.structureDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+.structureBlocks {
+  font-size: 0.7rem;
+  color: var(--color-accent);
+  font-family: var(--font-mono, monospace);
+}
+.changeStructure {
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.pickStructureBtn {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.pickStructureBtn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-low);
+}
+.structureGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: var(--space-xs);
+  max-height: 400px;
+  overflow-y: auto;
+}
+.structureCard {
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.structureCard:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-low);
+}
+.structureCardTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+.structureCardDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.structureCardMeta {
+  font-size: 0.65rem;
+  color: var(--color-text-dim);
+}
+.viewAllStructures {
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  text-align: center;
+  padding: var(--space-xs);
+  text-decoration: none;
+}
+.viewAllStructures:hover { text-decoration: underline; }

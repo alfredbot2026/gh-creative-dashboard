@@ -44,16 +44,40 @@ function ShortFormCreationPageInner() {
     angle: ''
   })
 
-  // Pre-fill from query params (Today page suggestions)
+  // Structure selection state
+  const [structures, setStructures] = useState<any[]>([])
+  const [selectedStructure, setSelectedStructure] = useState<any | null>(null)
+  const [showStructurePicker, setShowStructurePicker] = useState(false)
+
+  // Fetch available structures for reels
+  useEffect(() => {
+    fetch('/api/structures?type=reel')
+      .then(r => r.json())
+      .then(data => setStructures(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
+  // Pre-fill from query params (Today page suggestions or structure link)
   useEffect(() => {
     const topic = searchParams.get('topic')
     const purpose = searchParams.get('purpose')
-    if (topic || purpose) {
+    const structureSlug = searchParams.get('structure')
+    if (topic || purpose || structureSlug) {
       setFormData(prev => ({
         ...prev,
         ...(topic ? { topic } : {}),
         ...(purpose ? { content_purpose: purpose as ContentPurpose } : {}),
+        ...(structureSlug ? { structure_slug: structureSlug } : {}),
       }))
+      // If structure slug from URL, select it
+      if (structureSlug) {
+        fetch(`/api/structures/${structureSlug}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.structure) setSelectedStructure(data.structure)
+          })
+          .catch(() => {})
+      }
     }
   }, [searchParams])
 
@@ -118,6 +142,74 @@ function ShortFormCreationPageInner() {
             lane="short-form"
             onSelect={(params) => setFormData(prev => ({ ...prev, ...params as any }))}
           />
+
+          {/* Structure Picker */}
+          <div className={layout.formGroup}>
+            <label className={layout.label}>
+              <LayoutTemplate size={14} style={{display:'inline',verticalAlign:'middle',marginRight:4}} />
+              Content Structure <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(recommended)</span>
+            </label>
+            {selectedStructure ? (
+              <div className={styles.selectedStructure}>
+                <div className={styles.selectedStructureInfo}>
+                  <strong>{selectedStructure.is_cutting_edge ? '⭐ ' : ''}{selectedStructure.name}</strong>
+                  <span className={styles.structureDesc}>{selectedStructure.description}</span>
+                  <span className={styles.structureBlocks}>
+                    {selectedStructure.blocks.map((b: any) => b.label).join(' → ')}
+                  </span>
+                </div>
+                <button
+                  className={styles.changeStructure}
+                  onClick={() => {
+                    setSelectedStructure(null)
+                    setFormData(prev => ({ ...prev, structure_slug: undefined }))
+                    setShowStructurePicker(true)
+                  }}
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <button
+                className={styles.pickStructureBtn}
+                onClick={() => setShowStructurePicker(!showStructurePicker)}
+              >
+                {showStructurePicker ? 'Hide structures' : 'Pick a proven structure →'}
+              </button>
+            )}
+            {showStructurePicker && !selectedStructure && (
+              <div className={styles.structureGrid}>
+                {structures.map(s => (
+                  <button
+                    key={s.id}
+                    className={styles.structureCard}
+                    onClick={() => {
+                      setSelectedStructure(s)
+                      setFormData(prev => ({ ...prev, structure_slug: s.slug }))
+                      setShowStructurePicker(false)
+                    }}
+                  >
+                    <div className={styles.structureCardTitle}>
+                      {s.is_cutting_edge ? '⭐ ' : ''}{s.name}
+                    </div>
+                    <div className={styles.structureCardDesc}>{s.description}</div>
+                    <div className={styles.structureCardMeta}>
+                      {s.ideal_length_min && s.ideal_length_max
+                        ? `${s.ideal_length_min}-${s.ideal_length_max}s`
+                        : ''}
+                      {' · '}
+                      {s.blocks.length} blocks
+                      {' · '}
+                      {s.source_creator}
+                    </div>
+                  </button>
+                ))}
+                <a href="/structures" className={styles.viewAllStructures}>
+                  View all structures →
+                </a>
+              </div>
+            )}
+          </div>
 
           <div className={layout.formGroup}>
             <label className={layout.label}>What&apos;s the vibe? <span style={{color:'var(--color-text-muted)',fontWeight:400}}>(optional)</span></label>
