@@ -5,6 +5,12 @@ export interface ScriptScene {
   script_text: string           // what's said/shown as text
   hook_type?: string            // if this scene uses a specific hook pattern
   b_roll_suggestion?: string
+  // Structure block fields (when generated from a structure)
+  block_id?: string             // e.g. 'hook', 'process', 'cta'
+  block_label?: string          // e.g. 'Show Result', '3-Step Process'
+  timing?: string               // e.g. '0-3s'
+  on_screen_text?: string       // text overlay suggestion
+  production_notes?: string     // production tips
 }
 
 export interface ShortFormScript {

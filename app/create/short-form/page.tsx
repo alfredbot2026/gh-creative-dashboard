@@ -4,12 +4,14 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import SceneCard from '@/components/create/SceneCard'
+import BlockEditor from '@/components/create/BlockEditor'
+import type { RegenerateContext } from '@/components/create/BlockEditor'
 import QualityBadge from '@/components/create/QualityBadge'
 import PurposePicker from '@/components/create/PurposePicker'
 import ProductSelect from '@/components/create/ProductSelect'
 import TemplatePicker from '@/components/create/TemplatePicker'
 import { addScriptToCalendar } from '@/app/actions/create'
-import type { GenerateShortFormRequest, GenerateShortFormResponse, ContentPurpose } from '@/lib/create/types'
+import type { GenerateShortFormRequest, GenerateShortFormResponse, ContentPurpose, ScriptScene } from '@/lib/create/types'
 import {
   Wand2,
   Sparkles,
@@ -105,6 +107,30 @@ function ShortFormCreationPageInner() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRegenerateBlock = async (blockIndex: number, context: RegenerateContext) => {
+    const res = await fetch('/api/create/regenerate-block', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        blockIndex,
+        block: context.block,
+        allBlocks: context.allBlocks,
+        topic: formData.topic,
+        platform: formData.platform,
+      }),
+    })
+    if (!res.ok) throw new Error('Failed to regenerate block')
+    return await res.json()
+  }
+
+  const handleScenesChange = (newScenes: ScriptScene[]) => {
+    if (!result) return
+    setResult({
+      ...result,
+      script: { ...result.script, scenes: newScenes },
+    })
   }
 
   const handleSaveToCalendar = async () => {
@@ -377,11 +403,14 @@ function ShortFormCreationPageInner() {
                 <div className={styles.hookText}>&ldquo;{result.script.hook}&rdquo;</div>
               </div>
 
-              <div>
-                {result.script.scenes.map(scene => (
-                  <SceneCard key={scene.scene_number} scene={scene} />
-                ))}
-              </div>
+              <BlockEditor
+                scenes={result.script.scenes}
+                structureSlug={formData.structure_slug}
+                topic={formData.topic}
+                platform={formData.platform}
+                onChange={handleScenesChange}
+                onRegenerateBlock={handleRegenerateBlock}
+              />
 
               <div className={styles.captionBox}>
                 <h4>Caption Draft</h4>
