@@ -110,7 +110,7 @@ export default function InsightsPage() {
     try {
       const res = await fetch(`/api/content/library?${params}`)
       const data = await res.json()
-      setItems(prev => append ? [...prev, ...data.items] : data.items)
+      setItems(prev => append ? [...prev, ...(data.items || [])] : (data.items || []))
       setStats(data.stats)
       setHasMore(data.has_more)
       setTotal(data.total)
