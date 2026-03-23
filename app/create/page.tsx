@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Film, Image as ImageIcon, LayoutTemplate, PlaySquare, Video, CheckCircle2, Copy, Save, Sparkles, RefreshCcw } from 'lucide-react'
 import styles from './create.module.css'
@@ -60,6 +61,7 @@ const FUNNEL_LABELS: Record<string, string> = {
 }
 
 function CreatePageInner() {
+  const router = useRouter()
   const [step, setStep] = useState<Step>('select')
   const [platform, setPlatform] = useState<Platform>('reels')
   const [contentType, setContentType] = useState<ContentType>('educate')
@@ -418,7 +420,14 @@ function CreatePageInner() {
               <button
                 key={p.id}
                 className={`${styles.platformRow} ${isSelected ? styles.platformSelected : ''}`}
-                onClick={() => setPlatform(p.id)}
+                onClick={() => {
+                  // Reels/TikTok and YouTube use the structure-aware creation flow
+                  if (p.id === 'reels' || p.id === 'youtube') {
+                    router.push(`/create/short-form${topic ? `?topic=${encodeURIComponent(topic)}` : ''}`)
+                    return
+                  }
+                  setPlatform(p.id)
+                }}
               >
                 <div className={styles.platformIconWrapper}>
                   <Icon size={20} className={isSelected ? styles.iconSelected : styles.iconMuted} />
