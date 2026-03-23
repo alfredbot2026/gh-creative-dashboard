@@ -260,12 +260,35 @@
 
 ---
 
-## Phase 4b — Content Engine V2: Visual
-**Goal:** Text overlay compositor, performance-driven overlay styles, image+text composition.
-**Status:** `NOT_STARTED`
-**Depends on:** Phase 4a, Phase 3.5
+## Phase 4b — Visual Studio + Carousel Engine
+**Goal:** Separate `/studio` page for all image/visual work. Image generator (Nano Banana UI), text carousel builder (static image + text overlays), visual carousel builder (AI-composed from winning ad layouts).
+**Status:** `IN_PROGRESS` 🔄
+**Depends on:** Phase 4a (structures), Phase 3.5 (performance data), Grace identity lock (8 refs)
+**Key decision:** `/create` = scripts only. `/studio` = all image work. (Rob, 2026-03-24)
 
-**Spec:** `specs/CONTENT-ENGINE-V2-VISION.md` (section: Image Generation)
+### Wave 1: Studio Page + Image Generator (~4 hrs)
+- `/studio` page with upload zone, free-form prompting, Grace character toggle
+- Style presets (product, lifestyle, promo, BTS), aspect ratio picker
+- Gallery of recent generations
+- `POST /api/studio/generate` — image gen with identity lock
+
+### Wave 2: Text Carousel — Low Quality (~5 hrs)
+- Upload ONE static image → AI writes story/script → text overlay changes per slide
+- Font picker (5-6 fonts), text color, overlay darkness, text position
+- Per-slide text editing, live preview
+- Server-side compositing via `sharp` or `canvas`
+- Export as individual PNGs or ZIP
+
+### Wave 3: Visual Carousel — High Quality (~8 hrs)
+- Upload product image → pick layout from winning ad reference library → AI recomposes
+- Two-pass: AI generates base image → compositor adds crisp text
+- Editable text overlays on the result
+- Reference ad layout library (categorized: product-centered, lifestyle, testimonial, comparison)
+
+### Wave 4: Polish + Export (~3 hrs)
+- PDF export, ZIP download, save to library, duplicate & edit
+
+**Spec:** `specs/phase-4b-visual-studio.md`
 
 ---
 
