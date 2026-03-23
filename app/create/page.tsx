@@ -21,18 +21,38 @@ const PLATFORMS = [
   { id: 'static-image' as Platform, label: 'Static Image' },
 ]
 
-const GOALS = [
-  { id: 'educate' as ContentGoal, label: 'Teach something' },
-  { id: 'story' as ContentGoal, label: 'Tell a story' },
-  { id: 'sell' as ContentGoal, label: 'Promote & sell' },
-  { id: 'inspire' as ContentGoal, label: 'Inspire' },
-  { id: 'prove' as ContentGoal, label: 'Show proof' },
-  { id: 'trend' as ContentGoal, label: 'Ride a trend' },
-  { id: 'debunk' as ContentGoal, label: 'Debunk a myth' },
-  { id: 'process' as ContentGoal, label: 'Show the process' },
-  { id: 'journey' as ContentGoal, label: 'Share my journey' },
-  { id: 'announce' as ContentGoal, label: 'Announce something' },
+type Funnel = 'attract' | 'trust' | 'convert'
+
+const GOAL_GROUPS: { funnel: Funnel; label: string; goals: { id: ContentGoal; label: string }[] }[] = [
+  {
+    funnel: 'attract', label: 'Attract',
+    goals: [
+      { id: 'trend', label: 'Ride a trend' },
+      { id: 'inspire', label: 'Inspire & motivate' },
+      { id: 'journey', label: 'Share my journey' },
+    ],
+  },
+  {
+    funnel: 'trust', label: 'Build Trust',
+    goals: [
+      { id: 'educate', label: 'Teach something' },
+      { id: 'story', label: 'Tell a story' },
+      { id: 'debunk', label: 'Debunk a myth' },
+      { id: 'process', label: 'Show the process' },
+    ],
+  },
+  {
+    funnel: 'convert', label: 'Convert',
+    goals: [
+      { id: 'prove', label: 'Show proof' },
+      { id: 'sell', label: 'Promote & sell' },
+      { id: 'announce', label: 'Announce something' },
+    ],
+  },
 ]
+
+// Flat list for lookups
+const ALL_GOALS = GOAL_GROUPS.flatMap(g => g.goals)
 
 const VIDEO_PLATFORMS: Platform[] = ['reels', 'youtube']
 
@@ -279,19 +299,26 @@ function CreateWizard() {
             <ArrowLeft size={16} /> Back
           </button>
           <h1 className={styles.stepTitle}>What&apos;s the goal?</h1>
-          <div className={styles.optionGrid}>
-            {GOALS.map(g => (
-              <button
-                key={g.id}
-                className={`${styles.optionCard} ${goal === g.id ? styles.optionSelected : ''}`}
-                onClick={() => {
-                  setGoal(g.id)
-                  setTimeout(() => goTo(VIDEO_PLATFORMS.includes(platform) ? 'structure' : 'topic'), 150)
-                }}
-              >
-                {g.label}
-                {goal === g.id && <Check size={16} className={styles.checkIcon} />}
-              </button>
+          <div className={styles.goalGroups}>
+            {GOAL_GROUPS.map(group => (
+              <div key={group.funnel} className={styles.goalGroup}>
+                <div className={styles.goalGroupLabel}>{group.label}</div>
+                <div className={styles.goalGroupOptions}>
+                  {group.goals.map(g => (
+                    <button
+                      key={g.id}
+                      className={`${styles.optionCard} ${goal === g.id ? styles.optionSelected : ''}`}
+                      onClick={() => {
+                        setGoal(g.id)
+                        setTimeout(() => goTo(VIDEO_PLATFORMS.includes(platform) ? 'structure' : 'topic'), 150)
+                      }}
+                    >
+                      {g.label}
+                      {goal === g.id && <Check size={16} className={styles.checkIcon} />}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -346,11 +373,12 @@ function CreateWizard() {
             <ArrowLeft size={16} /> Back
           </button>
           <h1 className={styles.stepTitle}>What&apos;s it about?</h1>
+          <p className={styles.stepHint}>Optional — leave blank and AI will pick a topic based on your goal</p>
 
           {/* Summary chips */}
           <div className={styles.summaryRow}>
             <span className={styles.summaryChip}>{PLATFORMS.find(p => p.id === platform)?.label}</span>
-            <span className={styles.summaryChip}>{GOALS.find(g => g.id === goal)?.label}</span>
+            <span className={styles.summaryChip}>{ALL_GOALS.find(g => g.id === goal)?.label}</span>
             {selectedStructure && <span className={styles.summaryChip}>{selectedStructure.name}</span>}
           </div>
 
@@ -368,9 +396,8 @@ function CreateWizard() {
           <button
             className={styles.generateBtn}
             onClick={handleGenerate}
-            disabled={!topic.trim()}
           >
-            Generate Script
+            {topic.trim() ? 'Generate Script' : 'Generate (AI picks topic)'}
           </button>
         </div>
       )}

@@ -657,3 +657,35 @@
   .optionGrid { grid-template-columns: 1fr; }
   .stepTitle { font-size: 1.3rem; }
 }
+
+/* Goal groups with funnel labels */
+.goalGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.goalGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.goalGroupLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  padding-left: 2px;
+}
+
+.goalGroupOptions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-xs);
+}
+
+@media (max-width: 640px) {
+  .goalGroupOptions { grid-template-columns: 1fr; }
+}
