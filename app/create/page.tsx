@@ -1,26 +1,47 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Film, Image as ImageIcon, LayoutTemplate, PlaySquare, Video, CheckCircle2, Copy, Save, Sparkles, RefreshCcw } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2 } from 'lucide-react'
 import BlockEditor from '@/components/create/BlockEditor'
 import type { RegenerateContext } from '@/components/create/BlockEditor'
 import type { ScriptScene } from '@/lib/create/types'
 import styles from './create.module.css'
 
-type Step = 'select' | 'loading' | 'results'
-type Platform = 'reels' | 'tiktok' | 'facebook-post' | 'facebook-ad' | 'youtube' | 'carousel' | 'static-image'
-type ContentType = 'educate' | 'story' | 'prove' | 'sell' | 'trend' | 'inspire' | 'debunk' | 'process' | 'journey' | 'announce'
+type WizardStep = 'mode' | 'platform' | 'goal' | 'structure' | 'topic' | 'loading' | 'results' | 'improve-input' | 'improve-loading' | 'improve-results'
+type Platform = 'reels' | 'youtube' | 'facebook-post' | 'facebook-ad' | 'carousel' | 'static-image'
+type ContentGoal = 'educate' | 'story' | 'sell' | 'inspire' | 'prove' | 'trend' | 'debunk' | 'process' | 'journey' | 'announce'
 
-// Platforms that support image generation
-const VISUAL_PLATFORMS: Platform[] = ['facebook-ad', 'static-image', 'carousel', 'facebook-post']
+const PLATFORMS = [
+  { id: 'reels' as Platform, label: 'Reel / TikTok' },
+  { id: 'youtube' as Platform, label: 'YouTube' },
+  { id: 'facebook-post' as Platform, label: 'Facebook Post' },
+  { id: 'facebook-ad' as Platform, label: 'Facebook Ad' },
+  { id: 'carousel' as Platform, label: 'Carousel' },
+  { id: 'static-image' as Platform, label: 'Static Image' },
+]
 
-interface Product {
-  id: string
-  name: string
-  price: number | null
-}
+const GOALS = [
+  { id: 'educate' as ContentGoal, label: 'Teach something' },
+  { id: 'story' as ContentGoal, label: 'Tell a story' },
+  { id: 'sell' as ContentGoal, label: 'Promote & sell' },
+  { id: 'inspire' as ContentGoal, label: 'Inspire' },
+  { id: 'prove' as ContentGoal, label: 'Show proof' },
+  { id: 'trend' as ContentGoal, label: 'Ride a trend' },
+  { id: 'debunk' as ContentGoal, label: 'Debunk a myth' },
+  { id: 'process' as ContentGoal, label: 'Show the process' },
+  { id: 'journey' as ContentGoal, label: 'Share my journey' },
+  { id: 'announce' as ContentGoal, label: 'Announce something' },
+]
+
+const VIDEO_PLATFORMS: Platform[] = ['reels', 'youtube']
+
+const LOADING_MESSAGES = [
+  'Pulling from your knowledge base...',
+  'Found some great angles',
+  'Writing your script...',
+  'Almost there...',
+]
 
 interface Variant {
   id: string
@@ -29,215 +50,124 @@ interface Variant {
   content: any
   qualityScore: number
   imageUrl?: string
-  imageStoragePath?: string
 }
 
-const PLATFORMS: { id: Platform; label: string; desc: string; icon: any }[] = [
-  { id: 'reels', label: 'Reels / TikTok', desc: 'Short video script with scenes', icon: Video },
-  { id: 'facebook-post', label: 'Facebook Post', desc: 'Caption and hashtags', icon: LayoutTemplate },
-  { id: 'facebook-ad', label: 'Facebook Ad', desc: 'Headline, copy, and image prompt', icon: Sparkles },
-  { id: 'youtube', label: 'YouTube Video', desc: 'Full script with sections', icon: PlaySquare },
-  { id: 'carousel', label: 'Instagram Carousel', desc: 'Slide-by-slide content', icon: Film },
-  { id: 'static-image', label: 'Static Image', desc: 'Single image prompt & copy', icon: ImageIcon },
-]
+function CreateWizard() {
+  // Wizard state
+  const [step, setStep] = useState<WizardStep>('mode')
+  const [direction, setDirection] = useState<'forward' | 'back'>('forward')
 
-const CONTENT_TYPES: { id: ContentType; label: string; funnel: 'tofu' | 'mofu' | 'bofu' }[] = [
-  // TOFU — Attract new audience
-  { id: 'trend', label: 'Ride a trend', funnel: 'tofu' },
-  { id: 'inspire', label: 'Inspire & motivate', funnel: 'tofu' },
-  { id: 'journey', label: 'Share my journey', funnel: 'tofu' },
-  // MOFU — Build trust & grow followers
-  { id: 'educate', label: 'Teach something', funnel: 'mofu' },
-  { id: 'story', label: 'Tell a story', funnel: 'mofu' },
-  { id: 'debunk', label: 'Debunk a myth', funnel: 'mofu' },
-  { id: 'process', label: 'Show the process', funnel: 'mofu' },
-  // BOFU — Convert to sales
-  { id: 'prove', label: 'Show proof', funnel: 'bofu' },
-  { id: 'sell', label: 'Promote & sell', funnel: 'bofu' },
-  { id: 'announce', label: 'Announce something', funnel: 'bofu' },
-]
-
-const FUNNEL_LABELS: Record<string, string> = {
-  tofu: 'Attract',
-  mofu: 'Build Trust',
-  bofu: 'Convert',
-}
-
-function CreatePageInner() {
-  const router = useRouter()
-  const [step, setStep] = useState<Step>('select')
+  // Form state
   const [platform, setPlatform] = useState<Platform>('reels')
-  const [contentType, setContentType] = useState<ContentType>('educate')
-  const [selectedProduct, setSelectedProduct] = useState<string>('')
-  const [products, setProducts] = useState<Product[]>([])
-  
+  const [goal, setGoal] = useState<ContentGoal>('educate')
   const [topic, setTopic] = useState('')
-  const [showTopicInput, setShowTopicInput] = useState(false)
-  const [generateImages, setGenerateImages] = useState(false)
-  
-  // Structure-first creation
-  const [structures, setStructures] = useState<any[]>([])
   const [selectedStructure, setSelectedStructure] = useState<any>(null)
-  const [showStructurePicker, setShowStructurePicker] = useState(false)
-  
+  const [structures, setStructures] = useState<any[]>([])
+
+  // Improve mode
+  const [pastedScript, setPastedScript] = useState('')
+  const [improvePlatform, setImprovePlatform] = useState<Platform>('reels')
+
+  // Results
   const [results, setResults] = useState<Variant[]>([])
+  const [improveResult, setImproveResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
-  const [savingId, setSavingId] = useState<string | null>(null)
   const [loadingPhase, setLoadingPhase] = useState(0)
-  const [visibleCards, setVisibleCards] = useState<number[]>([])
-  const loadingTimerRef = useRef<NodeJS.Timeout | null>(null)
-  
-  const isVisualPlatform = VISUAL_PLATFORMS.includes(platform)
-  
-  const LOADING_PHASES = [
-    'Pulling inspiration from your notebooks...',
-    'Found some great hooks ✨',
-    'Writing your first draft...',
-    'Trying a different angle...',
-    'One more version, with a twist...',
-    'Making sure these sound like you...',
-    'Almost ready — just polishing...',
-  ]
-  
-  // Phased loading messages
-  const startLoadingPhases = useCallback(() => {
-    setLoadingPhase(0)
-    const delays = [2000, 1500, 2500, 2500, 2000, 3000, 4000]
-    let phase = 0
-    
-    const advance = () => {
-      phase++
-      if (phase < LOADING_PHASES.length) {
-        setLoadingPhase(phase)
-        loadingTimerRef.current = setTimeout(advance, delays[phase])
-      }
-    }
-    loadingTimerRef.current = setTimeout(advance, delays[0])
-  }, [])
-  
-  const stopLoadingPhases = useCallback(() => {
-    if (loadingTimerRef.current) {
-      clearTimeout(loadingTimerRef.current)
-      loadingTimerRef.current = null
-    }
-  }, [])
-  
-  // Staggered card entrance
-  const staggerCards = useCallback((count: number) => {
-    setVisibleCards([])
-    for (let i = 0; i < count; i++) {
-      setTimeout(() => {
-        setVisibleCards(prev => [...prev, i])
-      }, 200 + i * 200)
-    }
-  }, [])
 
+  // Load structures
   useEffect(() => {
-    const supabase = createClient()
-    supabase
-      .from('product_catalog')
-      .select('id, name, price')
-      .then(({ data }) => {
-        if (data) setProducts(data)
-      })
-    // Load structures
     fetch('/api/structures')
       .then(r => r.json())
-      .then(data => setStructures(Array.isArray(data) ? data : data.structures || []))
+      .then(data => setStructures(Array.isArray(data) ? data : []))
       .catch(() => {})
   }, [])
 
-  async function handleGenerate() {
-    setStep('loading')
+  // Loading animation
+  useEffect(() => {
+    if (step !== 'loading' && step !== 'improve-loading') return
+    setLoadingPhase(0)
+    const interval = setInterval(() => {
+      setLoadingPhase(p => (p + 1) % LOADING_MESSAGES.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [step])
+
+  const filteredStructures = structures.filter(s => {
+    if (platform === 'reels') return s.content_type === 'reel'
+    if (platform === 'youtube') return s.content_type === 'youtube'
+    if (platform === 'facebook-ad') return s.content_type === 'ad'
+    return false
+  })
+
+  const goTo = (next: WizardStep, dir: 'forward' | 'back' = 'forward') => {
+    setDirection(dir)
+    setStep(next)
+  }
+
+  // === GENERATE ===
+  const handleGenerate = async () => {
+    goTo('loading')
     setError(null)
-    setSavedIds(new Set())
-    startLoadingPhases()
-    
+
     try {
       const res = await fetch('/api/create/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           platform,
-          contentType,
-          productId: selectedProduct || undefined,
+          contentType: goal,
           topic: topic.trim() || undefined,
-          generateImages: isVisualPlatform && generateImages,
           variants: 3,
           structure_slug: selectedStructure?.slug || undefined,
         }),
       })
 
-      stopLoadingPhases()
-
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}))
-        throw new Error(errorData.error || `Generation failed (${res.status})`)
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Generation failed')
       }
 
       const data = await res.json()
-      setResults(data.variants)
-      setStep('results')
-      staggerCards(data.variants.length)
-    } catch (err) {
-      stopLoadingPhases()
-      setError(err instanceof Error ? err.message : 'Something went wrong')
-      setStep('select')
+      setResults(data.variants || [])
+      goTo('results')
+    } catch (err: any) {
+      setError(err.message)
+      goTo('topic', 'back')
     }
   }
 
-  function handleCopy(variant: Variant) {
-    let text = ''
-    
-    if (variant.content.scenes) {
-      text = `${variant.hook}\n\n`
-      text += variant.content.scenes.map((s: any) => `Scene ${s.sceneNumber}:\nVisual: ${s.visual}\nVoiceover: ${s.voiceover}`).join('\n\n')
-    } else if (variant.content.headline) {
-      text = `${variant.content.headline}\n\n${variant.content.primaryText || variant.content.subtext}`
-    } else if (variant.content.caption) {
-      text = `${variant.content.caption}`
-      if (variant.content.hashtags) text += `\n\n${variant.content.hashtags.join(' ')}`
-    } else if (variant.content.sections) {
-      text = `${variant.hook}\n\n`
-      text += variant.content.sections.map((s: any) => `[${s.timestamp}] ${s.content}`).join('\n\n')
-    } else if (variant.content.slides) {
-      text += variant.content.slides.map((s: any, i: number) => `Slide ${i+1}: ${s.text}`).join('\n\n')
-    }
+  // === IMPROVE ===
+  const handleImprove = async () => {
+    if (!pastedScript.trim()) return
+    goTo('improve-loading')
+    setError(null)
 
-    navigator.clipboard.writeText(text)
-    setCopiedId(variant.id)
-    setTimeout(() => setCopiedId(null), 2000)
-  }
-
-  async function handleSave(variant: Variant) {
-    if (savedIds.has(variant.id)) return
-    setSavingId(variant.id)
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      const { error: saveError } = await supabase.from('content_items').insert({
-        title: variant.hook.substring(0, 200),
-        content_type: contentType,
-        platform,
-        script_data: variant,
-        status: 'draft',
-        user_id: user?.id,
-        tenant_id: user?.id,
+      const res = await fetch('/api/create/improve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          script: pastedScript.trim(),
+          platform: improvePlatform,
+        }),
       })
-      
-      if (saveError) throw saveError
-      setSavedIds(prev => new Set(prev).add(variant.id))
-    } catch (err) {
-      console.error('Save failed:', err)
-      setError('Failed to save — are you logged in?')
-    } finally {
-      setSavingId(null)
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Improvement failed')
+      }
+
+      const data = await res.json()
+      setImproveResult(data)
+      goTo('improve-results')
+    } catch (err: any) {
+      setError(err.message)
+      goTo('improve-input', 'back')
     }
   }
 
+  // Block editor handlers
   async function handleRegenerateBlock(blockIndex: number, context: RegenerateContext) {
     const res = await fetch('/api/create/regenerate-block', {
       method: 'POST',
@@ -250,7 +180,7 @@ function CreatePageInner() {
         platform,
       }),
     })
-    if (!res.ok) throw new Error('Failed to regenerate block')
+    if (!res.ok) throw new Error('Failed to regenerate')
     return await res.json()
   }
 
@@ -260,379 +190,377 @@ function CreatePageInner() {
     ))
   }
 
-  function renderVariantContent(content: any, variant: Variant) {
-    const hasImage = !!variant.imageUrl
-    const imageRequested = isVisualPlatform && generateImages
-    const imageFailed = imageRequested && !hasImage
-
-    // Structure-aware scenes (has block_label) → BlockEditor
-    if (content.scenes && content.scenes[0]?.block_label) {
-      const scenes: ScriptScene[] = content.scenes.map((s: any, i: number) => ({
-        scene_number: i + 1,
-        duration_seconds: s.duration_seconds || parseInt(s.timing?.split('-')?.[1]) || 5,
-        script_text: s.script_text || s.voiceover || '',
-        visual_direction: s.visual_direction || s.visual || '',
-        block_id: s.block_id,
-        block_label: s.block_label,
-        timing: s.timing,
-        on_screen_text: s.on_screen_text,
-        production_notes: s.production_notes,
-        hook_type: s.hook_type,
-      }))
-      return (
-        <BlockEditor
-          scenes={scenes}
-          structureSlug={selectedStructure?.slug}
-          topic={topic}
-          platform={platform}
-          onChange={(newScenes) => handleScenesChange(variant.id, newScenes)}
-          onRegenerateBlock={handleRegenerateBlock}
-        />
-      )
-    }
-
-    // Old-style scenes (no structure) → original rendering
-    if (content.scenes) {
-      return (
-        <div className={styles.variantDetails}>
-          {content.scenes.map((s: any, i: number) => (
-            <div key={i} className={styles.sceneRow}>
-              <div className={styles.sceneMeta}>Scene {s.sceneNumber}</div>
-              <div className={styles.sceneVisual}>[{s.visual}]</div>
-              <div className={styles.sceneAudio}>{s.voiceover}</div>
-            </div>
-          ))}
-        </div>
-      )
-    }
-    
-    // Headline + copy (Static Image, Facebook Ad)
-    if (content.headline) {
-      return (
-        <div className={styles.variantDetails}>
-          {hasImage && (
-            <div className={styles.variantImage}>
-              <img src={variant.imageUrl} alt={content.headline} />
-            </div>
-          )}
-          {imageFailed && (
-            <div className={styles.imagePlaceholder}>
-              <ImageIcon size={24} />
-              <span>Image unavailable right now</span>
-              <span className={styles.placeholderHint}>Gemini image generation works best in the morning (PH time)</span>
-            </div>
-          )}
-          <div className={styles.headlineBlock}>{content.headline}</div>
-          <div className={styles.copyBlock}>{content.primaryText || content.subtext}</div>
-        </div>
-      )
-    }
-
-    // Caption + hashtags (Facebook Post)
-    if (content.caption) {
-      return (
-        <div className={styles.variantDetails}>
-          {hasImage && (
-            <div className={styles.variantImage}>
-              <img src={variant.imageUrl} alt="Post image" />
-            </div>
-          )}
-          {imageFailed && (
-            <div className={styles.imagePlaceholder}>
-              <ImageIcon size={24} />
-              <span>Image unavailable right now</span>
-            </div>
-          )}
-          <div className={styles.copyBlock}>{content.caption}</div>
-          {content.hashtags && (
-            <div className={styles.hashtagBlock}>{content.hashtags.join(' ')}</div>
-          )}
-        </div>
-      )
-    }
-
-    // Sections (YouTube)
-    if (content.sections) {
-      return (
-        <div className={styles.variantDetails}>
-          {content.sections.map((s: any, i: number) => (
-            <div key={i} className={styles.sceneRow}>
-              <div className={styles.sceneMeta}>{s.timestamp}</div>
-              <div className={styles.sceneAudio}>{s.content}</div>
-              <div className={styles.sceneVisual}>[{s.visual}]</div>
-            </div>
-          ))}
-        </div>
-      )
-    }
-    
-    // Slides (Carousel)
-    if (content.slides) {
-      return (
-        <div className={styles.variantDetails}>
-          {content.slides.map((s: any, i: number) => (
-            <div key={i} className={styles.slideCard}>
-              <div className={styles.slideNumber}>Slide {i + 1}</div>
-              <div className={styles.slideText}>{s.text}</div>
-            </div>
-          ))}
-        </div>
-      )
-    }
-
-    return null
+  function handleCopy(text: string, id: string) {
+    navigator.clipboard.writeText(text)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const showProductSelect = contentType === 'sell' && platform === 'facebook-ad'
-
-  if (step === 'loading') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.loadingContainer}>
-          <div className={styles.progressDots}>
-            {[0, 1, 2].map(i => (
-              <span key={i} className={styles.dot} style={{ animationDelay: `${i * 200}ms` }} />
-            ))}
-          </div>
-          <div className={styles.loadingTextWrapper}>
-            <h2 className={styles.loadingText} key={loadingPhase}>
-              {LOADING_PHASES[loadingPhase]}
-            </h2>
-          </div>
-          {loadingPhase >= 2 && (
-            <p className={styles.loadingHint} key={`hint-${loadingPhase}`}>
-              {loadingPhase < 5 ? 'Each variant uses a different storytelling framework' : 'Your content, your voice — just better'}
-            </p>
-          )}
-        </div>
-      </div>
-    )
+  function formatVariantText(variant: Variant): string {
+    let text = variant.hook + '\n\n'
+    const c = variant.content
+    if (c.scenes) {
+      text += c.scenes.map((s: any, i: number) => {
+        const label = s.block_label || `Scene ${s.sceneNumber || i + 1}`
+        return `[${label}]\n${s.script_text || s.voiceover || ''}\nVisual: ${s.visual_direction || s.visual || ''}`
+      }).join('\n\n')
+    } else if (c.headline) {
+      text += `${c.headline}\n\n${c.primaryText || c.body || ''}`
+    } else if (c.caption) {
+      text += c.caption
+    }
+    if (c.hashtags) text += '\n\n' + (Array.isArray(c.hashtags) ? c.hashtags.map((t: string) => '#' + t.replace('#', '')).join(' ') : c.hashtags)
+    return text
   }
 
-  if (step === 'results') {
-    const platformLabel = PLATFORMS.find(p => p.id === platform)?.label || 'Content'
-    const isVisualResult = VISUAL_PLATFORMS.includes(platform)
-    return (
-      <div className={styles.page}>
-        <div className={styles.resultsHeader}>
-          <h1 className={styles.pageTitle}>Your {platformLabel} {isVisualResult ? 'Creatives' : 'Scripts'}</h1>
-          <span className={styles.resultsBadge}>3 variants · {CONTENT_TYPES.find(c => c.id === contentType)?.label}</span>
-        </div>
-
-        <div className={styles.resultsList}>
-          {results.map((variant, index) => (
-            <div key={variant.id} className={`${styles.resultCard} ${visibleCards.includes(index) ? styles.cardVisible : styles.cardHidden}`}>
-              <div className={styles.cardHeader}>
-                <div className={styles.variantNumber}>{variant.number}</div>
-                <div className={styles.scoreBadge}>
-                  <Sparkles size={12} /> {variant.qualityScore}%
-                </div>
-              </div>
-              
-              <h2 className={styles.hookText}>{variant.hook}</h2>
-              
-              {renderVariantContent(variant.content, variant)}
-
-              <div className={styles.cardActions}>
-                <button className={styles.btnOutline} onClick={() => handleCopy(variant)}>
-                  {copiedId === variant.id ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                  {copiedId === variant.id ? 'Copied' : 'Copy'}
-                </button>
-                <button 
-                  className={styles.btnFilled} 
-                  onClick={() => handleSave(variant)}
-                  disabled={savedIds.has(variant.id) || savingId === variant.id}
-                >
-                  {savedIds.has(variant.id) ? <CheckCircle2 size={16} /> : <Save size={16} />}
-                  {savedIds.has(variant.id) ? 'Saved ✓' : savingId === variant.id ? 'Saving...' : 'Save to Library'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.bottomActions}>
-          <button className={styles.btnSecondary} onClick={handleGenerate}>
-            <RefreshCcw size={16} /> Create 3 More
-          </button>
-          <button className={styles.linkBtn} onClick={() => setStep('select')}>
-            Start Over
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const stepIndex = ['mode', 'platform', 'goal', 'structure', 'topic'].indexOf(step)
+  const totalSteps = VIDEO_PLATFORMS.includes(platform) ? 5 : 4
+  const progressPct = stepIndex >= 0 ? ((stepIndex + 1) / totalSteps) * 100 : 0
 
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <h1 className={styles.pageTitle}>What are you creating?</h1>
-        <p className={styles.subtitle}>Select your medium and let us handle the rest.</p>
-      </div>
+    <div className={styles.wizard}>
+      {/* Progress bar */}
+      {stepIndex >= 0 && (
+        <div className={styles.progressBar}>
+          <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+        </div>
+      )}
 
-      {error && <div className={styles.error}>{error}</div>}
+      {/* === MODE SELECTION === */}
+      {step === 'mode' && (
+        <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
+          <h1 className={styles.stepTitle}>What would you like to do?</h1>
+          <div className={styles.modeCards}>
+            <button className={styles.modeCard} onClick={() => goTo('platform')}>
+              <span className={styles.modeLabel}>Create new content</span>
+              <span className={styles.modeDesc}>Generate a fresh script from scratch</span>
+              <ArrowRight size={16} className={styles.modeArrow} />
+            </button>
+            <button className={styles.modeCard} onClick={() => goTo('improve-input')}>
+              <span className={styles.modeLabel}>Improve existing script</span>
+              <span className={styles.modeDesc}>Paste a script and make it better</span>
+              <ArrowRight size={16} className={styles.modeArrow} />
+            </button>
+          </div>
+        </div>
+      )}
 
-      <div className={styles.section}>
-        <label className={styles.sectionLabel}>Select Platform</label>
-        <div className={styles.platformList}>
-          {PLATFORMS.map((p) => {
-            const isSelected = platform === p.id
-            const Icon = p.icon
-            return (
+      {/* === PLATFORM === */}
+      {step === 'platform' && (
+        <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
+          <button className={styles.backBtn} onClick={() => goTo('mode', 'back')}>
+            <ArrowLeft size={16} /> Back
+          </button>
+          <h1 className={styles.stepTitle}>What are you creating?</h1>
+          <div className={styles.optionGrid}>
+            {PLATFORMS.map(p => (
               <button
                 key={p.id}
-                className={`${styles.platformRow} ${isSelected ? styles.platformSelected : ''}`}
+                className={`${styles.optionCard} ${platform === p.id ? styles.optionSelected : ''}`}
                 onClick={() => {
-                  // Reels/TikTok and YouTube use the structure-aware creation flow
-                  if (p.id === 'reels' || p.id === 'youtube') {
-                    router.push(`/create/short-form${topic ? `?topic=${encodeURIComponent(topic)}` : ''}`)
-                    return
-                  }
                   setPlatform(p.id)
+                  setSelectedStructure(null)
+                  // Skip structure step for non-video platforms
+                  setTimeout(() => goTo('goal'), 150)
                 }}
               >
-                <div className={styles.platformIconWrapper}>
-                  <Icon size={20} className={isSelected ? styles.iconSelected : styles.iconMuted} />
-                </div>
-                <div className={styles.platformInfo}>
-                  <span className={styles.platformName}>{p.label}</span>
-                </div>
-                {isSelected && <CheckCircle2 size={20} className={styles.checkIcon} />}
+                {p.label}
+                {platform === p.id && <Check size={16} className={styles.checkIcon} />}
               </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className={styles.section}>
-        <label className={styles.sectionLabel}>What's the goal?</label>
-        {(['tofu', 'mofu', 'bofu'] as const).map((stage) => (
-          <div key={stage} className={styles.funnelGroup}>
-            <span className={styles.funnelLabel}>{FUNNEL_LABELS[stage]}</span>
-            <div className={styles.chipsContainer}>
-              {CONTENT_TYPES.filter(c => c.funnel === stage).map((c) => (
-                <button
-                  key={c.id}
-                  className={`${styles.chip} ${contentType === c.id ? styles.chipSelected : ''}`}
-                  onClick={() => setContentType(c.id)}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {showProductSelect && (
-        <div className={styles.section}>
-          <label className={styles.sectionLabel}>Which product?</label>
-          <select
-            className={styles.select}
-            value={selectedProduct}
-            onChange={(e) => setSelectedProduct(e.target.value)}
-          >
-            <option value="">Choose a product...</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} {p.price ? `— ₱${p.price}` : ''}
-              </option>
             ))}
-          </select>
+          </div>
         </div>
       )}
 
-      {/* Structure picker — for video platforms */}
-      {(platform === 'reels' || platform === 'youtube') && (
-        <div className={styles.section}>
-          <label className={styles.sectionLabel}>Structure <span className={styles.optionalBadge}>recommended</span></label>
-          {selectedStructure ? (
-            <div className={styles.structureSelected}>
-              <div>
-                <strong>{selectedStructure.name}</strong>
-                <div className={styles.structureDesc}>{selectedStructure.description}</div>
-                <div className={styles.blockFlow}>
-                  {selectedStructure.blocks?.map((b: any, i: number) => (
-                    <span key={i} className={styles.blockFlowItem}>
-                      {b.label}{i < selectedStructure.blocks.length - 1 ? ' → ' : ''}
-                    </span>
-                  ))}
+      {/* === GOAL === */}
+      {step === 'goal' && (
+        <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
+          <button className={styles.backBtn} onClick={() => goTo('platform', 'back')}>
+            <ArrowLeft size={16} /> Back
+          </button>
+          <h1 className={styles.stepTitle}>What&apos;s the goal?</h1>
+          <div className={styles.optionGrid}>
+            {GOALS.map(g => (
+              <button
+                key={g.id}
+                className={`${styles.optionCard} ${goal === g.id ? styles.optionSelected : ''}`}
+                onClick={() => {
+                  setGoal(g.id)
+                  setTimeout(() => goTo(VIDEO_PLATFORMS.includes(platform) ? 'structure' : 'topic'), 150)
+                }}
+              >
+                {g.label}
+                {goal === g.id && <Check size={16} className={styles.checkIcon} />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* === STRUCTURE (video only) === */}
+      {step === 'structure' && (
+        <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
+          <button className={styles.backBtn} onClick={() => goTo('goal', 'back')}>
+            <ArrowLeft size={16} /> Back
+          </button>
+          <h1 className={styles.stepTitle}>Pick a structure</h1>
+          <p className={styles.stepHint}>Proven frameworks that guide the AI</p>
+          <div className={styles.structureList}>
+            <button
+              className={`${styles.structureCard} ${!selectedStructure ? styles.structureSelected : ''}`}
+              onClick={() => { setSelectedStructure(null); setTimeout(() => goTo('topic'), 150) }}
+            >
+              <div className={styles.structureName}>Let AI decide</div>
+              <div className={styles.structureDesc}>AI picks the best format for your topic</div>
+            </button>
+            {filteredStructures.map(s => (
+              <button
+                key={s.slug}
+                className={`${styles.structureCard} ${selectedStructure?.slug === s.slug ? styles.structureSelected : ''}`}
+                onClick={() => { setSelectedStructure(s); setTimeout(() => goTo('topic'), 200) }}
+              >
+                <div className={styles.structureName}>
+                  {s.name}
+                  {s.is_cutting_edge && <span className={styles.newBadge}>New</span>}
+                </div>
+                <div className={styles.structureDesc}>{s.description}</div>
+                {s.blocks && (
+                  <div className={styles.blockFlow}>
+                    {s.blocks.map((b: any, i: number) => (
+                      <span key={i} className={styles.blockTag}>
+                        {b.label}{i < s.blocks.length - 1 ? ' → ' : ''}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* === TOPIC === */}
+      {step === 'topic' && (
+        <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
+          <button className={styles.backBtn} onClick={() => goTo(VIDEO_PLATFORMS.includes(platform) ? 'structure' : 'goal', 'back')}>
+            <ArrowLeft size={16} /> Back
+          </button>
+          <h1 className={styles.stepTitle}>What&apos;s it about?</h1>
+
+          {/* Summary chips */}
+          <div className={styles.summaryRow}>
+            <span className={styles.summaryChip}>{PLATFORMS.find(p => p.id === platform)?.label}</span>
+            <span className={styles.summaryChip}>{GOALS.find(g => g.id === goal)?.label}</span>
+            {selectedStructure && <span className={styles.summaryChip}>{selectedStructure.name}</span>}
+          </div>
+
+          <textarea
+            className={styles.topicTextarea}
+            placeholder="e.g. How to make stickers using Canva, or a story about your first Shopee sale..."
+            value={topic}
+            onChange={e => setTopic(e.target.value)}
+            autoFocus
+            rows={3}
+          />
+
+          {error && <div className={styles.errorMsg}>{error}</div>}
+
+          <button
+            className={styles.generateBtn}
+            onClick={handleGenerate}
+            disabled={!topic.trim()}
+          >
+            Generate Script
+          </button>
+        </div>
+      )}
+
+      {/* === LOADING === */}
+      {(step === 'loading' || step === 'improve-loading') && (
+        <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
+          <div className={styles.loadingContainer}>
+            <div className={styles.spinner} />
+            <p className={styles.loadingText} key={loadingPhase}>{LOADING_MESSAGES[loadingPhase]}</p>
+          </div>
+        </div>
+      )}
+
+      {/* === RESULTS === */}
+      {step === 'results' && (
+        <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
+          <button className={styles.backBtn} onClick={() => goTo('topic', 'back')}>
+            <ArrowLeft size={16} /> Start over
+          </button>
+          <h1 className={styles.stepTitle}>Here are your scripts</h1>
+
+          <div className={styles.variantList}>
+            {results.map((variant, vi) => (
+              <div key={variant.id} className={styles.variantCard} style={{ animationDelay: `${vi * 100}ms` }}>
+                <div className={styles.variantHeader}>
+                  <span className={styles.variantNumber}>Option {variant.number}</span>
+                  {variant.qualityScore && (
+                    <span className={styles.qualityBadge}>{variant.qualityScore}/10</span>
+                  )}
+                </div>
+                <div className={styles.variantHook}>{variant.hook}</div>
+
+                {/* Structure-aware scenes → BlockEditor */}
+                {variant.content.scenes && variant.content.scenes[0]?.block_label ? (
+                  <BlockEditor
+                    scenes={variant.content.scenes.map((s: any, i: number) => ({
+                      scene_number: i + 1,
+                      duration_seconds: s.duration_seconds || 5,
+                      script_text: s.script_text || s.voiceover || '',
+                      visual_direction: s.visual_direction || s.visual || '',
+                      block_id: s.block_id,
+                      block_label: s.block_label,
+                      timing: s.timing,
+                      on_screen_text: s.on_screen_text,
+                      production_notes: s.production_notes,
+                    }))}
+                    structureSlug={selectedStructure?.slug}
+                    topic={topic}
+                    platform={platform}
+                    onChange={(newScenes) => handleScenesChange(variant.id, newScenes)}
+                    onRegenerateBlock={handleRegenerateBlock}
+                  />
+                ) : variant.content.scenes ? (
+                  /* Old-style scenes */
+                  <div className={styles.sceneList}>
+                    {variant.content.scenes.map((s: any, i: number) => (
+                      <div key={i} className={styles.sceneRow}>
+                        <span className={styles.sceneBadge}>Scene {s.sceneNumber || i + 1}</span>
+                        <p className={styles.sceneText}>{s.voiceover}</p>
+                        <p className={styles.sceneVisual}>{s.visual}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : variant.content.headline ? (
+                  <div className={styles.adContent}>
+                    <h3>{variant.content.headline}</h3>
+                    <p>{variant.content.primaryText || variant.content.body}</p>
+                  </div>
+                ) : variant.content.caption ? (
+                  <p className={styles.captionText}>{variant.content.caption}</p>
+                ) : null}
+
+                {/* Hashtags */}
+                {variant.content.hashtags && (
+                  <div className={styles.hashtags}>
+                    {(Array.isArray(variant.content.hashtags) ? variant.content.hashtags : []).map((t: string) => (
+                      <span key={t} className={styles.hashtag}>#{t.replace('#', '')}</span>
+                    ))}
+                  </div>
+                )}
+
+                <div className={styles.variantActions}>
+                  <button
+                    className={styles.iconBtn}
+                    onClick={() => handleCopy(formatVariantText(variant), variant.id)}
+                  >
+                    {copiedId === variant.id ? <Check size={16} /> : <Copy size={16} />}
+                    {copiedId === variant.id ? 'Copied' : 'Copy'}
+                  </button>
                 </div>
               </div>
-              <button className={styles.changeBtn} onClick={() => setShowStructurePicker(true)}>Change</button>
-            </div>
-          ) : (
-            <button className={styles.pickStructureBtn} onClick={() => setShowStructurePicker(true)}>
-              Pick a proven structure
-            </button>
-          )}
-          {showStructurePicker && (
-            <div className={styles.structureDropdown}>
-              <button className={styles.structureOption} onClick={() => { setSelectedStructure(null); setShowStructurePicker(false) }}>
-                <strong>No structure</strong>
-                <span className={styles.structureOptionDesc}>AI picks the best format</span>
-              </button>
-              {structures
-                .filter(s => platform === 'reels' ? s.content_type === 'reel' : s.content_type === 'youtube')
-                .map(s => (
-                <button key={s.slug} className={styles.structureOption} onClick={() => { setSelectedStructure(s); setShowStructurePicker(false) }}>
-                  <strong>{s.name}{s.is_cutting_edge && <span className={styles.newBadge}>New</span>}</strong>
-                  <span className={styles.structureOptionDesc}>{s.description}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+            ))}
+          </div>
 
-      {/* Optional topic/idea input */}
-      <div className={styles.section}>
-        {!showTopicInput ? (
-          <button 
-            className={styles.topicToggle} 
-            onClick={() => setShowTopicInput(true)}
-          >
-            Got a specific idea? <span className={styles.topicToggleHint}>optional</span>
-          </button>
-        ) : (
-          <>
-            <label className={styles.sectionLabel}>Topic or Idea <span className={styles.optionalBadge}>optional</span></label>
-            <textarea
-              className={styles.topicInput}
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g. How to make stickers using Canva, or a story about your first Shopee sale..."
-              rows={3}
-            />
-          </>
-        )}
-      </div>
-
-      {/* Image generation toggle — only for visual platforms */}
-      {isVisualPlatform && (
-        <div className={styles.section}>
-          <div className={styles.toggleRow}>
-            <div className={styles.toggleInfo}>
-              <span className={styles.toggleLabel}>Generate images</span>
-              <span className={styles.toggleDesc}>AI images using Grace's reference photos</span>
-            </div>
-            <button
-              className={`${styles.toggleSwitch} ${generateImages ? styles.toggleOn : ''}`}
-              onClick={() => setGenerateImages(!generateImages)}
-              role="switch"
-              aria-checked={generateImages}
-            >
-              <span className={styles.toggleKnob} />
+          <div className={styles.bottomActions}>
+            <button className={styles.secondaryBtn} onClick={handleGenerate}>
+              <RotateCw size={16} /> Regenerate All
             </button>
           </div>
         </div>
       )}
 
-      <div className={styles.actionSection}>
-        <button className={styles.generateBtn} onClick={handleGenerate}>
-          Create 3 Variants{generateImages && isVisualPlatform ? ' + Images' : ''}
-        </button>
-      </div>
+      {/* === IMPROVE INPUT === */}
+      {step === 'improve-input' && (
+        <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
+          <button className={styles.backBtn} onClick={() => goTo('mode', 'back')}>
+            <ArrowLeft size={16} /> Back
+          </button>
+          <h1 className={styles.stepTitle}>Paste your script</h1>
+          <p className={styles.stepHint}>We&apos;ll analyze it and suggest improvements based on what works best</p>
+
+          <div className={styles.improveSection}>
+            <label className={styles.fieldLabel}>Platform</label>
+            <div className={styles.pillRow}>
+              {PLATFORMS.filter(p => ['reels', 'youtube', 'facebook-post'].includes(p.id)).map(p => (
+                <button
+                  key={p.id}
+                  className={`${styles.pill} ${improvePlatform === p.id ? styles.pillActive : ''}`}
+                  onClick={() => setImprovePlatform(p.id)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <textarea
+            className={styles.pasteTextarea}
+            placeholder="Paste your existing script here..."
+            value={pastedScript}
+            onChange={e => setPastedScript(e.target.value)}
+            autoFocus
+            rows={8}
+          />
+
+          {error && <div className={styles.errorMsg}>{error}</div>}
+
+          <button
+            className={styles.generateBtn}
+            onClick={handleImprove}
+            disabled={!pastedScript.trim()}
+          >
+            <Wand2 size={16} /> Improve Script
+          </button>
+        </div>
+      )}
+
+      {/* === IMPROVE RESULTS === */}
+      {step === 'improve-results' && improveResult && (
+        <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
+          <button className={styles.backBtn} onClick={() => goTo('improve-input', 'back')}>
+            <ArrowLeft size={16} /> Try another
+          </button>
+          <h1 className={styles.stepTitle}>Improved Script</h1>
+
+          {/* Analysis */}
+          {improveResult.analysis && (
+            <div className={styles.analysisCard}>
+              <h3 className={styles.analysisTitle}>What we found</h3>
+              {improveResult.analysis.strengths && (
+                <div className={styles.analysisSection}>
+                  <strong>Strengths</strong>
+                  <ul>{improveResult.analysis.strengths.map((s: string, i: number) => <li key={i}>{s}</li>)}</ul>
+                </div>
+              )}
+              {improveResult.analysis.improvements && (
+                <div className={styles.analysisSection}>
+                  <strong>Improvements made</strong>
+                  <ul>{improveResult.analysis.improvements.map((s: string, i: number) => <li key={i}>{s}</li>)}</ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Improved script */}
+          {improveResult.improved_script && (
+            <div className={styles.improvedScript}>
+              <pre className={styles.scriptPre}>{improveResult.improved_script}</pre>
+              <button
+                className={styles.iconBtn}
+                onClick={() => handleCopy(improveResult.improved_script, 'improved')}
+              >
+                {copiedId === 'improved' ? <Check size={16} /> : <Copy size={16} />}
+                {copiedId === 'improved' ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -640,7 +568,7 @@ function CreatePageInner() {
 export default function CreatePage() {
   return (
     <Suspense>
-      <CreatePageInner />
+      <CreateWizard />
     </Suspense>
   )
 }
