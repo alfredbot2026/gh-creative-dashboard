@@ -125,9 +125,10 @@ export interface BatchResult {
  */
 export async function classifyBatch(
   userId: string,
-  batchSize: number = 20
+  batchSize: number = 20,
+  externalSupabase?: any
 ): Promise<BatchResult> {
-  const supabase = await createClient()
+  const supabase = externalSupabase || await createClient()
   
   // Get KB vocabulary once for the whole batch
   const { hookTypes, frameworks } = await getKBVocabulary()
@@ -159,7 +160,7 @@ export async function classifyBatch(
       .order('published_at', { ascending: false })
       .range(ingestOffset, ingestOffset + PAGE_SIZE - 1)
     if (!page || page.length === 0) break
-    const fresh = page.filter(i => !classifiedIds.has(i.id))
+    const fresh = page.filter((i: any) => !classifiedIds.has(i.id))
     unclassified.push(...fresh)
     if (page.length < PAGE_SIZE) break
     ingestOffset += PAGE_SIZE
@@ -243,14 +244,15 @@ export async function classifyBatch(
 export async function classifyAll(
   userId: string,
   batchSize: number = 20,
-  onProgress?: (classified: number, total: number) => void
+  onProgress?: (classified: number, total: number) => void,
+  externalSupabase?: any
 ): Promise<{ total_classified: number; total_errors: number; duration_seconds: number }> {
   const start = Date.now()
   let totalClassified = 0
   let totalErrors = 0
 
   while (true) {
-    const result = await classifyBatch(userId, batchSize)
+    const result = await classifyBatch(userId, batchSize, externalSupabase)
     totalClassified += result.classified
     totalErrors += result.errors.length
 
