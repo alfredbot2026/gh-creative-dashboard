@@ -18,6 +18,7 @@ export function getGraceReferenceImages(): Buffer[] {
     'public/grace-ref-right.jpg',   // 3/4 right profile
     'public/grace-ref-right2.jpg',  // 3/4 right, different angle
     'public/grace-ref-left.jpg',    // 3/4 left profile
+    'public/grace-ref-desk.jpg',    // 3/4 right at desk, craft workspace
   ]
 
   const buffers: Buffer[] = []
