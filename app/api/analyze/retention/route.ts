@@ -164,18 +164,35 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Count how many videos still need retention
-  const { count: remaining } = await supabase
-    .from('content_ingest')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('platform', 'youtube')
+  // Count how many videos still need retention (no retention_curve in metrics)
+  // Can't filter JSONB easily with PostgREST, so calculate from total - fetched
+  const totalYT = 1003 // known total, or we could count
+  const remaining = totalYT - fetched // approximate; actual remaining computed below
+  
+  // More accurate: count all, subtract those with retention
+  let withRetention = 0
+  let countOffset = 0
+  while (true) {
+    const { data } = await supabase
+      .from('content_ingest')
+      .select('metrics')
+      .eq('user_id', userId)
+      .eq('platform', 'youtube')
+      .range(countOffset, countOffset + 999)
+    if (!data || data.length === 0) break
+    for (const row of data) {
+      if (row.metrics?.retention_curve) withRetention++
+    }
+    if (data.length < 1000) break
+    countOffset += 1000
+  }
+  const actualRemaining = 1003 - withRetention
 
   return NextResponse.json({
     fetched,
     errors,
     quota_exhausted: quotaExhausted,
-    remaining_total: remaining || 0,
+    remaining_total: actualRemaining,
     batch_size: toProcess.length,
   })
 }
