@@ -1,8 +1,27 @@
 # GH Creative Dashboard — STATUS
 
-**Last Updated:** 2026-03-21 23:30 PHT
+**Last Updated:** 2026-03-23 09:25 PHT
 
-## Current Phase: Phase 3.5 COMPLETE + Content Insights UI COMPLETE
+## Current Phase: Phase 4a — Content Engine V2: Structure-First Creation
+
+### Active Work
+- **Phase 4a Wave 1:** Structure catalog DB schema + seed data — STARTING
+- **Analysis crons:** Running (paid tier — 55 posts/15 min across all platforms)
+- **Retention crons:** Running (25/hr)
+
+### Background Processing
+| Platform | Done | Remaining | ETA |
+|----------|------|-----------|-----|
+| YouTube deep analysis (v2) | 481 | 522 | ~6 hrs |
+| YouTube retention curves | 503 | 500 | ~3 days |
+| Instagram deep analysis | 5 | 807 | ~14 hrs |
+| Facebook deep analysis | 0 | 2,147 | ~36 hrs |
+
+### Key Decision (2026-03-23)
+- **Structure-first, not AI-first.** Grace picks proven structure → enters topic → AI fills it in following exact structure with timing markers
+- 45 techniques extracted from 7 KB notebooks (Chris Chung, Briar Cochran, Sam Gaudet, Caleb Ralston)
+- Second-by-second timing rules compiled
+- Rob: "We want the newest techniques, not typical structures everybody uses"
 
 ### What's Done
 - ✅ Phase 3.5: Learning Pipeline (all 9 tasks — Lead implemented directly)

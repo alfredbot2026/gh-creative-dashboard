@@ -221,33 +221,42 @@
 
 ---
 
-## Phase 4a — Content Engine V2: Core
-**Goal:** Topic intelligence, outline-first creation, block swap UI, working documents, PDF export.
-**Status:** `NOT_STARTED`
-**Depends on:** Phase 3.5 (needs performance profile data)
+## Phase 4a — Content Engine V2: Structure-First Creation
+**Goal:** Structure catalog with 45 proven techniques + structure-first creation flow where Grace picks a structure, enters a topic, and gets a script that follows that exact structure with timing markers.
+**Status:** `IN_PROGRESS` 🔄
+**Depends on:** Phase 3.5 ✅ (performance data flowing)
+**Key decision:** "Start with proven structures, not Frankenstein" — Grace learns structures by choosing them deliberately. Knowledge is VISIBLE, not invisible. (Rob, 2026-03-23)
 
-### 4a.1 Topic Intelligence Engine
-- Smart topic suggestions on create page
-- Content mix ratios from KB + Grace's performance data
-- Topic freshness tracking (days since last coverage, per platform)
-- Seasonal awareness from historical patterns
+### Wave 1: Structure Catalog + DB Schema (~2 hrs)
+- `content_structures` table — 21 full script structures with block definitions + timing
+- `technique_library` table — 24 supplementary techniques (hooks, retention, algorithm, production)
+- Seed all 45 techniques from `references/CONTENT-STRUCTURES.md`
+- Sources: Chris Chung, Briar Cochran, Sam Gaudet, Caleb Ralston + KB
 
-### 4a.2 Outline-first YouTube flow
-- Generate 2-3 structural approaches for user to pick
-- Outline editor: reorder, swap techniques, add/remove sections
-- Generate full script from approved outline
+### Wave 2: Structure Browser UI (~4 hrs)
+- `/structures` — Browse structures by type (Reels/YouTube/Ads/Stories), filter by purpose/difficulty
+- `/structures/[slug]` — Detail view with visual timeline, block timing, examples, when-to-use
+- `/structures/techniques` — Hook formulas, retention tricks, algorithm exploits, production tips
 
-### 4a.3 Block swap UI
-- Tap-to-swap alternatives for any content block
-- On-demand generation (not pre-generated)
-- Keep previous version for comparison
+### Wave 3: Structure-First Creation Flow (~6 hrs)
+- Updated `/create` flow: Pick type → Pick structure → Enter topic → AI generates script following exact structure
+- Structure-aware generation prompts (blocks + timing + rules baked into prompt)
+- Labeled script editor showing structure annotations ("HOOK 0-3s", "SUPER HOOK 3-5s", etc.)
 
-### 4a.4 Working documents + PDF export
-- Content lifecycle: draft → in_progress → ready → published → analyzing
-- Cross-device: start on phone, continue on desktop
-- PDF production sheet export (practical, not pretty)
+### Wave 4: Performance Integration (~3 hrs)
+- Link deep_analysis results to matched structures
+- "Recommended for you" sorting based on Grace's performance data
+- Structure performance insights on detail pages
 
-**Spec:** `specs/CONTENT-ENGINE-V2-VISION.md` (section: Content Engine V2 — Creation Flows)
+**Spec:** `specs/phase-4a-content-engine-v2-core.md`
+**Reference:** `references/CONTENT-STRUCTURES.md`
+
+### Deferred to later phases:
+- Block swap UI (after structures are proven)
+- Topic intelligence engine (needs more performance data)
+- Working documents + PDF export
+- Image+text compositing (Phase 4b)
+- Competitive intelligence (Phase 4c)
 
 ---
 
