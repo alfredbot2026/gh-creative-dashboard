@@ -13,12 +13,14 @@ export const GRACE_IDENTITY_LOCK = `Southeast Asian (Filipina) woman, age mid-to
  */
 export function getGraceReferenceImages(): Buffer[] {
   const cwd = process.cwd()
+  // Best 5 for generation (diverse angles, varied expressions)
+  // Full set of 8 stored in references/grace-refs/ and Supabase
   const files = [
-    'public/grace-ref-front.jpg',   // Front-facing, big smile
-    'public/grace-ref-right.jpg',   // 3/4 right profile
-    'public/grace-ref-right2.jpg',  // 3/4 right, different angle
-    'public/grace-ref-left.jpg',    // 3/4 left profile
-    'public/grace-ref-desk.jpg',    // 3/4 right at desk, craft workspace
+    'public/grace-ref-front.jpg',     // Front-facing, big smile
+    'public/grace-ref-warm.jpg',      // Front, warm soft smile
+    'public/grace-ref-laughing.jpg',  // Front, big laugh (expression range)
+    'public/grace-ref-right.jpg',     // 3/4 right profile
+    'public/grace-ref-left.jpg',      // 3/4 left profile
   ]
 
   const buffers: Buffer[] = []
