@@ -8,7 +8,7 @@ import { GoogleGenAI } from '@google/genai'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const MODEL = 'gemini-3-flash-preview'
-const DELAY_BETWEEN_CALLS_MS = 4000  // 4s = safe under 15 RPM free tier
+const DELAY_BETWEEN_CALLS_MS = 1500  // 1.5s delay, paid tier
 
 export interface VideoDeepAnalysis {
   transcript: string

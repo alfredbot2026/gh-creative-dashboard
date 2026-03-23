@@ -1732,3 +1732,14 @@
 [SocialAnalyzer] Analyzing instagram 18132530206477476 (Basic tools = Stapled Journal😍...)
 [SocialAnalyzer] Rate limited. Stopping batch.
  POST /api/analyze/social 200 in 959ms (compile: 7ms, render: 952ms)
+[SocialAnalyzer] Analyzing instagram 18132530206477476 (VIDEO: Basic tools = Stapled Journal😍...)
+[SocialAnalyzer] 📹 Video uploaded to Gemini
+[SocialAnalyzer] ✅ 18132530206477476 — score: 4.15/10 (with video)
+[SocialAnalyzer] Analyzing instagram 18099929164726241 (VIDEO: Journal Making Business😍...)
+[SocialAnalyzer] 📹 Video uploaded to Gemini
+[SocialAnalyzer] ✅ 18099929164726241 — score: 3.1/10 (with video)
+[SocialAnalyzer] Analyzing instagram 17972780576793614 (VIDEO: Christmas envelope coz why not!🎄...)
+[SocialAnalyzer] 📹 Video uploaded to Gemini
+[SocialAnalyzer] ✅ 17972780576793614 — score: 2.7/10 (with video)
+ POST /api/analyze/social 200 in 87s (compile: 286ms, render: 86s)
+[?25h

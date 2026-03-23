@@ -16,7 +16,7 @@ import { tmpdir } from 'os'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const MODEL = 'gemini-3-flash-preview'
-const DELAY_BETWEEN_CALLS_MS = 4000  // 4s = safe under 15 RPM
+const DELAY_BETWEEN_CALLS_MS = 1500  // 1.5s delay, paid tier
 
 /**
  * Download a video from Meta CDN and upload to Gemini File API.
