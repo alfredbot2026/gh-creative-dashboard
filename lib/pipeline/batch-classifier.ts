@@ -131,7 +131,7 @@ export async function classifyBatch(
   const supabase = externalSupabase || await createClient()
   
   // Get KB vocabulary once for the whole batch
-  const { hookTypes, frameworks } = await getKBVocabulary()
+  const { hookTypes, frameworks } = await getKBVocabulary(externalSupabase)
   
   // Fetch ALL classified ingest IDs (paginate to handle Supabase 1000-row default cap)
   const classifiedIds = new Set<string>()

@@ -15,11 +15,11 @@ interface KBEntry {
 /**
  * Fetch valid classification vocabulary from the knowledge base.
  */
-export async function getKBVocabulary(): Promise<{
+export async function getKBVocabulary(externalSupabase?: any): Promise<{
   hookTypes: string[]
   frameworks: string[]
 }> {
-  const supabase = await createClient()
+  const supabase = externalSupabase || await createClient()
 
   const [hooks, frameworks] = await Promise.all([
     supabase
