@@ -107,8 +107,11 @@ export async function generateAdImage(
         personaRefImages = [persona.avatar_url]
       }
       if (personaRefImages.length > 0) {
-        // Identity lock prompt — tells Gemini to preserve exact facial features
-        identityLockPrompt = `CRITICAL IDENTITY REQUIREMENT: The person in this image must have the EXACT same facial features as the person shown in the reference photos. Maintain identical: eye shape, eye size, eye spacing, nose shape, nose bridge, lip shape, jawline contour, cheekbone structure, skin tone, skin texture, face proportions, and hair style. Do NOT generate a new face — reproduce the reference person's face exactly. All facial features must remain identical to the reference, including eyelid thickness, iris proportion, and expression style.`
+        // Use persona appearance description (detailed identity lock) if available
+        const appearanceDesc = persona.appearance
+          ? `\n\nEXACT APPEARANCE: ${persona.appearance}`
+          : ''
+        identityLockPrompt = `CRITICAL IDENTITY REQUIREMENT: The person in this image must have the EXACT same facial features as the person shown in the reference photos. Maintain identical: eye shape, eye size, eye spacing, nose shape, nose bridge, lip shape, jawline contour, cheekbone structure, skin tone, skin texture, face proportions, and hair style. Do NOT generate a new face — reproduce the reference person's face exactly. All facial features must remain identical to the reference, including eyelid thickness, iris proportion, and expression style.${appearanceDesc}`
       }
     }
   }
