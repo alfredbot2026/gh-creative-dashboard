@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2, Save, Download } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2, Save, Download, ImageIcon, Sparkles } from 'lucide-react'
 import { formatScriptForExport, downloadScriptAsText } from '@/lib/studio/download-utils'
 import BlockEditor from '@/components/create/BlockEditor'
 import type { RegenerateContext } from '@/components/create/BlockEditor'
@@ -263,11 +263,45 @@ function CreateWizard() {
 
   const [savingId, setSavingId] = useState<string | null>(null)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
+  const [generatingImageId, setGeneratingImageId] = useState<string | null>(null)
+  const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({})
 
   function handleCopy(text: string, id: string) {
     navigator.clipboard.writeText(text)
     setCopiedId(id)
     setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  async function handleGenerateImage(variant: Variant) {
+    setGeneratingImageId(variant.id)
+    try {
+      // Build prompt from the variant content
+      const scenes = variant.content?.scenes || []
+      const hookText = variant.hook || ''
+      const visualDir = scenes[0]?.visual_direction || ''
+      const imagePrompt = variant.content?.imagePrompt || 
+        `${hookText}. ${visualDir}. Filipino woman in home office setting, warm lighting, paper crafting products visible.`
+      
+      const aspectMap: Record<string, string> = {
+        'reels': '9:16', 'facebook-ad': '1:1', 'carousel': '1:1', 
+        'static-image': '1:1', 'facebook-post': '4:5', 'youtube': '16:9'
+      }
+      
+      const fd = new FormData()
+      fd.append('prompt', imagePrompt)
+      fd.append('aspectRatio', aspectMap[platform] || '1:1')
+      fd.append('includeGrace', 'true')
+      
+      const res = await fetch('/api/studio/generate', { method: 'POST', body: fd })
+      const data = await res.json()
+      
+      if (data.url) {
+        setGeneratedImages(prev => ({ ...prev, [variant.id]: data.url }))
+      }
+    } catch (err) {
+      console.error('Image generation failed:', err)
+    }
+    setGeneratingImageId(null)
   }
 
   async function handleSaveVariant(variant: Variant) {
@@ -666,7 +700,30 @@ function CreateWizard() {
                     {savedIds.has(variant.id) ? <Check size={16} /> : <Save size={16} />}
                     {savedIds.has(variant.id) ? 'Saved' : savingId === variant.id ? 'Saving...' : 'Save'}
                   </button>
+                  {['facebook-ad', 'carousel', 'static-image'].includes(platform) && (
+                    <button
+                      className={styles.iconBtn}
+                      onClick={() => handleGenerateImage(variant)}
+                      disabled={generatingImageId === variant.id}
+                    >
+                      {generatingImageId === variant.id ? (
+                        <><Sparkles size={16} className={styles.spin} /> Generating...</>
+                      ) : (
+                        <><ImageIcon size={16} /> Generate Image</>
+                      )}
+                    </button>
+                  )}
                 </div>
+
+                {/* Generated image */}
+                {generatedImages[variant.id] && (
+                  <div className={styles.generatedImage}>
+                    <img src={generatedImages[variant.id]} alt="Generated ad image" className={styles.genImg} />
+                    <a href={generatedImages[variant.id]} download={`ad-image-${variant.id}.png`} className={styles.iconBtn}>
+                      <Download size={14} /> Download Image
+                    </a>
+                  </div>
+                )}
               </div>
             ))}
           </div>
