@@ -218,22 +218,22 @@ export async function compositeTextOnImage(
     .map((line, i) => {
       const y = Math.round(startY + i * lineHeight)
       const escaped = escapeXml(line)
-      const lineWidth = line.length * fontSize * 0.55 // approximate
-      const boxPadX = fontSize * 0.4
-      const boxPadY = fontSize * 0.15
+      const lineWidth = line.length * fontSize * 0.48 // tighter char width estimate
+      const boxPadX = fontSize * 0.25
+      const boxPadY = fontSize * 0.1
       let lineXml = ''
 
       switch (style) {
         case 'highlight': {
-          // Colored box behind each line (Instagram Stories style)
+          // Colored box behind each line (Instagram Stories style) — tight fit
           let boxX: number
           if (textAnchor === 'middle') boxX = xPos - lineWidth / 2 - boxPadX
           else if (textAnchor === 'end') boxX = xPos - lineWidth - boxPadX
           else boxX = xPos - boxPadX
-          const boxY = y - fontSize * 0.85
+          const boxY = y - fontSize * 0.78
           const boxW = lineWidth + boxPadX * 2
-          const boxH = lineHeight
-          const radius = fontSize * 0.15
+          const boxH = fontSize * 1.1
+          const radius = fontSize * 0.12
           lineXml = `<rect x="${Math.round(boxX)}" y="${Math.round(boxY)}" width="${Math.round(boxW)}" height="${Math.round(boxH)}" rx="${Math.round(radius)}" fill="${opts.highlightColor}" opacity="0.85"/>
           <text x="${xPos}" y="${y}" font-family="${effectiveFontFamily}" font-size="${fontSize}" font-weight="${effectiveFontWeight}" font-style="${effectiveFontStyle}" fill="${opts.textColor}" text-anchor="${textAnchor}">${escaped}</text>`
           break
@@ -249,14 +249,14 @@ export async function compositeTextOnImage(
           break
         }
         case 'typewriter': {
-          // Monospace with semi-transparent background strip
+          // Monospace with semi-transparent background strip — tight fit
           let boxX: number
           if (textAnchor === 'middle') boxX = xPos - lineWidth / 2 - boxPadX
           else if (textAnchor === 'end') boxX = xPos - lineWidth - boxPadX
           else boxX = xPos - boxPadX
-          const boxY = y - fontSize * 0.85
+          const boxY = y - fontSize * 0.78
           const boxW = lineWidth + boxPadX * 2
-          const boxH = lineHeight
+          const boxH = fontSize * 1.1
           lineXml = `<rect x="${Math.round(boxX)}" y="${Math.round(boxY)}" width="${Math.round(boxW)}" height="${Math.round(boxH)}" fill="black" opacity="0.6"/>
           <text x="${xPos}" y="${y}" font-family="${effectiveFontFamily}" font-size="${fontSize}" font-weight="normal" fill="${opts.textColor}" text-anchor="${textAnchor}">${escaped}</text>`
           break
