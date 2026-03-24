@@ -74,6 +74,8 @@ export async function POST(request: NextRequest) {
   const overlayOpacity = parseFloat(formData.get('overlayOpacity') as string || '0.4')
   const position = (formData.get('position') as string || 'center') as 'top' | 'center' | 'bottom'
   const fontWeight = (formData.get('fontWeight') as string || 'bold') as 'normal' | 'bold' | 'black'
+  const textStyle = (formData.get('textStyle') as string || 'classic') as 'classic' | 'highlight' | 'outline' | 'neon' | 'typewriter' | 'strong'
+  const highlightColor = formData.get('highlightColor') as string || '#000000'
 
   if (!imageFile) {
     return NextResponse.json({ error: 'Background image is required' }, { status: 400 })
@@ -102,6 +104,8 @@ export async function POST(request: NextRequest) {
       position,
       fontWeight,
       textShadow: true,
+      textStyle,
+      highlightColor,
     }
 
     const slides = await generateCarouselSlides(imageBuffer, texts, styleOptions)

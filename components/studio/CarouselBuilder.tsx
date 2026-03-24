@@ -11,12 +11,16 @@ interface SlideData {
   storage_path: string
 }
 
+type TextStyle = 'classic' | 'highlight' | 'outline' | 'neon' | 'typewriter' | 'strong'
+
 interface CarouselStyle {
   fontFamily: string
   textColor: string
   overlayOpacity: number
   position: 'top' | 'center' | 'bottom'
   fontWeight: 'normal' | 'bold' | 'black'
+  textStyle: TextStyle
+  highlightColor: string
 }
 
 const FONT_OPTIONS = [
@@ -24,6 +28,25 @@ const FONT_OPTIONS = [
   { id: 'Georgia, Times New Roman, serif', label: 'Georgia' },
   { id: 'Courier New, monospace', label: 'Courier' },
   { id: 'system-ui, sans-serif', label: 'System' },
+]
+
+const TEXT_STYLE_OPTIONS: { id: TextStyle; label: string; desc: string }[] = [
+  { id: 'classic', label: 'Classic', desc: 'Clean text with shadow' },
+  { id: 'highlight', label: 'Highlight', desc: 'Colored box behind text' },
+  { id: 'outline', label: 'Outline', desc: 'Text stroke, no fill' },
+  { id: 'neon', label: 'Neon', desc: 'Glowing text effect' },
+  { id: 'typewriter', label: 'Typewriter', desc: 'Monospace with dark strip' },
+  { id: 'strong', label: 'Strong', desc: 'Big bold italic serif' },
+]
+
+const HIGHLIGHT_COLORS = [
+  { id: '#000000', label: 'Black' },
+  { id: '#FFFFFF', label: 'White' },
+  { id: '#E11D48', label: 'Pink' },
+  { id: '#2563EB', label: 'Blue' },
+  { id: '#16A34A', label: 'Green' },
+  { id: '#9333EA', label: 'Purple' },
+  { id: '#EA580C', label: 'Orange' },
 ]
 
 const COLOR_OPTIONS = [
@@ -52,6 +75,8 @@ export default function CarouselBuilder() {
     overlayOpacity: 0.4,
     position: 'center',
     fontWeight: 'bold',
+    textStyle: 'classic',
+    highlightColor: '#000000',
   })
 
   // Results
@@ -101,6 +126,8 @@ export default function CarouselBuilder() {
       formData.append('overlayOpacity', carouselStyle.overlayOpacity.toString())
       formData.append('position', carouselStyle.position)
       formData.append('fontWeight', carouselStyle.fontWeight)
+      formData.append('textStyle', carouselStyle.textStyle)
+      formData.append('highlightColor', carouselStyle.highlightColor)
 
       const res = await fetch('/api/studio/carousel/text', {
         method: 'POST',
@@ -141,6 +168,8 @@ export default function CarouselBuilder() {
       formData.append('overlayOpacity', carouselStyle.overlayOpacity.toString())
       formData.append('position', carouselStyle.position)
       formData.append('fontWeight', carouselStyle.fontWeight)
+      formData.append('textStyle', carouselStyle.textStyle)
+      formData.append('highlightColor', carouselStyle.highlightColor)
       formData.append('outputPath', slides[editingSlide].storage_path)
 
       const res = await fetch('/api/studio/carousel/recomposite', {
@@ -188,6 +217,8 @@ export default function CarouselBuilder() {
       formData.append('overlayOpacity', carouselStyle.overlayOpacity.toString())
       formData.append('position', carouselStyle.position)
       formData.append('fontWeight', carouselStyle.fontWeight)
+      formData.append('textStyle', carouselStyle.textStyle)
+      formData.append('highlightColor', carouselStyle.highlightColor)
 
       const res = await fetch('/api/studio/carousel/text', {
         method: 'POST',
@@ -286,6 +317,42 @@ export default function CarouselBuilder() {
               className={styles.slider}
             />
           </div>
+
+          {/* Text style (IG-style) */}
+          <div className={styles.section}>
+            <label className={styles.label}>Text Style</label>
+            <div className={styles.pillRow}>
+              {TEXT_STYLE_OPTIONS.map(ts => (
+                <button
+                  key={ts.id}
+                  className={`${styles.pill} ${carouselStyle.textStyle === ts.id ? styles.pillActive : ''}`}
+                  onClick={() => setCarouselStyle(s => ({ ...s, textStyle: ts.id }))}
+                  title={ts.desc}
+                >
+                  {ts.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Highlight color (only shown for highlight style) */}
+          {carouselStyle.textStyle === 'highlight' && (
+            <div className={styles.section}>
+              <label className={styles.label}>Highlight Color</label>
+              <div className={styles.pillRow}>
+                {HIGHLIGHT_COLORS.map(c => (
+                  <button
+                    key={c.id}
+                    className={`${styles.colorPill} ${carouselStyle.highlightColor === c.id ? styles.colorPillActive : ''}`}
+                    onClick={() => setCarouselStyle(s => ({ ...s, highlightColor: c.id }))}
+                  >
+                    <span className={styles.colorDot} style={{ background: c.id, border: c.id === '#FFFFFF' ? '1px solid #ccc' : 'none' }} />
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Style controls */}
           <div className={styles.section}>

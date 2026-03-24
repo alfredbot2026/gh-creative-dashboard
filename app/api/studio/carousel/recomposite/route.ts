@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
   const overlayOpacity = parseFloat(formData.get('overlayOpacity') as string || '0.4')
   const position = (formData.get('position') as string || 'center') as 'top' | 'center' | 'bottom'
   const fontWeight = (formData.get('fontWeight') as string || 'bold') as 'normal' | 'bold' | 'black'
+  const textStyle = (formData.get('textStyle') as string || 'classic') as 'classic' | 'highlight' | 'outline' | 'neon' | 'typewriter' | 'strong'
+  const highlightColor = formData.get('highlightColor') as string || '#000000'
   const outputPath = formData.get('outputPath') as string | null
 
   if (!text) {
@@ -57,6 +59,8 @@ export async function POST(request: NextRequest) {
       position,
       fontWeight,
       textShadow: true,
+      textStyle,
+      highlightColor,
     }
 
     const result = await compositeTextOnImage(imageBuffer, options)
