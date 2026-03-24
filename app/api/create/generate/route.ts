@@ -315,7 +315,9 @@ IMPORTANT RULES:
 - Respect the timing. A 1-second hook should be 5-8 words max, not a full paragraph.
 - Transitions between blocks should be intentional — each block builds on the previous one but has its own distinct energy and technique.
 
-Each variant MUST follow this exact block structure. Use the block_id and block_label from above for each scene.`
+Each variant MUST include ALL blocks listed above — do NOT skip or merge blocks. Use the block_id and block_label from above for each scene.
+The variant's "hook" field should be a short 1-line summary of the first block's text (for display as a title). The FULL hook text goes inside the first scene's script_text.
+CRITICAL: You must generate a scene for EVERY block listed above. If the structure has 6 blocks, you must output 6 scenes. Never condense or merge blocks.`
       }
     }
 
