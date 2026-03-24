@@ -53,7 +53,7 @@ const EMPTY_BRAND_STYLE: Partial<BrandStyleGuide> = {
 }
 
 export default function SettingsPage() {
-    const [activeTab, setActiveTab] = useState<'business' | 'brand' | 'products' | 'persona' | 'accounts'>('business')
+    const [activeTab, setActiveTab] = useState<'business' | 'brand' | 'accounts'>('business')
 
     const [profile, setProfile] = useState<BusinessProfileData>(EMPTY_PROFILE)
     const [brandStyle, setBrandStyle] = useState<Partial<BrandStyleGuide>>(EMPTY_BRAND_STYLE)
@@ -230,25 +230,13 @@ export default function SettingsPage() {
                     className={`${styles.tab} ${activeTab === 'business' ? styles.tabActive : ''}`}
                     onClick={() => setActiveTab('business')}
                 >
-                    Business Profile
+                    My Business
                 </button>
                 <button 
                     className={`${styles.tab} ${activeTab === 'brand' ? styles.tabActive : ''}`}
                     onClick={() => setActiveTab('brand')}
                 >
-                    Brand Style Guide
-                </button>
-                <button 
-                    className={`${styles.tab} ${activeTab === 'products' ? styles.tabActive : ''}`}
-                    onClick={() => setActiveTab('products')}
-                >
-                    Products
-                </button>
-                <button
-                    className={`${styles.tab} ${activeTab === 'persona' ? styles.tabActive : ''}`}
-                    onClick={() => setActiveTab('persona')}
-                >
-                    Brand Persona
+                    My Brand
                 </button>
                 <button
                     className={`${styles.tab} ${activeTab === 'accounts' ? styles.tabActive : ''}`}
@@ -268,6 +256,7 @@ export default function SettingsPage() {
 
             {activeTab === 'business' && (
                 <div className={styles.formGrid}>
+                    <p className={styles.tabHint}>Everything the AI knows about your business — this directly shapes what scripts are generated.</p>
                     <section className={styles.section}>
                         <h2 className={styles.sectionTitle}>Basic Info</h2>
                         <label className={styles.label}>
@@ -304,6 +293,7 @@ export default function SettingsPage() {
 
             {activeTab === 'brand' && (
                 <div className={styles.formGrid}>
+                    <p className={styles.tabHint}>How the AI represents you — your voice, visual style, and character.</p>
                     <section className={styles.section}>
                         <h2 className={styles.sectionTitle}>Voice Rubric</h2>
                         <GenericListSection 
@@ -385,7 +375,7 @@ export default function SettingsPage() {
                 </div>
             )}
 
-            {activeTab === 'products' && (
+            {activeTab === 'business' && (
                 <div className={styles.formGrid}>
                     <section className={styles.section}>
                         <div className={styles.listHeader}>
@@ -478,7 +468,7 @@ export default function SettingsPage() {
                 </div>
             )}
 
-            {activeTab === 'persona' && (
+            {activeTab === 'brand' && (
                 <div className={styles.formGrid}>
                     <section className={styles.section}>
                         <h2 className={styles.sectionTitle}>Brand Character</h2>

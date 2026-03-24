@@ -40,6 +40,13 @@
     font-weight: 600;
 }
 
+.tabHint {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-md);
+    font-style: italic;
+}
+
 .formGrid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
