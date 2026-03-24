@@ -1,0 +1,190 @@
+.page { padding: var(--space-lg); max-width: 1100px; margin: 0 auto; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.back {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+.back:hover { color: var(--color-text); }
+
+.title { font-size: 1.5rem; font-weight: 700; margin: 0 0 4px; }
+.subtitle { font-size: 0.875rem; color: var(--color-text-muted); margin: 0; }
+
+.headerActions { display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; }
+
+.actionBtn {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.actionBtn:hover { border-color: var(--color-text); }
+.actionBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.actionBtnPrimary {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-text);
+  color: var(--color-surface);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.actionBtnPrimary:hover { opacity: 0.85; }
+.actionBtnPrimary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.notice {
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-border) 30%, transparent);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-md);
+}
+
+/* Stats row */
+.statsRow {
+  display: flex;
+  gap: var(--space-lg);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-md);
+}
+
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.statNum { font-size: 1.5rem; font-weight: 700; }
+.statLabel { font-size: 0.75rem; color: var(--color-text-muted); }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-lg);
+}
+.tab {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--color-text); }
+.tabActive { color: var(--color-text); border-bottom-color: var(--color-text); font-weight: 600; }
+
+.loading { text-align: center; padding: 40px; color: var(--color-text-muted); }
+
+.empty { text-align: center; padding: 40px; }
+.empty p { color: var(--color-text-muted); margin: 4px 0; }
+.emptyHint { font-size: 0.875rem; }
+
+/* Trends grid */
+.trendsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+@media (max-width: 768px) { .trendsGrid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+}
+.cardTitle { font-size: 1rem; font-weight: 600; margin: 0 0 2px; }
+.cardHint { font-size: 0.75rem; color: var(--color-text-muted); margin: 0 0 var(--space-sm); }
+
+/* Rank list */
+.rankList { display: flex; flex-direction: column; gap: 10px; }
+.rankRow { display: flex; align-items: center; gap: 10px; }
+.rankNum { font-size: 0.7rem; font-weight: 700; color: var(--color-text-muted); width: 16px; text-align: right; flex-shrink: 0; }
+.rankContent { flex: 1; min-width: 0; }
+.rankName { font-size: 0.875rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rankMeta { font-size: 0.7rem; color: var(--color-text-muted); }
+.rankBar { width: 60px; height: 4px; background: var(--color-border); border-radius: 2px; flex-shrink: 0; }
+.rankBarFill { height: 100%; background: var(--color-text); border-radius: 2px; transition: width 0.3s; }
+
+/* Topics */
+.topicGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.topicTag {
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  background: var(--color-surface);
+}
+.topicTagTop { border-color: var(--color-text); font-weight: 600; }
+.topicName { display: block; }
+.topicMeta { font-size: 0.65rem; color: var(--color-text-muted); }
+
+/* Purpose mix */
+.purposeList { display: flex; flex-direction: column; gap: 10px; }
+.purposeRow { display: flex; align-items: center; gap: 10px; }
+.purposeName { font-size: 0.85rem; width: 80px; flex-shrink: 0; text-transform: capitalize; }
+.purposeBar { flex: 1; height: 6px; background: var(--color-border); border-radius: 3px; }
+.purposeBarFill { height: 100%; background: var(--color-text); border-radius: 3px; }
+.purposePct { font-size: 0.75rem; font-weight: 600; color: var(--color-text-muted); width: 32px; text-align: right; }
+
+/* Channels list */
+.channelsList { display: flex; flex-direction: column; gap: 1px; }
+.channelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-sm);
+}
+.channelInfo { flex: 1; min-width: 0; }
+.channelName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  display: block;
+}
+.channelName:hover { text-decoration: underline; }
+.channelMeta {
+  display: flex;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.langBadge {
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-border) 40%, transparent);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.channelStats { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.vidCount { font-size: 0.8rem; font-weight: 600; }
+.lastAnalyzed { font-size: 0.7rem; color: var(--color-text-muted); }

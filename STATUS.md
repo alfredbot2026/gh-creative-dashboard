@@ -76,3 +76,22 @@
 - Cross-post deduplication
 - Reclassify all content with transcript data
 - Retention curves (YouTube Analytics API)
+
+---
+
+## 2026-03-24 10:35 — Phase 4c Planning
+
+### Current state
+- Phase 4b Wave 4: COMPLETE (`a0c3ace`) — Save to Library, Download ZIP, Export
+- Phase 4c: PLANNING — Competitive Intelligence
+
+### Phase 4c definition (from vision doc)
+1. Top creator identification + tracking
+2. Niche trend analysis
+3. Integration into topic suggestions + technique recommendations
+
+### Key decisions from Rob (vision doc)
+- Discover top creators PROGRAMMATICALLY via YouTube API (not seed list)
+- Same classification framework as Grace's content
+- Refresh monthly
+- Integration: surface "trending in niche" in /create topic suggestions

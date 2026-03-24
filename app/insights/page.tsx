@@ -179,9 +179,14 @@ export default function InsightsPage() {
         <div className={styles.insightsSection}>
           <div className={styles.insightsHeader}>
             <h2 className={styles.insightsTitle}>💡 Key Insights</h2>
-            <Link href="/insights/topics" className={styles.topicsLink}>
-              View Topic Analysis →
-            </Link>
+            <div style={{display:'flex', gap:'12px'}}>
+              <Link href="/insights/topics" className={styles.topicsLink}>
+                Topic Analysis →
+              </Link>
+              <Link href="/insights/competitive" className={styles.topicsLink}>
+                Competitive Intel →
+              </Link>
+            </div>
           </div>
           <div className={styles.insightCards}>
             {dashboard.insights.map((insight: string, i: number) => (

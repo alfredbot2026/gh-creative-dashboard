@@ -57,6 +57,15 @@ const ALL_GOALS = GOAL_GROUPS.flatMap(g => g.goals)
 
 const STRUCTURE_PLATFORMS: Platform[] = ['reels', 'youtube', 'facebook-ad', 'carousel', 'static-image']
 
+// Goals that DON'T make sense for certain platforms — hide them
+const HIDDEN_GOALS_BY_PLATFORM: Partial<Record<Platform, string[]>> = {
+  youtube: ['trend'],
+  'facebook-ad': ['journey', 'debunk', 'process', 'trend'],
+  carousel: ['journey', 'debunk', 'process', 'trend'],
+  'static-image': ['journey', 'debunk', 'process', 'trend'],
+  'facebook-post': ['trend'],
+}
+
 const LOADING_MESSAGES = [
   'Pulling from your knowledge base...',
   'Found some great angles',
@@ -366,19 +375,34 @@ function CreateWizard() {
               <div key={group.funnel} className={styles.goalGroup}>
                 <div className={styles.goalGroupLabel}>{group.label}</div>
                 <div className={styles.goalGroupOptions}>
-                  {group.goals.map(g => (
+                  {group.goals
+                    .filter(g => !(HIDDEN_GOALS_BY_PLATFORM[platform] || []).includes(g.id))
+                    .map(g => {
+                    // Check if this goal has structures for the current platform
+                    const purposeTag = GOAL_TO_PURPOSE[g.id]
+                    const goalHasStructures = STRUCTURE_PLATFORMS.includes(platform) && structures.some(s => {
+                      let typeMatch = false
+                      if (platform === 'reels') typeMatch = s.content_type === 'reel'
+                      else if (platform === 'youtube') typeMatch = s.content_type === 'youtube'
+                      else if (platform === 'facebook-ad' || platform === 'carousel' || platform === 'static-image') typeMatch = s.content_type === 'ad'
+                      else if (platform === 'facebook-post') typeMatch = s.content_type === 'story'
+                      if (!typeMatch) return false
+                      return purposeTag && s.purpose?.includes(purposeTag)
+                    })
+                    return (
                     <button
                       key={g.id}
                       className={`${styles.optionCard} ${goal === g.id ? styles.optionSelected : ''}`}
                       onClick={() => {
                         setGoal(g.id)
-                        setTimeout(() => goTo(hasStructures ? 'structure' : 'topic'), 150)
+                        setTimeout(() => goTo(goalHasStructures ? 'structure' : 'topic'), 150)
                       }}
                     >
                       {g.label}
                       {goal === g.id && <Check size={16} className={styles.checkIcon} />}
                     </button>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             ))}
