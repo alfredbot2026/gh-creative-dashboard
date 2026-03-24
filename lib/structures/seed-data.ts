@@ -12,7 +12,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Show the end result first, then explain how you got there. Fast-paced, proof-driven.',
     source_creator: 'Personal Brand Launch KB',
     content_type: 'reel',
-    purpose: ['educate', 'sell', 'debunk', 'process'],
+    purpose: ['educate', 'sell', 'process'],
     difficulty: 'beginner',
     blocks: [
       { id: 'result', label: 'Show Result', timing: '0-1s', duration_hint: '1s', instruction: 'Show a visual of the end result — finished product, improved metrics, or transformation.', example: 'Close-up of beautifully bound journal on a styled desk', rules: ['Visual must be compelling enough to stop the scroll', 'No text needed yet — let the visual speak'] },
@@ -32,7 +32,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Challenge a common belief, reveal the truth, give an actionable next step.',
     source_creator: 'Personal Brand Launch KB',
     content_type: 'reel',
-    purpose: ['educate', 'journey', 'debunk'],
+    purpose: ['educate', 'debunk'],
     difficulty: 'beginner',
     blocks: [
       { id: 'myth', label: 'State the Myth', timing: '0-2s', duration_hint: '2s', instruction: 'State a myth or common belief your audience holds. Make it feel like something they\'ve heard 100 times.', example: '"Most people think you need expensive equipment to start a printing business"', rules: ['Use "Most people think..." or "Everyone says..."', 'Must be a real belief in your niche'] },
@@ -51,7 +51,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Three-act structure: grab attention, deliver value, end with a payoff that drives action.',
     source_creator: 'Viral Video Anatomy KB',
     content_type: 'reel',
-    purpose: ['educate', 'inspire', 'sell', 'process', 'trend'],
+    purpose: ['educate', 'inspire', 'sell', 'process', 'trend', 'story', 'journey', 'debunk', 'prove', 'announce'],
     difficulty: 'beginner',
     blocks: [
       { id: 'hook', label: 'Hook', timing: '0-3s', duration_hint: '3s', instruction: 'Establish immediate value, tension, or intrigue to stop the scroll.', example: '"I made ₱10,000 in one weekend with this..."', rules: ['3-6 word text overlay', '3-6 cuts/shots in first 3 seconds', 'Transition on second 3', 'Zero dead space at start'] },
@@ -69,7 +69,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Open a curiosity loop with an unexplained visual, walk through the journey, close with a reveal.',
     source_creator: 'Viral Video Anatomy KB',
     content_type: 'reel',
-    purpose: ['story', 'inspire', 'journey'],
+    purpose: ['story', 'inspire', 'journey', 'process'],
     difficulty: 'intermediate',
     blocks: [
       { id: 'loop', label: 'Open Loop', timing: '0-3s', duration_hint: '3s', instruction: 'Start with an unexplained visual or question that creates a curiosity loop.', example: 'Show a messy pile of paper and tools on a desk with text: "3 hours later, this became..."', rules: ['Visual must raise a question', 'Don\'t reveal the answer yet', 'Zeigarnik Effect — brain MUST know the resolution'] },
@@ -87,7 +87,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Chris Chung\'s complete 8-part Reel structure: hook → super hook → context → dance → re-hooks → value → re-loop → CTA.',
     source_creator: 'Chris Chung',
     content_type: 'reel',
-    purpose: ['educate', 'sell', 'story', 'trend'],
+    purpose: ['educate', 'inspire', 'sell', 'process', 'trend', 'story', 'journey', 'debunk', 'prove', 'announce'],
     difficulty: 'advanced',
     blocks: [
       { id: 'hook', label: 'Hook', timing: '0-1s', duration_hint: '1s', instruction: 'Pain + Benefit + Curiosity in one line. Text hook on screen simultaneously.', example: '"Stop wasting money on expensive binding machines"', rules: ['Written + verbal + visual hook (Triple Hook)', 'Transition on second 3', '3-6 word text overlay'] },
@@ -253,7 +253,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Every founder needs these 4 videos: origin story, product creation story, how-it-works, and day-in-the-life.',
     source_creator: 'Personal Brand Launch KB',
     content_type: 'story',
-    purpose: ['story', 'sell', 'prove'],
+    purpose: ['story', 'sell', 'prove', 'journey'],
     difficulty: 'beginner',
     blocks: [
       { id: 'type', label: 'Choose Video Type', timing: 'full', duration_hint: 'varies', instruction: 'Pick one of the 4 founder video types to create.', rules: ['1. Founder Story: How you built the business from zero', '2. Product Story: Step-by-step of how you created your product', '3. Product Breakdown: How your product works for a customer', '4. Day in the Life: Documenting your founder day'] },
@@ -311,7 +311,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Show the struggle, show the dream, bridge them with your product.',
     source_creator: 'CRO KB',
     content_type: 'ad',
-    purpose: ['sell', 'announce'],
+    purpose: ['sell', 'inspire'],
     difficulty: 'beginner',
     blocks: [
       { id: 'before', label: 'Before', timing: '0-8s', duration_hint: '8s', instruction: 'Visualize their current struggle. Make it relatable and vivid.', example: 'Show: messy desk, crumpled paper, broken stapler, frustrated face', rules: ['Visual storytelling preferred', 'Must match viewer\'s current reality'] },
@@ -330,7 +330,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Hook with curiosity, tell a compelling story, transition naturally into your offer.',
     source_creator: 'CRO KB',
     content_type: 'ad',
-    purpose: ['sell', 'story', 'trend', 'announce'],
+    purpose: ['sell', 'story'],
     difficulty: 'intermediate',
     blocks: [
       { id: 'hook', label: 'Hook', timing: '0-3s', duration_hint: '3s', instruction: 'Grab attention with a curiosity-inducing opening. Make them NEED to hear the story.', example: '"Last month, a customer sent me a message that made me cry"', rules: ['Emotional or curiosity-driven', 'Must make them want the story'] },
