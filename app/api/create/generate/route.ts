@@ -269,10 +269,27 @@ export async function POST(req: Request) {
 
       if (structure) {
         const blocks = (structure.blocks as any[]) || []
-        structureContext = `\nSELECTED STRUCTURE: "${structure.name}"
+        structureContext = `\n\n=== SELECTED STRUCTURE: "${structure.name}" ===
 Description: ${structure.description}
-REQUIRED BLOCKS (generate scenes matching these EXACTLY):
-${blocks.map((b: any) => `- block_id: "${b.id}", block_label: "${b.label}", timing: "${b.timing || ''}", purpose: "${b.purpose || ''}"`).join('\n')}
+
+CRITICAL: Each block below has specific RULES and INSTRUCTIONS. You must follow them precisely — don't just label paragraphs with block names. Each block has a distinct PURPOSE and TECHNIQUE.
+
+${blocks.map((b: any) => {
+          const rules = (b.rules as string[] || []).map((r: string) => `    - ${r}`).join('\n')
+          return `BLOCK: ${b.label} (${b.id})
+  Timing: ${b.timing || 'flexible'}
+  Purpose: ${b.instruction || b.purpose || ''}
+  Rules:
+${rules}
+  Example: ${b.example || 'N/A'}
+  Duration: ${b.duration_hint || 'see timing'}`
+        }).join('\n\n')}
+
+IMPORTANT RULES:
+- Each block must serve its SPECIFIC purpose. A Hook is NOT just the first sentence — it's a pattern interrupt that stops the scroll.
+- Do NOT write a regular script and then retrofit block labels onto it. Each block must follow its rules independently.
+- Respect the timing. A 1-second hook should be 5-8 words max, not a full paragraph.
+- Transitions between blocks should be intentional — each block builds on the previous one but has its own distinct energy and technique.
 
 Each variant MUST follow this exact block structure. Use the block_id and block_label from above for each scene.`
       }
