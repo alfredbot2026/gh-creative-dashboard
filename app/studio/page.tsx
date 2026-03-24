@@ -2,9 +2,11 @@
 
 import { useState, useCallback, useRef, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, X, Download, RotateCw, User, Sparkles, Image as ImageIcon } from 'lucide-react'
+import { Upload, X, Download, RotateCw, User, Sparkles, Image as ImageIcon, LayoutGrid } from 'lucide-react'
+import CarouselBuilder from '@/components/studio/CarouselBuilder'
 import styles from './studio.module.css'
 
+type StudioTab = 'generate' | 'carousel'
 type AspectRatio = '1:1' | '9:16' | '4:5' | '16:9'
 type StylePreset = 'product' | 'lifestyle' | 'promo' | 'bts'
 
@@ -36,6 +38,9 @@ interface GeneratedImage {
 }
 
 function StudioPage() {
+  // Tab
+  const [tab, setTab] = useState<StudioTab>('generate')
+
   // Upload state
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [uploadPreview, setUploadPreview] = useState<string | null>(null)
@@ -140,6 +145,24 @@ function StudioPage() {
       <h1 className={styles.title}>Studio</h1>
       <p className={styles.subtitle}>Create images, composites, and carousels</p>
 
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${tab === 'generate' ? styles.tabActive : ''}`}
+          onClick={() => setTab('generate')}
+        >
+          <ImageIcon size={16} /> Image Generator
+        </button>
+        <button
+          className={`${styles.tab} ${tab === 'carousel' ? styles.tabActive : ''}`}
+          onClick={() => setTab('carousel')}
+        >
+          <LayoutGrid size={16} /> Text Carousel
+        </button>
+      </div>
+
+      {tab === 'carousel' ? (
+        <CarouselBuilder />
+      ) : (
       <div className={styles.workspace}>
         {/* Left: Controls */}
         <div className={styles.controls}>
@@ -298,6 +321,7 @@ function StudioPage() {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }
