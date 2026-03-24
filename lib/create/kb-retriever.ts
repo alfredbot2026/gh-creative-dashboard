@@ -199,7 +199,7 @@ export async function getContextWithPinnedSelections(
 
 export async function getContentTypeContext(
   lane: 'short-form' | 'ads' | 'youtube' | 'social_media',
-  contentType: 'educate' | 'story' | 'prove' | 'sell',
+  contentType: string,
   limit: number = 25
 ): Promise<{ entries: KnowledgeEntry[], hooks: KnowledgeEntry[], tier: 'approved' | 'candidate' }> {
   let categories: string[] = []

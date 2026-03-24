@@ -12,7 +12,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Show the end result first, then explain how you got there. Fast-paced, proof-driven.',
     source_creator: 'Personal Brand Launch KB',
     content_type: 'reel',
-    purpose: ['educate', 'sell'],
+    purpose: ['educate', 'sell', 'debunk', 'process'],
     difficulty: 'beginner',
     blocks: [
       { id: 'result', label: 'Show Result', timing: '0-1s', duration_hint: '1s', instruction: 'Show a visual of the end result — finished product, improved metrics, or transformation.', example: 'Close-up of beautifully bound journal on a styled desk', rules: ['Visual must be compelling enough to stop the scroll', 'No text needed yet — let the visual speak'] },
@@ -32,7 +32,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Challenge a common belief, reveal the truth, give an actionable next step.',
     source_creator: 'Personal Brand Launch KB',
     content_type: 'reel',
-    purpose: ['educate'],
+    purpose: ['educate', 'journey', 'debunk'],
     difficulty: 'beginner',
     blocks: [
       { id: 'myth', label: 'State the Myth', timing: '0-2s', duration_hint: '2s', instruction: 'State a myth or common belief your audience holds. Make it feel like something they\'ve heard 100 times.', example: '"Most people think you need expensive equipment to start a printing business"', rules: ['Use "Most people think..." or "Everyone says..."', 'Must be a real belief in your niche'] },
@@ -51,7 +51,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Three-act structure: grab attention, deliver value, end with a payoff that drives action.',
     source_creator: 'Viral Video Anatomy KB',
     content_type: 'reel',
-    purpose: ['educate', 'inspire', 'sell'],
+    purpose: ['educate', 'inspire', 'sell', 'process', 'trend'],
     difficulty: 'beginner',
     blocks: [
       { id: 'hook', label: 'Hook', timing: '0-3s', duration_hint: '3s', instruction: 'Establish immediate value, tension, or intrigue to stop the scroll.', example: '"I made ₱10,000 in one weekend with this..."', rules: ['3-6 word text overlay', '3-6 cuts/shots in first 3 seconds', 'Transition on second 3', 'Zero dead space at start'] },
@@ -69,7 +69,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Open a curiosity loop with an unexplained visual, walk through the journey, close with a reveal.',
     source_creator: 'Viral Video Anatomy KB',
     content_type: 'reel',
-    purpose: ['story', 'inspire'],
+    purpose: ['story', 'inspire', 'journey'],
     difficulty: 'intermediate',
     blocks: [
       { id: 'loop', label: 'Open Loop', timing: '0-3s', duration_hint: '3s', instruction: 'Start with an unexplained visual or question that creates a curiosity loop.', example: 'Show a messy pile of paper and tools on a desk with text: "3 hours later, this became..."', rules: ['Visual must raise a question', 'Don\'t reveal the answer yet', 'Zeigarnik Effect — brain MUST know the resolution'] },
@@ -87,7 +87,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Chris Chung\'s complete 8-part Reel structure: hook → super hook → context → dance → re-hooks → value → re-loop → CTA.',
     source_creator: 'Chris Chung',
     content_type: 'reel',
-    purpose: ['educate', 'sell', 'story'],
+    purpose: ['educate', 'sell', 'story', 'trend'],
     difficulty: 'advanced',
     blocks: [
       { id: 'hook', label: 'Hook', timing: '0-1s', duration_hint: '1s', instruction: 'Pain + Benefit + Curiosity in one line. Text hook on screen simultaneously.', example: '"Stop wasting money on expensive binding machines"', rules: ['Written + verbal + visual hook (Triple Hook)', 'Transition on second 3', '3-6 word text overlay'] },
@@ -110,7 +110,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Focus on a tiny detail everyone ignores, then reveal it has massive consequences.',
     source_creator: 'Chris Chung',
     content_type: 'reel',
-    purpose: ['educate'],
+    purpose: ['educate', 'debunk'],
     difficulty: 'intermediate',
     blocks: [
       { id: 'tiny', label: 'Tiny Detail', timing: '0-3s', duration_hint: '3s', instruction: 'Focus on a small, seemingly insignificant detail in your niche.', example: '"The way you fold your paper before binding actually matters more than the machine you use"', rules: ['Must seem trivial at first', 'Hooks through curiosity — "wait, really?"'] },
@@ -150,7 +150,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Hook → Explain → Illustrate → Teach. The standard YouTube educational structure.',
     source_creator: 'YouTube Best Practices KB',
     content_type: 'youtube',
-    purpose: ['educate'],
+    purpose: ['educate', 'process'],
     difficulty: 'beginner',
     blocks: [
       { id: 'hook', label: 'Hook', timing: '0-15s', duration_hint: '15s', instruction: 'Set up the video\'s promise. Clear enough for new viewers to understand what they\'ll learn.', rules: ['Must be clear for someone who\'s never seen your channel', 'Promise specific value', 'Avoid long channel intros'] },
@@ -214,7 +214,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'The founder story framework that "almost always goes viral." Problem → inflection → failures → solution → results → CTA.',
     source_creator: 'Personal Brand Launch KB',
     content_type: 'story',
-    purpose: ['story', 'inspire', 'sell'],
+    purpose: ['story', 'inspire', 'sell', 'journey'],
     difficulty: 'beginner',
     blocks: [
       { id: 'intro', label: 'The Intro / Problem', timing: '0-5s', duration_hint: '5s', instruction: 'State the problem you were feeling. Use "I" and present tense to pull viewer in.', example: '"One year ago, I was a stay-at-home mom with no income and mounting bills"', rules: ['First person', 'Emotional — make them feel it', 'Relatable to your audience'] },
@@ -235,7 +235,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Catalyst → Core Truth → Proof. Skip basic problem-solution and establish brand positioning.',
     source_creator: 'Caleb Ralston',
     content_type: 'story',
-    purpose: ['story', 'inspire'],
+    purpose: ['story', 'inspire', 'journey'],
     difficulty: 'intermediate',
     blocks: [
       { id: 'catalyst', label: 'The Catalyst', timing: '0-10s', duration_hint: '10s', instruction: 'Why does your brand exist? What gap or opportunity did you see that nobody else was addressing?', example: '"I saw moms spending thousands on school supplies when they could make better ones at home for a fraction of the cost"', rules: ['Focus on the GAP you saw', 'Not about you — about the problem in the world'] },
@@ -272,7 +272,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Chronological milestones with one photo per year. Simple, emotional, effective.',
     source_creator: 'Personal Brand Launch KB',
     content_type: 'story',
-    purpose: ['story', 'inspire'],
+    purpose: ['story', 'inspire', 'journey'],
     difficulty: 'beginner',
     blocks: [
       { id: 'script', label: 'Write Timeline', timing: 'prep', duration_hint: 'prep', instruction: 'Write one significant event for each year. Keep each to ONE sentence.', rules: ['One event per year', 'Mix highs and lows', 'End on a high'] },
@@ -292,7 +292,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'The classic direct response framework: introduce pain, twist the knife, present your solution.',
     source_creator: 'CRO KB',
     content_type: 'ad',
-    purpose: ['sell'],
+    purpose: ['sell', 'debunk', 'inspire', 'announce'],
     difficulty: 'beginner',
     blocks: [
       { id: 'problem', label: 'Problem', timing: '0-5s', duration_hint: '5s', instruction: 'Introduce a specific pain point your audience struggles with. Be precise.', example: '"Tired of journals that fall apart after a week?"', rules: ['Specific, not vague', 'Use their language, not yours'] },
@@ -311,7 +311,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Show the struggle, show the dream, bridge them with your product.',
     source_creator: 'CRO KB',
     content_type: 'ad',
-    purpose: ['sell'],
+    purpose: ['sell', 'announce'],
     difficulty: 'beginner',
     blocks: [
       { id: 'before', label: 'Before', timing: '0-8s', duration_hint: '8s', instruction: 'Visualize their current struggle. Make it relatable and vivid.', example: 'Show: messy desk, crumpled paper, broken stapler, frustrated face', rules: ['Visual storytelling preferred', 'Must match viewer\'s current reality'] },
@@ -330,7 +330,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Hook with curiosity, tell a compelling story, transition naturally into your offer.',
     source_creator: 'CRO KB',
     content_type: 'ad',
-    purpose: ['sell', 'story'],
+    purpose: ['sell', 'story', 'trend', 'announce'],
     difficulty: 'intermediate',
     blocks: [
       { id: 'hook', label: 'Hook', timing: '0-3s', duration_hint: '3s', instruction: 'Grab attention with a curiosity-inducing opening. Make them NEED to hear the story.', example: '"Last month, a customer sent me a message that made me cry"', rules: ['Emotional or curiosity-driven', 'Must make them want the story'] },
@@ -348,7 +348,7 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
     description: 'Target a specific audience, explain why it matters to them, present the offer, direct to action.',
     source_creator: 'CRO KB',
     content_type: 'ad',
-    purpose: ['sell'],
+    purpose: ['sell', 'announce'],
     difficulty: 'intermediate',
     blocks: [
       { id: 'who', label: 'Who (Call Out)', timing: '0-5s', duration_hint: '5s', instruction: 'Identify and call out your specific target audience. Make them feel seen.', example: '"Homeschool moms in the Philippines who want to earn from home..."', rules: ['Specific demographic + desire', 'Must feel like a personal conversation', 'They should think "that\'s me!"'] },

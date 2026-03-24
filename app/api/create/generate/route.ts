@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 
 interface GenerateRequest {
   platform: 'reels' | 'tiktok' | 'facebook-post' | 'facebook-ad' | 'youtube' | 'carousel' | 'static-image'
-  contentType: 'educate' | 'story' | 'prove' | 'sell'
+  contentType: 'educate' | 'story' | 'prove' | 'sell' | 'trend' | 'inspire' | 'debunk' | 'process' | 'journey' | 'announce'
   productId?: string
   topic?: string
   generateImages?: boolean
@@ -39,6 +39,7 @@ function buildSystemPrompt(
   biz: { profile: any; persona: any; products: any[] | null },
   platform: string,
   contentType: string,
+  hasStructure = false,
 ) {
   const p = biz.profile
   const persona = biz.persona
@@ -98,7 +99,7 @@ MUST NOT: Be wishy-washy. Don't say "well, it depends." Don't tell a personal jo
 GOAL: Viewer watches Grace DO the thing — satisfying, behind-the-scenes, ASMR-adjacent.
 STRUCTURE: "Watch me..." intro → Step-by-step process → Satisfying reveal of finished product → "Want to learn how?"
 HOOK STYLE: Process-driven — "Watch me turn ₱15 of paper into...", "The most satisfying part of my day...", "How I make 50 sticker sheets in one afternoon..."
-MUST: Focus on VISUALS — hands working, printer running, cutting, packaging. This is a "show don't tell" format. Minimal talking, maximum visual satisfaction.
+MUST: Focus on VISUALS — hands working, printer running, cutting, packaging. Keep narration brief and casual but every block MUST have script_text (even short lines like "Watch this part..." or "This is where it gets good..."). Visual satisfaction is the star.
 MUST NOT: Tell a story. Don't get emotional. Don't pitch products. Let the process speak for itself.`,
 
     journey: `CONTENT TYPE: SHARE MY JOURNEY
@@ -137,10 +138,17 @@ Each variant must have a "hook" and a "content" object with "headline" (short, p
 Must include a clear CTA. Price anchoring encouraged.`
       break
     case 'youtube':
-      platformRules = `Format: YouTube video script.
+      if (hasStructure) {
+        platformRules = `Format: YouTube video script (5-8 minutes).
+Each variant must have a "hook" (the opening line) and a "content" object with a "scenes" array.
+Each scene must use this EXACT format: { "block_id": "hook", "block_label": "HOOK", "timing": "0:00-0:30", "script_text": "what Grace says (Taglish)", "visual_direction": "what the viewer sees", "on_screen_text": "text overlay", "production_notes": "filming tips" }.
+The scenes should follow the selected structure's blocks with labeled sections.`
+      } else {
+        platformRules = `Format: YouTube video script.
 Each variant must have a "hook" and a "content" object with a "sections" array.
 Each section: { "timestamp": "0:00", "content": "what Grace says", "visual": "what the viewer sees" }.
 Target 5-8 minutes. Include a strong intro hook, value delivery, and CTA.`
+      }
       break
     case 'carousel':
       platformRules = `Format: Instagram carousel (5-7 slides).
@@ -296,7 +304,7 @@ Each variant MUST follow this exact block structure. Use the block_id and block_
     }
 
     // 4. Build Prompts
-    const systemPrompt = buildSystemPrompt(bizContext, platform, contentType)
+    const systemPrompt = buildSystemPrompt(bizContext, platform, contentType, !!structure_slug)
     
     const topicContext = topic 
       ? `\nSPECIFIC TOPIC/IDEA (focus the content on this):\n${topic}\n`

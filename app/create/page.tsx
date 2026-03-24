@@ -113,12 +113,35 @@ function CreateWizard() {
     return () => clearInterval(interval)
   }, [step])
 
+  // Goal → purpose tag mapping
+  const GOAL_TO_PURPOSE: Record<string, string> = {
+    educate: 'educate',
+    story: 'story',
+    sell: 'sell',
+    prove: 'prove',
+    inspire: 'inspire',
+    trend: 'trend',
+    debunk: 'debunk',
+    process: 'process',
+    journey: 'journey',
+    announce: 'announce',
+  }
+
   const filteredStructures = structures.filter(s => {
-    if (platform === 'reels') return s.content_type === 'reel'
-    if (platform === 'youtube') return s.content_type === 'youtube'
-    if (platform === 'facebook-ad' || platform === 'carousel' || platform === 'static-image') return s.content_type === 'ad'
-    if (platform === 'facebook-post') return s.content_type === 'story'
-    return false
+    // Filter by platform content_type
+    let platformMatch = false
+    if (platform === 'reels') platformMatch = s.content_type === 'reel'
+    else if (platform === 'youtube') platformMatch = s.content_type === 'youtube'
+    else if (platform === 'facebook-ad' || platform === 'carousel' || platform === 'static-image') platformMatch = s.content_type === 'ad'
+    else if (platform === 'facebook-post') platformMatch = s.content_type === 'story'
+    if (!platformMatch) return false
+
+    // Filter by goal (purpose array) — if goal has a mapping, show only matching structures
+    const purposeTag = GOAL_TO_PURPOSE[goal]
+    if (purposeTag && s.purpose?.length > 0) {
+      return s.purpose.includes(purposeTag)
+    }
+    return true
   })
 
   const hasStructures = STRUCTURE_PLATFORMS.includes(platform) || filteredStructures.length > 0
