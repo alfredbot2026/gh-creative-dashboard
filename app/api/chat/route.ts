@@ -64,7 +64,7 @@ BEHAVIOR RULES:
 - Audience: ${profile.target_audience}
 - Voice: ${profile.brand_voice}
 - Pillars: ${JSON.stringify(profile.content_pillars)}
-- Products: ${JSON.stringify(profile.products_services)}
+- USPs: ${JSON.stringify(profile.unique_selling_points)}
 - Platforms: ${JSON.stringify(profile.platforms)}`
     }
 

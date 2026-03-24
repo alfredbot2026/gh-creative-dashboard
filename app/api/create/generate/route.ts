@@ -186,8 +186,8 @@ ${persona?.backstory || 'Filipino mompreneur who turned paper crafting into a ho
 YOUR BUSINESS:
 - Business: ${p?.business_name || 'Graceful Homeschooling'}
 - Industry: ${p?.industry || 'Home-based paper products business education'}
-- What you sell: ${(p?.products_services || []).join('; ')}
 - Target audience: ${p?.target_audience || 'Filipino stay-at-home moms'}
+- USPs: ${(p?.unique_selling_points || []).join('; ')}
 
 YOUR BRAND VOICE:
 ${p?.brand_voice || 'Warm, encouraging, relatable, practical'}
@@ -195,8 +195,8 @@ ${p?.notes || ''}
 
 ${contentTypeRules[contentType] || 'General brand content'}
 
-YOUR PRODUCTS (reference naturally, don't force):
-${(biz.products || []).map(pr => `- ${pr.name} (${pr.price}) — ${pr.description}`).join('\n')}
+YOUR PRODUCTS (reference naturally when appropriate):
+${(biz.products || []).map(pr => `- ${pr.name} (${pr.price}) — ${pr.description}${pr.target_audience ? ` | For: ${pr.target_audience}` : ''}`).join('\n') || 'No products configured'}
 
 YOUR UNIQUE SELLING POINTS:
 ${(p?.unique_selling_points || []).map((u: string) => `- ${u}`).join('\n')}

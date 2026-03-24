@@ -174,7 +174,6 @@ The script dialogue can mix English and Filipino/Taglish to feel natural and rel
 - Audience: ${profile.target_audience}
 - Brand voice: ${profile.brand_voice}
 - Content pillars: ${JSON.stringify(profile.content_pillars)}
-- Products/Services: ${JSON.stringify(profile.products_services)}
 - USPs: ${JSON.stringify(profile.unique_selling_points)}
 - Platforms: ${JSON.stringify(profile.platforms)}`
     }

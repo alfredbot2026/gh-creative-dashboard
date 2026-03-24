@@ -279,7 +279,6 @@ export default function SettingsPage() {
                             <textarea className={styles.textarea} value={profile.brand_voice} onChange={e => updateProfileField('brand_voice', e.target.value)} rows={3} />
                         </label>
                     </section>
-                    <ListSection title="Products & Services" items={profile.products_services} field="products_services" placeholder="e.g. Facial treatments" onAdd={addToList} onUpdate={updateListItem} onRemove={removeFromList} />
                     <ListSection title="Unique Selling Points" items={profile.unique_selling_points} field="unique_selling_points" placeholder="e.g. 10 years experience" onAdd={addToList} onUpdate={updateListItem} onRemove={removeFromList} />
                     <ListSection title="Content Pillars" items={profile.content_pillars} field="content_pillars" placeholder="e.g. Skin tips" onAdd={addToList} onUpdate={updateListItem} onRemove={removeFromList} />
                     <ListSection title="Platforms" items={profile.platforms} field="platforms" placeholder="e.g. Instagram" onAdd={addToList} onUpdate={updateListItem} onRemove={removeFromList} />
