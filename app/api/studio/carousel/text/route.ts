@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { generateCarouselSlides, type TextOverlayOptions } from '@/lib/studio/text-compositor'
 import { generateJSON } from '@/lib/llm/client'
 import { randomUUID } from 'crypto'
+
+function createServiceClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export const maxDuration = 120
 
@@ -98,12 +106,13 @@ export async function POST(request: NextRequest) {
 
     const slides = await generateCarouselSlides(imageBuffer, texts, styleOptions)
 
-    // Upload all slides to Supabase Storage
+    // Upload all slides to Supabase Storage (use service client for reliable storage access)
+    const serviceClient = createServiceClient()
     const carouselId = randomUUID()
     const slideResults = await Promise.all(
       slides.map(async (slide, i) => {
         const storagePath = `${user.id}/carousel/${carouselId}/slide-${i + 1}.png`
-        const { error: uploadErr } = await supabase.storage
+        const { error: uploadErr } = await serviceClient.storage
           .from('ad-creatives')
           .upload(storagePath, slide.buffer, {
             contentType: 'image/png',
@@ -112,14 +121,14 @@ export async function POST(request: NextRequest) {
 
         if (uploadErr) throw new Error(`Upload failed for slide ${i + 1}: ${uploadErr.message}`)
 
-        const { data: urlData } = supabase.storage
+        const { data: urlData } = await serviceClient.storage
           .from('ad-creatives')
-          .getPublicUrl(storagePath)
+          .createSignedUrl(storagePath, 3600) // 1 hour
 
         return {
           slide_number: i + 1,
           text: texts[i],
-          image_url: urlData.publicUrl,
+          image_url: urlData?.signedUrl || '',
           storage_path: storagePath,
           width: slide.width,
           height: slide.height,

@@ -129,18 +129,34 @@ export async function generateAdImage(
   let localRefPaths: string[] = []
 
   try {
-    // 4. Download reference images if provided
+    // 4. Load reference images
+    // Prefer local files from public/ (avoids Supabase auth issues in API routes)
     const allRefImages = [...(request.reference_images || [])]
-    // Inject ALL persona reference photos for identity consistency
+
     if (personaRefImages.length > 0) {
-      allRefImages.unshift(...personaRefImages)
+      // Use local reference images instead of downloading from Supabase Storage
+      const { getGraceReferenceImagePaths } = await import('./reference-images')
+      const localPaths = getGraceReferenceImagePaths()
+      if (localPaths.length > 0) {
+        localRefPaths = localPaths
+      } else {
+        // Fallback: download from Supabase
+        localRefPaths = await Promise.all(
+          personaRefImages.map((refPath) =>
+            downloadFromStorage(supabase, refPath, tempDir)
+          )
+        )
+      }
     }
+
+    // Also download any extra request reference images (e.g. uploaded product photo)
     if (allRefImages.length > 0) {
-      localRefPaths = await Promise.all(
+      const extraPaths = await Promise.all(
         allRefImages.map((refPath) =>
           downloadFromStorage(supabase, refPath, tempDir)
         )
       )
+      localRefPaths = [...localRefPaths, ...extraPaths]
     }
 
     // 5. Build args for nano-banana-pro script

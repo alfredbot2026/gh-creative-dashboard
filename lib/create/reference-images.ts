@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 
 /**
@@ -37,4 +37,23 @@ export function getGraceReferenceImages(): Buffer[] {
   }
 
   return buffers
+}
+
+/**
+ * Get absolute file paths to Grace's reference images.
+ * Used by image-generator to pass to Nano Banana script directly.
+ */
+export function getGraceReferenceImagePaths(): string[] {
+  const cwd = process.cwd()
+  const files = [
+    'public/grace-ref-front.jpg',
+    'public/grace-ref-warm.jpg',
+    'public/grace-ref-laughing.jpg',
+    'public/grace-ref-right.jpg',
+    'public/grace-ref-left.jpg',
+  ]
+
+  return files
+    .map(f => join(cwd, f))
+    .filter(p => existsSync(p))
 }

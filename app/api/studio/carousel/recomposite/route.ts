@@ -71,10 +71,10 @@ export async function POST(request: NextRequest) {
         })
       if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`)
 
-      const { data: urlData } = supabase.storage.from('ad-creatives').getPublicUrl(outputPath)
+      const { data: urlData } = await supabase.storage.from('ad-creatives').createSignedUrl(outputPath, 3600)
 
       return NextResponse.json({
-        image_url: urlData.publicUrl,
+        image_url: urlData?.signedUrl || '',
         storage_path: outputPath,
         width: result.width,
         height: result.height,
