@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { generateJSON } from '@/lib/llm/client'
+import { generateCreativeJSON } from '@/lib/llm/client'
 import { getContentTypeContext } from '@/lib/create/kb-retriever'
 import { generateImage } from '@/lib/create/image-generator-api'
 import { getOrCreateSession } from '@/lib/create/session-manager'
@@ -262,6 +262,44 @@ export async function POST(req: Request) {
     }
     
     const kbContext = await getContentTypeContext(laneMap[platform], contentType, 15)
+
+    // 1b. Pull additional KB intelligence for richer generation
+    const supabaseKB = await createClient()
+    
+    // Virality science entries (what makes content go viral)
+    const { data: viralityEntries } = await supabaseKB
+      .from('knowledge_entries')
+      .select('title, content')
+      .eq('category', 'virality_science')
+      .limit(5)
+    
+    // Angle shift techniques (how to find unique angles)
+    const { data: angleEntries } = await supabaseKB
+      .from('knowledge_entries')
+      .select('title, content')
+      .in('subcategory', ['angle_shifts', 'contrarian_reframe', 'contrarian_hook', 'contrarian_perspective'])
+      .limit(4)
+
+    // Recently generated scripts (for anti-repetition)
+    const { data: recentScripts } = await supabaseKB
+      .from('content_items')
+      .select('hook, script_data')
+      .eq('ai_generated', true)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    
+    const recentHooks = (recentScripts || []).map(s => s.hook).filter(Boolean)
+    const recentAngles = recentHooks.length > 0 
+      ? `\nANTI-REPETITION: These hooks/angles were used in recent scripts. Do NOT reuse them — find a DIFFERENT angle:\n${recentHooks.map(h => `- "${h}"`).join('\n')}\n`
+      : ''
+
+    const viralityContext = (viralityEntries || []).length > 0
+      ? `\nVIRALITY SCIENCE (apply these principles):\n${(viralityEntries || []).slice(0, 3).map(e => `- ${e.title}: ${(e.content || '').substring(0, 200)}`).join('\n')}\n`
+      : ''
+
+    const angleContext = (angleEntries || []).length > 0
+      ? `\nANGLE TECHNIQUES (use these to find a UNIQUE perspective):\n${(angleEntries || []).map(e => `- ${e.title}: ${(e.content || '').substring(0, 200)}`).join('\n')}\n`
+      : ''
     
     // 2. Get Business context (profile + persona + products — the WHAT)
     const bizContext = await getBusinessContext()
@@ -332,19 +370,41 @@ CRITICAL: You must generate a scene for EVERY block listed above. If the structu
       ? `\nIMAGE GENERATION: For each variant, include an "imagePrompt" field in the content object. This should be a detailed visual description for AI image generation. Describe: the scene, Grace's appearance, products visible, lighting, composition. The image should feel like a real photo from Grace's home/studio.`
       : ''
 
+    // Goal-appropriate CTA and product mention rules
+    const goalCTARules: Record<string, string> = {
+      sell: 'CTA RULES: Full product pitch with pricing. Name the product, state the price, include a clear CTA (comment keyword, link, DM). Price anchor against something relatable.',
+      announce: 'CTA RULES: Full announcement with details. Can mention products and pricing. Create urgency with deadlines or limited availability.',
+      prove: 'CTA RULES: Can reference products as the vehicle for results shown. Light CTA — "DM me if you want to know how" or "Follow for more results."',
+      educate: 'CTA RULES: DO NOT mention any product names or pricing. End with "Follow for more tips" or "Save this for later" or a question to boost comments. This is pure education, not a sales funnel.',
+      story: 'CTA RULES: DO NOT mention any product names, pricing, or offers. End with "Follow for more of my journey" or an emotional closing line. This is pure storytelling.',
+      inspire: 'CTA RULES: DO NOT mention any product names or pricing. End with an empowering message directed at the viewer. No sales, no links, just encouragement.',
+      journey: 'CTA RULES: DO NOT mention any product names or pricing. End authentically — what you learned, how you feel now. No sales pitch.',
+      debunk: 'CTA RULES: DO NOT mention products. End with the truth and an invitation to discuss — "What do you think? Comment below" or "Follow for more myth-busting."',
+      process: 'CTA RULES: DO NOT mention products by name or price. End with "Follow to see more" or "Which product should I make next?" Keep it casual.',
+      trend: 'CTA RULES: DO NOT mention products. End with a trend-native CTA — "Follow for more paper crafting content" or a challenge/tag.',
+    }
+
+    // Only include product context for goals where selling is appropriate
+    const sellGoals = ['sell', 'announce', 'prove']
+    const filteredProductContext = sellGoals.includes(contentType) ? productContext : ''
+    const ctaRule = goalCTARules[contentType] || goalCTARules.educate
+
     const userPrompt = `Objective: Create "${contentType}" content for ${platform}. Follow the ${contentType.toUpperCase()} content type rules STRICTLY — the hook style, structure, MUST and MUST NOT constraints.
+
+${ctaRule}
 ${topicContext}
 CONTENT FRAMEWORKS TO USE (choose the best structure for each variant):
 ${JSON.stringify(kbContext.entries.slice(0, 8).map(e => ({ title: e.title, content: e.content?.substring(0, 500) })))}
 
 HOOK STYLES TO USE (each variant must use a DIFFERENT hook):
 ${JSON.stringify(kbContext.hooks.map(h => ({ title: h.title, content: h.content?.substring(0, 300) })))}
-${productContext}${structureContext}${imageInstructions}
+${filteredProductContext}${structureContext}${imageInstructions}
 
-Generate ${variants} distinct variants now. Remember: every variant must be specifically about PAPER CRAFTING business, reference real things Grace does, and sound like natural Taglish.`
+${viralityContext}${angleContext}${recentAngles}
+Generate ${variants} distinct variants now. Each variant MUST take a DIFFERENT angle on the topic — don't just reword the same talking points. Find unique perspectives, unexpected comparisons, or fresh entry points. Remember: every variant must be specifically about PAPER CRAFTING business, reference real things Grace does, and sound like natural Taglish.`
 
     // 5. Generate via LLM
-    const result = await generateJSON<any>(systemPrompt, userPrompt)
+    const result = await generateCreativeJSON<any>(systemPrompt, userPrompt)
 
     if (!result.data || !result.data.variants) {
       throw new Error('LLM failed to return variants array')

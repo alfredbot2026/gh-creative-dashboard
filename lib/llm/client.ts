@@ -16,7 +16,7 @@ interface LLMProvider {
     model: string
 }
 
-/* Ordered fallback chain */
+/* Ordered fallback chain — default (fast/cheap) */
 const PROVIDERS: LLMProvider[] = [
     {
         name: 'Gemini',
@@ -41,6 +41,22 @@ const PROVIDERS: LLMProvider[] = [
         endpoint: 'https://api.deepseek.com/v1/chat/completions',
         model: 'deepseek-chat',
     },
+]
+
+/* Premium providers — for creative writing (script generation) */
+const CREATIVE_PROVIDERS: LLMProvider[] = [
+    {
+        name: 'Claude',
+        envKey: 'ANTHROPIC_API_KEY',
+        endpoint: 'https://api.anthropic.com/v1/messages',
+        model: 'claude-sonnet-4-6',
+    },
+    {
+        name: 'GeminiPro',
+        envKey: 'GEMINI_API_KEY',
+        model: 'gemini-2.5-pro-preview-06-05',
+    },
+    // Falls back to default chain if neither is available
 ]
 
 /* -- Response type -- */
@@ -113,6 +129,44 @@ async function callOpenAICompatible(
 }
 
 /**
+ * Call Anthropic Claude API.
+ */
+async function callClaude(
+    systemPrompt: string,
+    userPrompt: string,
+    apiKey: string,
+    model: string
+): Promise<string> {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+            model,
+            max_tokens: 8192,
+            system: systemPrompt,
+            messages: [
+                { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.8,  // Slightly higher for creative writing
+        }),
+    })
+
+    if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json()
+    const content = data.content?.[0]?.text
+    if (!content) throw new Error('Claude returned empty response')
+    return content
+}
+
+/**
  * Generate content using the LLM fallback chain.
  * Tries each provider in order until one succeeds.
  */
@@ -164,6 +218,79 @@ export async function generateContent(
 
     // All providers failed
     throw new Error(`All LLM providers failed:\n${errors.join('\n')}`)
+}
+
+/**
+ * Generate creative content using premium providers (Claude → Gemini Pro → default chain).
+ * Use for script generation where writing quality matters.
+ */
+export async function generateCreativeContent(
+    systemPrompt: string,
+    userPrompt: string
+): Promise<LLMResponse> {
+    const errors: string[] = []
+
+    // Try creative/premium providers first
+    for (const provider of CREATIVE_PROVIDERS) {
+        const apiKey = process.env[provider.envKey]
+        if (!apiKey) {
+            errors.push(`${provider.name}: no API key (${provider.envKey})`)
+            continue
+        }
+
+        try {
+            let content: string
+
+            if (provider.name === 'Claude') {
+                content = await callClaude(systemPrompt, userPrompt, apiKey, provider.model)
+            } else if (provider.name === 'GeminiPro' || provider.name === 'Gemini') {
+                content = await callGemini(systemPrompt, userPrompt, apiKey, provider.model)
+            } else {
+                content = await callOpenAICompatible(
+                    systemPrompt, userPrompt, apiKey, provider.endpoint!, provider.model
+                )
+            }
+
+            return { content, provider: provider.name, model: provider.model }
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            errors.push(`${provider.name}: ${msg}`)
+            console.warn(`[LLM Creative] ${provider.name} failed: ${msg}`)
+        }
+    }
+
+    // Fall back to default chain
+    console.warn('[LLM] No creative providers available, falling back to default chain')
+    return generateContent(systemPrompt, userPrompt)
+}
+
+/**
+ * Generate creative content and parse as JSON.
+ */
+export async function generateCreativeJSON<T>(
+    systemPrompt: string,
+    userPrompt: string
+): Promise<{ data: T; provider: string; model: string }> {
+    const response = await generateCreativeContent(systemPrompt, userPrompt)
+    let cleaned = response.content.trim()
+    const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (fenceMatch) cleaned = fenceMatch[1].trim()
+    try {
+        const data = JSON.parse(cleaned) as T
+        return { data, provider: response.provider, model: response.model }
+    } catch {
+        // Try to find JSON object/array in the response
+        const jsonMatch = cleaned.match(/[\[{][\s\S]*[\]}]/)
+        if (jsonMatch) {
+            try {
+                const data = JSON.parse(jsonMatch[0]) as T
+                return { data, provider: response.provider, model: response.model }
+            } catch {
+                throw new Error(`Failed to parse JSON from ${response.provider}: ${cleaned.substring(0, 200)}`)
+            }
+        }
+        throw new Error(`No JSON found in ${response.provider} response: ${cleaned.substring(0, 200)}`)
+    }
 }
 
 /**

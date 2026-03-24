@@ -91,6 +91,8 @@ function CreateWizard() {
   const [platform, setPlatform] = useState<Platform>('reels')
   const [goal, setGoal] = useState<ContentGoal>('educate')
   const [topic, setTopic] = useState('')
+  const [topicSuggestions, setTopicSuggestions] = useState<any[]>([])
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
   const [selectedStructure, setSelectedStructure] = useState<any>(null)
   const [structures, setStructures] = useState<any[]>([])
 
@@ -476,6 +478,47 @@ function CreateWizard() {
             autoFocus
             rows={3}
           />
+
+          {/* Topic suggestions */}
+          <div className={styles.topicSuggestRow}>
+            <button
+              className={styles.suggestBtn}
+              onClick={async () => {
+                setTopicSuggestions([])
+                setLoadingSuggestions(true)
+                try {
+                  const res = await fetch('/api/create/topics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mainTopic: topic || undefined, platform, contentType: goal }),
+                  })
+                  const data = await res.json()
+                  setTopicSuggestions(data.subtopics || [])
+                } catch { /* ignore */ }
+                setLoadingSuggestions(false)
+              }}
+              disabled={loadingSuggestions}
+            >
+              <Wand2 size={14} />
+              {loadingSuggestions ? 'Finding topics...' : 'Suggest topics'}
+            </button>
+          </div>
+
+          {topicSuggestions.length > 0 && (
+            <div className={styles.topicChips}>
+              {topicSuggestions.map((s: any, i: number) => (
+                <button
+                  key={i}
+                  className={`${styles.topicChip} ${topic === s.title ? styles.topicChipActive : ''}`}
+                  onClick={() => setTopic(s.title)}
+                  title={s.hook_idea}
+                >
+                  <span className={styles.topicChipCategory}>{s.category}</span>
+                  {s.title}
+                </button>
+              ))}
+            </div>
+          )}
 
           {error && <div className={styles.errorMsg}>{error}</div>}
 
