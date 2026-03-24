@@ -54,7 +54,7 @@ const CREATIVE_PROVIDERS: LLMProvider[] = [
     {
         name: 'GeminiPro',
         envKey: 'GEMINI_API_KEY',
-        model: 'gemini-2.5-pro-preview-06-05',
+        model: 'gemini-2.5-pro',
     },
     // Falls back to default chain if neither is available
 ]

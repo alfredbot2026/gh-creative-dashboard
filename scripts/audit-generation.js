@@ -73,11 +73,18 @@ async function runAudit() {
     process.stdout.write(`${label}... `)
     
     try {
+      // Use varied topics per platform to test diversity
+      const TOPICS_BY_PLATFORM = {
+        'facebook-ad': 'Papers to Profits Starter Kit — the complete sticker business blueprint',
+        'reels': 'The Pinoy Weather Humidity Test — why your stickers peel and the secret paper combo',
+        'facebook-post': 'The night I almost gave up on my ₱500 dream',
+        'youtube': 'Why 90% of sticker businesses fail in the first month (and how to avoid it)',
+      }
       const body = {
-        topic: TOPIC,
+        topic: TOPICS_BY_PLATFORM[tc.platform] || TOPIC,
         platform: tc.platform,
         contentType: tc.goal,
-        variants: 1,  // Just 1 variant per combo to save API calls
+        variants: 1,
       }
       if (tc.structure_slug) body.structure_slug = tc.structure_slug
       
@@ -94,10 +101,13 @@ async function runAudit() {
       
       if (!res.ok || data.error) {
         console.log('❌ ERROR: ' + (data.error || res.status))
-        results.push({ ...tc, status: 'ERROR', error: data.error || res.status, variant: null })
+        results.push({ ...tc, status: 'ERROR', error: data.error || res.status, variant: null, provider: null })
         failed++
         continue
       }
+      
+      const provider = data.provider || 'unknown'
+      const model = data.model || 'unknown'
       
       const variant = data.variants?.[0]
       if (!variant) {
@@ -147,9 +157,9 @@ async function runAudit() {
       
       const status = formatCorrect ? 'PASS' : 'FORMAT_ISSUE'
       console.log(status === 'PASS' ? '✅' : '⚠️', 
-        `scenes:${scenes.length} blocks:${hasBlocks} hook:${(variant.hook||'').substring(0,50)}...`)
+        `[${provider}/${model}] scenes:${scenes.length} blocks:${hasBlocks} hook:${(variant.hook||'').substring(0,50)}...`)
       
-      results.push({ ...tc, status, analysis, variant })
+      results.push({ ...tc, status, analysis, variant, provider, model })
       if (status === 'PASS') passed++
       else failed++
       
@@ -165,9 +175,10 @@ async function runAudit() {
   
   // Write full results
   const outputPath = path.join(__dirname, '..', 'GENERATION-AUDIT.md')
-  let md = `# Generation Audit Report\n`
+  const providers = [...new Set(results.map(r => `${r.provider}/${r.model}`).filter(p => !p.includes('null')))]
+  let md = `# Generation Audit Report (V2 — Enriched)\n`
   md += `**Date:** ${new Date().toISOString()}\n`
-  md += `**Topic:** "${TOPIC}"\n`
+  md += `**Provider(s):** ${providers.join(', ') || 'unknown'}\n`
   md += `**Total:** ${TEST_CASES.length} | **Pass:** ${passed} | **Issues:** ${failed}\n\n`
   
   md += `## Summary\n\n`
@@ -195,8 +206,17 @@ async function runAudit() {
     const a = r.analysis
     if (!v) continue
     
+    const fullText = JSON.stringify(v).toLowerCase()
+    const hasProductPitch = fullText.includes('papers to profits') || fullText.includes('1,300') || fullText.includes('₱1,300') || fullText.includes('starter kit')
+    const hasCommentCTA = fullText.includes('comment') && (fullText.includes('sticker') || fullText.includes('paper'))
+    const ctaStatus = (r.goal === 'sell' || r.goal === 'announce') 
+      ? (hasProductPitch ? '✅ Product pitch (correct for sell)' : '⚠️ Missing product pitch')
+      : (hasProductPitch ? '❌ Product pitch in non-sell content!' : '✅ No product pitch (correct)')
+    
     md += `**Hook:** ${v.hook}\n`
-    md += `**Quality Score:** ${a.qualityScore || 'N/A'}\n\n`
+    md += `**Quality Score:** ${a.qualityScore || 'N/A'}\n`
+    md += `**CTA Check:** ${ctaStatus}\n`
+    md += `**Provider:** ${r.provider}/${r.model}\n\n`
     
     const content = v.content || {}
     

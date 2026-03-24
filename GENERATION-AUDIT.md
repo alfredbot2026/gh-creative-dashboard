@@ -1,36 +1,36 @@
-# Generation Audit Report
-**Date:** 2026-03-24T05:24:42.539Z
-**Topic:** "How to start a sticker business with less than 500 pesos"
+# Generation Audit Report (V2 — Enriched)
+**Date:** 2026-03-24T06:46:19.935Z
+**Provider(s):** GeminiPro/gemini-2.5-pro
 **Total:** 24 | **Pass:** 24 | **Issues:** 0
 
 ## Summary
 
 | # | Platform | Structure | Goal | Status | Scenes | Blocks | Hook (truncated) |
 |---|----------|-----------|------|--------|--------|--------|------------------|
-| 1 | facebook-ad | Before-After-Bridge | sell | PASS | 4 | 4 | ₱500 for a milk tea vs. ₱500 for a sticker business. |
-| 2 | facebook-ad | Benefit-Caveat | sell | PASS | 4 | 4 | If you're a stay-at-home mom who wants to earn from home, do |
-| 3 | facebook-ad | Hook-Story-Offer | sell | PASS | 3 | 3 | Gusto mo bang magka-sticker business nang hindi bumibili ng  |
-| 4 | facebook-ad | PAS | sell | PASS | 4 | 4 | Akala ko rin dati kailangan ng ₱50,000 para magka-business. |
-| 5 | facebook-ad | PASTOR | sell | PASS | 6 | 6 | 500 pesos for a fast food meal vs. 500 pesos to start your s |
-| 6 | facebook-ad | WHO-WHY-OFFER-ACTION | sell | PASS | 4 | 4 | Sticker Business for less than ₱500? Kaya mo 'to, Mommy! |
-| 7 | facebook-ad | (No structure) | sell | PASS | 0 | 0 | Isang bucket ng chicken or isang sticker business? ₱500 can  |
-| 8 | reels | Comparison | educate | PASS | 4 | 4 | ₱20,000 vs. ₱500 to start your sticker business—sino ang pan |
-| 9 | reels | Full Reel Anatomy | educate | PASS | 8 | 8 | ₱500 lang, may sticker business ka na? |
-| 10 | reels | Hook-Hold-Reward | educate | PASS | 3 | 3 | The 'No-Machine' Sticker Framework |
-| 11 | reels | Iceberg Effect | educate | PASS | 5 | 5 | Most people think you need an expensive cutting machine to s |
-| 12 | reels | Micro-Story Arc | story | PASS | 3 | 3 | I'll never forget the night I almost gave up on my ₱500 drea |
-| 13 | reels | Myth, Truth, Move | educate | PASS | 4 | 4 | Noong nagsisimula ako, akala ko kailangan ko ng 20k para lan |
-| 14 | reels | Show Then Tell | educate | PASS | 5 | 5 | ₱500 Sticker Business Start |
-| 15 | reels | (No structure) | educate | PASS | 5 | 5 | Mommy, kung gusto mong mag-start ng small business pero less |
-| 16 | facebook-post | 4 Founder Videos | story | PASS | 4 | 4 | I'll never forget the night I was staring at my last 500 pes |
-| 17 | facebook-post | 6-Step My Story | story | PASS | 6 | 6 | Sabi nila, kailangan mo ng libo-libong puhunan para mag-busi |
-| 18 | facebook-post | Three-Part Brand Story | story | PASS | 3 | 3 | I know that heavy feeling when you want to help with bills b |
-| 19 | facebook-post | Year-by-Year | story | PASS | 3 | 3 | Three years ago, I sat at our wooden dining table with exact |
-| 20 | facebook-post | (No structure) | story | PASS | 0 | 0 | Five years ago, habang mahimbing na ang tulog ng mga anak ko |
-| 21 | youtube | 4 Cs YouTube Intro | educate | PASS | 6 | 6 | How to launch a real sticker business with only ₱500 and zer |
-| 22 | youtube | HEIT Framework | educate | PASS | 4 | 4 | Start your own sticker business today for less than ₱500, wi |
-| 23 | youtube | One Concept, Five Stories | educate | PASS | 7 | 7 | ₱500 vs ₱50,000: The truth about starting a sticker business |
-| 24 | youtube | (No structure) | educate | PASS | 0 | 0 | Floating text sticker: '₱500 Sticker Biz Challenge' |
+| 1 | facebook-ad | Before-After-Bridge | sell | PASS | 4 | 4 | 2 years ago, stressed ako sa budget. Ngayon, kumikita ako sa |
+| 2 | facebook-ad | Benefit-Caveat | sell | PASS | 4 | 4 | Kumita ng extra ₱5,000 a month selling stickers from home? K |
+| 3 | facebook-ad | Hook-Story-Offer | sell | PASS | 3 | 3 | I know exactly how you feel, mommy. Gusto mong kumita, pero  |
+| 4 | facebook-ad | PAS | sell | PASS | 4 | 4 | Akala mo kailangan mo ng Cricut para mag-start ng sticker bu |
+| 5 | facebook-ad | PASTOR | sell | PASS | 6 | 6 | Is it possible to start a business kung 1-2 hours lang ang f |
+| 6 | facebook-ad | WHO-WHY-OFFER-ACTION | sell | PASS | 4 | 4 | Is it possible to start a real business in just 30 minutes a |
+| 7 | facebook-ad | (No structure) | sell | PASS | 0 | 0 | Gusto mong kumita pero ayaw mong maging 'puyat na V.A.' na l |
+| 8 | reels | Comparison | educate | PASS | 5 | 5 | Which sticker survives the Pinoy humidity test? |
+| 9 | reels | Full Reel Anatomy | educate | PASS | 8 | 8 | Stop blaming your printer for peeling stickers. |
+| 10 | reels | Hook-Hold-Reward | educate | PASS | 3 | 3 | Bakit 'di mo dapat bilhin ang pinakamahal na sticker paper. |
+| 11 | reels | Iceberg Effect | educate | PASS | 4 | 4 | Everyone says 'buy expensive sticker paper.' Mali. |
+| 12 | reels | Micro-Story Arc | story | PASS | 3 | 3 | I almost cried when my first batch of stickers started peeli |
+| 13 | reels | Myth, Truth, Move | educate | PASS | 4 | 4 | The #1 reason your stickers are peeling in this Pinoy heat. |
+| 14 | reels | Show Then Tell | educate | PASS | 5 | 5 | Your waterproof stickers are still peeling? Here’s why. |
+| 15 | reels | (No structure) | educate | PASS | 5 | 5 | This vs. This. Alin dito ang sticker problem mo, Mommy? |
+| 16 | facebook-post | 4 Founder Videos | story | PASS | 4 | 4 | Nobody saw me crying in the kitchen that night over a ₱500 d |
+| 17 | facebook-post | 6-Step My Story | story | PASS | 6 | 6 | Gabi-gabi, umiiyak ako sa kusina. Akala ko, hanggang pangara |
+| 18 | facebook-post | Three-Part Brand Story | story | PASS | 3 | 3 | I'll never forget that night, staring at the last ₱500 in my |
+| 19 | facebook-post | Year-by-Year | story | PASS | 3 | 3 | Nobody saw me crying in the kitchen that night over our last |
+| 20 | facebook-post | (No structure) | story | PASS | 0 | 0 | Akala ko, this was it. The answer to my prayers. But there I |
+| 21 | youtube | 4 Cs YouTube Intro | educate | PASS | 6 | 6 | 90% of new sticker businesses fail. Here's the #1 reason why |
+| 22 | youtube | HEIT Framework | educate | PASS | 5 | 5 | 9 out of 10 sticker businesses fail in the first month. Here |
+| 23 | youtube | One Concept, Five Stories | educate | PASS | 7 | 7 | Why 90% of sticker businesses fail (and the one thing that s |
+| 24 | youtube | (No structure) | educate | PASS | 0 | 0 | Ito ang #1 dahilan kung bakit 9 out of 10 sticker businesses |
 
 ---
 
@@ -39,992 +39,1043 @@
 ### 1. facebook-ad — Before-After-Bridge (sell)
 **Status:** PASS
 
-**Hook:** ₱500 for a milk tea vs. ₱500 for a sticker business.
+**Hook:** 2 years ago, stressed ako sa budget. Ngayon, kumikita ako sa bahay gamit ang papel at printer.
 **Quality Score:** 98
+**CTA Check:** ✅ Product pitch (correct for sell)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (4):** BEFORE → AFTER → BRIDGE → CTA
+**Blocks (4):** Before → After → Bridge → CTA
 
-#### BEFORE
-Mommy, 'yung ₱500 mo, isang grab food o milk tea lang 'yan 'di ba? Ubos agad in 30 minutes, tapos back to zero na naman ang budget. Minsan nakaka-guilt pa kasi imbes na pandagdag sa bills, napunta lang sa panandaliang cravings.
+#### Before
+2 years ago, ganito ako: laging nag-aalala sa bills, feeling helpless kasi 'mommy lang' ako sa bahay. I felt stuck, watching my husband carry all the financial weight. Gusto ko tumulong, pero paano?
 
-> Visual: Filipino woman looking sadly at a fast food receipt and an empty wallet on a messy kitchen table.
+> Visual: A slightly desaturated, handheld shot of a Filipino woman's hands resting on a pile of utility bills next to a calculator. The mood is anxious and still.
 
-#### AFTER
-Pero look at this! 'Yung ₱500 ko, ginawa kong sticker supplies. Ngayon, may extra ₱1,500 na ako habang natutulog ang mga bata. Stress-free, creative, at ang sarap sa feeling na may sarili akong kita without leaving my kids.
+#### After
+Ngayon, this is my reality. May sarili na akong income from my sticker business, all from our dining table. Nakaka-contribute na ako sa family expenses, at may extra pa for treats for the kids, guilt-free.
 
-> Visual: Grace smiling brightly, holding a stack of colorful, freshly printed sticker sheets and showing a notification of a new sale on her phone.
+> Visual: A bright, warm shot of Grace happily packing cute sticker orders into mailers on her clean desk. A child's drawing is taped to the wall behind her. A phone showing a GCash notification is visible.
 
-#### BRIDGE
-Hindi mo kailangan ng mahal na machine. Gamit ang Papers to Profits Starter Kit, ituturo ko sa'yo paano simulan 'to using your home printer and Canva. For ₱1,300, lifetime access na sa lahat ng techniques ko para maging profit ang papel.
+#### Bridge
+The bridge? Hindi magic. It was learning how to turn simple paper into profit. Ito 'yung exact system na ginawa ko, and it's all inside the Papers to Profits Starter Kit. It's the blueprint I wished I had.
 
-> Visual: Grace at her desk, showing how she uses Canva on a laptop and then a basic home printer printing out the stickers.
+> Visual: Quick cuts: Grace designing stickers on Canva on her laptop, then her home printer printing a vibrant sticker sheet. A simple graphic overlay says 'The P2P Blueprint'.
 
 #### CTA
-Ready ka na bang gawing business ang hobby mo? Click the link below para makuha ang Papers to Profits Starter Kit for only ₱1,300. Start your sticker journey today!
+For just ₱1,300—less than a family milk tea blowout—you get lifetime access. Ready ka na ba to start your own sticker business journey? Comment 'STICKERS' below and I'll send you the link!
 
-> Visual: Grace holding the Papers to Profits logo and pointing to a 'Learn More' button overlay.
+> Visual: A clear, simple graphic with text: "Papers to Profits Starter Kit | ₱1,300 ONE-TIME PAYMENT | Comment 'STICKERS' to start!"
 
 ---
 
 ### 2. facebook-ad — Benefit-Caveat (sell)
 **Status:** PASS
 
-**Hook:** If you're a stay-at-home mom who wants to earn from home, don't ignore your home printer.
-**Quality Score:** 98
+**Hook:** Kumita ng extra ₱5,000 a month selling stickers from home? Kayang-kaya, Mommy!
+**Quality Score:** 97
+**CTA Check:** ✅ Product pitch (correct for sell)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (4):** Start Positive → Make It Personal → Introduce the Caveat → Promote Action
+**Blocks (4):** Start Positive (benefit) → Make It Personal (personal) → Introduce the Caveat (caveat) → Promote Action (action)
 
-#### Start Positive
-Mommy, if you're a stay-at-home mom who wants to earn ₱500 to ₱1,000 a day without leaving your kids, don't ignore your home printer! Pwedeng-pwedeng magsimula ng sariling sticker business kahit ₱500 lang ang budget mo sa materials.
+#### Start Positive (benefit)
+Kumita ng extra ₱5,000 a month selling stickers from home? Kayang-kaya, Mommy!
 
-> Visual: Grace at her desk, holding up a sheet of vibrant, hand-cut stickers with a warm smile.
+> Visual: Grace, a Filipino woman, holds up a freshly printed sheet of vibrant, cute planner stickers, smiling warmly. The setting is her home workspace with a printer in the background.
 
-#### Make It Personal
-Kung may basic printer ka lang sa bahay at marunong mag-Canva, you're already halfway there. Hindi mo kailangan ng malaking opisina; kahit sa dining table lang, pwedeng-pwede ka na mag-start.
+#### Make It Personal (personal)
+At kung may basic printer ka lang sa bahay at free Canva account, you're already 90% there. Hindi mo kailangan ng mamahaling cutting machine to start.
 
-> Visual: A Filipino woman working on a laptop showing a simple sticker design in Canva, with a basic inkjet printer beside her.
+> Visual: Quick shot of a standard home printer printing a colorful sticker sheet. The Canva interface is briefly visible on a laptop screen beside it.
 
-#### Introduce the Caveat
-Pero ang totoo, marami ang sumusuko agad kasi nanghihinayang sa budget—mali ang nabibiling sticker paper, sayang ang tinta, at hindi alam kung paano ba talaga ibebenta.
+#### Introduce the Caveat (caveat)
+PERO, the biggest mistake I see is moms wasting money on the wrong sticker paper or using the wrong print settings. Sayang ang ink, oras, at pera. Nakaka-frustrate, 'di ba?
 
-> Visual: Close-up of a hand holding a smudged sticker next to a pile of wasted paper, showing the frustration of trial and error.
+> Visual: A side-by-side shot. On the left, a smudged, low-quality sticker sheet. On the right, a crisp, perfectly printed one. Grace points from the bad one to the good one with a knowing look.
 
-#### Promote Action
-That’s exactly why I created the Papers to Profits (P2P) Starter Kit. For only ₱1,300 one-time payment, ituturo ko sa'yo ang exact system ko para hindi ka na mag-aksaya ng pera. Click the link below to get lifetime access!
+#### Promote Action (action)
+That's why my Papers to Profits Starter Kit is here. For a one-time payment of ₱1,300—less than a family's milk tea treat—you get my complete sticker business blueprint. I'll teach you the right paper, settings, and pricing. Comment 'STICKERS' below and I'll send you the link para makapag-start ka na this week!
 
-> Visual: Grace showing a finished, professionally packed sticker set with a 'Thank You' note, pointing to a 'Learn More' button overlay.
+> Visual: Grace holds the Papers to Profits kit box towards the camera. The text '₱1,300 Lifetime Access' and 'Comment STICKERS' appears on screen.
 
 ---
 
 ### 3. facebook-ad — Hook-Story-Offer (sell)
 **Status:** PASS
 
-**Hook:** Gusto mo bang magka-sticker business nang hindi bumibili ng mahal na cutting machine?
-**Quality Score:** 96
+**Hook:** I know exactly how you feel, mommy. Gusto mong kumita, pero feeling mo, 'Saan ko isisingit?'
+**Quality Score:** 98
+**CTA Check:** ✅ Product pitch (correct for sell)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (3):** HOOK → STORY → OFFER
+**Blocks (3):** Hook → Story → Offer
 
-#### HOOK
-Gusto mo bang magka-sticker business nang hindi bumibili ng mahal na cutting machine? Akala ng marami, kailangan ng ₱20,000 equipment para makapagsimula. Mommy, hindi po totoo 'yun!
+#### Hook
+I know exactly how you feel, mommy. Gusto mong kumita para makatulong sa pamilya, pero feeling mo, 'Saan ko isisingit?' between laundry, cooking, and alaga sa mga bata. You feel stuck, right?
 
-> Visual: Grace at her desk, smiling and holding up a sheet of colorful hand-cut stickers while shaking her head 'no' at a price tag that says ₱20,000.
+> Visual: Grace sits at a small dining table with her laptop open, looking thoughtfully at the screen. Kids' drawings and a half-empty glass of water are on the table, showing a real, lived-in home environment.
 
-#### STORY
-Nagsimula ako sa isang pack ng sticker paper at gunting lang. Habang natutulog ang mga bata, nagka-cut ako sa dining table. Wala akong mamahaling gamit, pero doon nagsimula ang first ₱500 profit ko. Ang budget ko noon? Kulang-kulang ₱500 lang para sa papel at ink. Ginamit ko lang yung luma naming printer sa bahay at libreng version ng Canva. Ang sarap sa feeling na kumikita ka habang nasa tabi lang ng mga anak mo, 'di ba?
+#### Story
+I felt the same way for years. Akala ko imposible. But then I found a rhythm that worked. Habang si baby ay natutulog, I'd spend 30 minutes on Canva designing simple stickers. Pag gabi, while watching our favorite teleserye, I'd print a small batch. It wasn't about 'hustle,' it was about finding small pockets of time to create something beautiful and profitable, right from our dining table.
 
-> Visual: A Filipino woman sitting at a dining table, carefully cutting out small round stickers with a pair of craft scissors. In the background, a simple home printer is visible next to some kids' toys.
+> Visual: A quick montage: A screen recording of a simple sticker design on Canva. Grace's hands placing sticker paper into a basic home printer. Grace sitting on the sofa, cutting sticker sheets with scissors while a TV glows in the background.
 
-#### OFFER
-Dahil dyan, binuo ko ang Papers to Profits (P2P). For only ₱1,300—one-time payment for lifetime access—ituturo ko sa'yo ang step-by-step paano gawing negosyo ang papel. Mas mura pa 'to sa isang family meal sa labas, pero ito ang magbibigay sa'yo ng income. Click the 'Learn More' button to start your sticker journey today!
+#### Offer
+And that simple, realistic system is what I 'found' and put inside the Papers to Profits Starter Kit. It's my exact blueprint for busy moms. For a one-time payment of ₱1,300—less than a fancy family dinner out—you get lifetime access to start your own sticker business. Stop feeling stuck. Start creating. Comment 'STICKERS' below and I'll send you the link to enroll today!
 
-> Visual: Grace holding a finished sticker pack with a 'Thank You' note, pointing towards a laptop screen showing the Papers to Profits Starter Kit logo.
+> Visual: A vibrant flatlay of colorful sticker sheets, a pair of scissors, and a notecard that says 'Papers to Profits Starter Kit.' The final shot is Grace holding a neatly packed mailer with a 'Thank You' sticker, smiling warmly.
 
 ---
 
 ### 4. facebook-ad — PAS (sell)
 **Status:** PASS
 
-**Hook:** Akala ko rin dati kailangan ng ₱50,000 para magka-business.
-**Quality Score:** 98
+**Hook:** Akala mo kailangan mo ng Cricut para mag-start ng sticker business? Mali.
+**Quality Score:** 97
+**CTA Check:** ✅ Product pitch (correct for sell)
+**Provider:** GeminiPro/gemini-2.5-pro
 
 **Blocks (4):** Problem → Agitate → Solve → CTA
 
 #### Problem
-Mommy, gusto mo bang mag-business pero feeling mo kailangan mo ng malaking puhunan at mamahaling machines para mag-umpisa?
+Feeling mo ba kailangan mo ng mamahaling cutting machine tulad ng Cricut para lang makapagsimula ng sticker business from home? 'Yan ang laging sinasabi, 'di ba?
 
-> Visual: Grace sitting at her desk, looking thoughtfully at a pile of plain sticker paper and a basic home printer.
+> Visual: Grace is looking at her laptop screen showing an expensive cutting machine (like a Cricut) with a price tag over ₱15,000. She has a thoughtful, slightly discouraged expression.
 
 #### Agitate
-I felt that way too. Nakaka-frustrate 'yung gustong-gusto mong makatulong kay Daddy sa bills pero naiisip mo, 'Saan naman ako kukuha ng pambili ng plotter?' Hanggang sa lumilipas ang mga buwan, drawing pa rin ang pangarap mong home business.
+Kaya napapanghinaan ka ng loob. Ang mahal! Paano ka mag-uumpisa kung libo-libo agad ang ilalabas mo para lang sa machine? Paano kung hindi mag-work out? Sayang ang pera. So you end up just scrolling, wishing, pero walang nangyayari.
 
-> Visual: Close up of Grace's hands holding a utility bill, then looking over at her kids playing nearby (out of focus).
+> Visual: Quick shot of Grace looking at her wallet, then back at the screen, shaking her head slightly. The feeling is one of frustration and being stuck.
 
 #### Solve
-But I found a way! With my Papers to Profits (P2P) Starter Kit, tuturuan kita how to start a sticker business with less than ₱500 for materials. Basic printer, Canva, at gunting lang, sapat na. For a one-time fee of ₱1,300, you get lifetime access to the blueprint I used to build my business.
+Pero mali sila. I started my own paper business with just my basic printer, paper, and Canva. At 'yan mismo ang step-by-step na tinuturo ko sa Papers to Profits Starter Kit. You'll learn how to design, print, and sell your stickers—kahit gunting lang ang gamit mo sa simula. O kaya, use our partner printer. Design ka lang, sila na bahala mag-print. Benta na lang ang gagawin mo.
 
-> Visual: Grace smiling, showing her laptop screen with a Canva sticker design, then cutting a beautiful sheet of stickers with regular scissors.
+> Visual: The scene changes to a vibrant, positive tone. Quick cuts: Grace confidently designing stickers on Canva, her simple home printer printing a colorful sheet, and her hands neatly packing finished sticker orders into a small mailer.
 
 #### CTA
-Ready to turn paper into profits? Comment 'STICKER' below and I'll send you the link to join our P2P community!
+Ready ka na bang kumita habang nasa bahay? Get the complete blueprint for just ₱1,300—one-time payment lang 'yan for lifetime access! Mas mura pa sa isang family dinner out. Comment 'STICKERS' below and I'll personally send you the link para makapagsimula ka na today.
 
-> Visual: Grace holding up a finished pack of cute planner stickers, pointing down to a text overlay that says 'Comment STICKER'.
+> Visual: A final, satisfying shot of a finished, professional-looking sticker sheet held by Grace. Text overlay appears: "Papers to Profits Starter Kit: ₱1,300. Comment 'STICKERS' to start!"
 
 ---
 
 ### 5. facebook-ad — PASTOR (sell)
 **Status:** PASS
 
-**Hook:** 500 pesos for a fast food meal vs. 500 pesos to start your sticker business.
+**Hook:** Is it possible to start a business kung 1-2 hours lang ang free time mo?
 **Quality Score:** 96
+**CTA Check:** ✅ Product pitch (correct for sell)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (6):** PROBLEM → AMPLIFY → STORY → TRANSFORMATION → OFFER → RESPONSE
+**Blocks (6):** Problem → Amplify → Story / Solution → Transformation → Offer → Response / CTA
 
-#### PROBLEM
-Mommy, yung 500 pesos mo ba, mabilis lang maglaho sa isang meal sa labas? Gusto mo mag-business pero feeling mo laging kulang ang budget?
+#### Problem
+Is it possible to start a real business kung 1-2 hours lang ang free time mo sa isang araw? 'Yung time na tulog si baby or nasa school si kuya? Most moms think hindi, kaya they feel stuck and guilty for wanting to earn.
 
-> Visual: Grace holding a fast food paper bag in one hand and a pack of blank sticker paper in the other, looking thoughtfully at both.
+> Visual: A shot of a clock on the wall showing 1 PM. The camera pans to Grace looking thoughtfully at her laptop, with kids' toys visible but out of focus in the background.
 
-#### AMPLIFY
-Habang pinapatagal mo ang pag-start, lalong lumalaki ang bills pero ang income, stagnant pa rin. Sayang yung chance na kumita habang kasama ang mga bata sa bahay.
+#### Amplify
+Kaya 'yung pangarap na kumita from home, hanggang pangarap na lang. Nakaka-frustrate na gusto mong tumulong sa family expenses pero parang kulang na kulang sa oras. Feeling mo sayang ang panahon, 'di ba?
 
-> Visual: Close-up of a stack of household bills next to a laptop showing a Canva design of cute planner stickers.
+> Visual: Quick cuts: a pile of bills on a table, a mom sighing while scrolling on her phone, a half-finished cup of coffee getting cold.
 
-#### STORY
-Nagsimula lang din ako sa isang pack ng sticker paper at yung printer na gamit namin sa bahay. No fancy machines, just basic tools and a lot of faith.
+#### Story / Solution
+Ganyan na ganyan ako dati, mommy. But I discovered that one hour is powerful. I used it to learn how to turn simple paper into products people actually buy, using just Canva and my basic home printer.
 
-> Visual: Grace at her desk, carefully feeding a sheet of sticker paper into a standard home inkjet printer.
+> Visual: Grace sits at her desk during what looks like naptime (quiet background). She's on Canva, dragging and dropping a cute sticker design into place. A smile of satisfaction on her face.
 
-#### TRANSFORMATION
-Ngayon, yung dating 'extra' lang, naging predictable income na para sa family namin. Hindi ko na kailangang iwan ang mga anak ko para lang kumita.
+#### Transformation
+That 'one hour' a day now pays for our groceries and my kids' milk. It turned my mommy guilt into mommy pride. Hindi ko na kailangang iwan ang mga anak ko para lang kumita at makatulong sa asawa ko.
 
-> Visual: Grace happily packing a colorful set of stickers into a small envelope, with a toddler's drawing visible in the background.
+> Visual: A satisfying shot of Grace packing a small, neat order of stickers into a mailer. On the table, a G-Cash notification screen is visible on her phone showing a payment received.
 
-#### OFFER
-Sa Papers to Profits (P2P) Starter Kit, ituturo ko sa'yo step-by-step paano gawin 'to. Lifetime access na for only ₱1,300. Isang beses lang na investment para sa skill na pang-habambuhay.
+#### Offer
+This is the exact system I teach inside my Papers to Profits Starter Kit. For a one-time payment of ₱1,300—less than a family's weekend mall food trip—you get lifetime access to my complete sticker business blueprint. May templates ka na, supplier list, and step-by-step videos.
 
-> Visual: A flat lay of the P2P Starter Kit materials: sticker sheets, a cutting mat, a phone showing the course login, and the ₱1,300 price tag clearly visible.
+> Visual: A flat lay shot showing the contents of the 'Papers to Profits' kit: sample sticker sheets, a welcome card, and a laptop screen displaying the course dashboard.
 
-#### RESPONSE
-Ready ka na bang gawing profit ang papel? Comment 'STICKER' below at isesend ko sa'yo ang details paano mag-enroll!
+#### Response / CTA
+Ready to turn your 'one hour' into income? Comment 'KAYA' below and I will personally send you the link to get started. Kaya mo 'to, mommy!
 
-> Visual: Grace holding a finished sheet of beautiful floral stickers, smiling warmly towards the camera.
+> Visual: Grace looks warmly at the camera, holding up a finished sticker sheet. A text overlay appears: "Comment 'KAYA' to start!"
 
 ---
 
 ### 6. facebook-ad — WHO-WHY-OFFER-ACTION (sell)
 **Status:** PASS
 
-**Hook:** Sticker Business for less than ₱500? Kaya mo 'to, Mommy!
+**Hook:** Is it possible to start a real business in just 30 minutes a day?
 **Quality Score:** 98
+**CTA Check:** ✅ Product pitch (correct for sell)
+**Provider:** GeminiPro/gemini-2.5-pro
 
 **Blocks (4):** Who (Call Out) → Why It Matters → The Offer → Call to Action
 
 #### Who (Call Out)
-Calling all Filipino mommies na mahilig sa crafts pero tight ang budget. Gusto mo bang magsimula ng sariling sticker business kahit wala pang 500 pesos ang puhunan sa materials?
+Para sa mga kapwa ko busy moms na laging sinasabi, 'Grace, gusto ko niyan pero wala akong time!' Is it really possible to start a business with just 30 minutes a day, habang nag-aalaga ng kids?
 
-> Visual: Grace is sitting at her home office desk, holding a sheet of colorful planner stickers in one hand and a 500-peso bill in the other. Text overlay: 'STICKER BIZ FOR <₱500?'
+> Visual: Grace at her home desk, looking warmly at the camera. A laptop is open, and some kids' crafts or toys are visible in the background, creating a relatable 'mompreneur' setting.
 
 #### Why It Matters
-Hindi mo kailangan ng mamahaling cutting machine agad. Gamit lang ang printer mo sa bahay at Canva, pwede ka na gumawa ng stickers for school labels or journals. It's the perfect way to earn while watching the kids, dahil hawak mo ang oras mo.
+Yes, Mommy! Kasi hindi ito 'hustle.' This is a simple, creative outlet. You can design stickers on Canva habang natutulog si baby (15 mins). Print them out after dinner (5 mins). At i-pack mo orders mo while watching your favorite teleserye (10 mins). Simple, doable, and you're still present for your family.
 
-> Visual: A close-up shot of a basic home printer printing out a sheet of labels. Then a quick cut to Grace's laptop screen showing a simple sticker design being made in Canva.
+> Visual: Quick cuts: 1) Grace's hands designing on Canva on a laptop. 2) A home printer printing a sheet of colorful stickers. 3) Her hands neatly cutting the stickers. 4) The finished stickers being packed into a small, cute envelope.
 
 #### The Offer
-Para hindi ka na mangapa sa process, I created the Papers to Profits (P2P) Starter Kit. For only ₱1,300—one-time payment lang with lifetime access—ituturo ko sa'yo lahat. From design basics to how to sell your first pack. Over 1,000 moms are already inside!
+This exact workflow is what I teach inside the Papers to Profits Starter Kit. It's my complete blueprint for starting your own sticker business from home. For just ₱1,300, one-time payment for lifetime access na 'yan. Mas mura pa sa isang family milk tea date, pero ito, pwedeng maging source of family income.
 
-> Visual: Grace holds up a tablet showing the Papers to Profits course dashboard. She flips through a few printed sticker sheets she made. Text overlay: '₱1,300 Lifetime Access'.
+> Visual: Grace holds up a branded welcome card for the kit. Text overlay appears: 'Papers to Profits Starter Kit: ₱1,300 One-Time Payment'.
 
 #### Call to Action
-Ready to turn your paper into family income? Click the link below or comment 'STICKER' and I'll send you the details. Simulan na natin ang dream business mo tonight, Mommy!
+Stop saying 'wala akong time' and start making time for your dreams. Comment 'STICKERS' below right now, and I will personally send you the link to enroll. Let's turn your 30 minutes into extra income for your family!
 
-> Visual: Grace smiles warmly at the camera, pointing down towards a 'Learn More' button overlay. She gives a thumbs up.
+> Visual: Close-up of a phone screen showing the Facebook comment section, with a finger typing 'STICKERS'. The final shot is Grace giving an encouraging smile.
 
 ---
 
 ### 7. facebook-ad — (No structure) (sell)
 **Status:** PASS
 
-**Hook:** Isang bucket ng chicken or isang sticker business? ₱500 can go a long way, Mommy!
-**Quality Score:** 98
+**Hook:** Gusto mong kumita pero ayaw mong maging 'puyat na V.A.' na laging nakatutok sa laptop? What if you can earn by making something cute and tangible... like stickers?
+**Quality Score:** 96
+**CTA Check:** ✅ Product pitch (correct for sell)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Headline:** Start your Sticker Biz for < ₱500! 🎨
-**Primary Text:** Mommy, alam mo ba na ang ₱500 mo, pwedeng maging simula ng iyong home business? Compare natin: Yung ₱500, pwedeng pang-isang kainan lang sa labas, or pwedeng pambili ng sticker paper at ink para makabenta ka na! 
+**Headline:** Start Your Sticker Business from Home!
+**Primary Text:** Relate ka ba, Mommy? You see other moms earning online, pero parang kapalit 'yung oras nila sa pamilya. Nakaka-guilty isipin. But what if your business fits *into* your mommy life, instead of taking it over?
 
-Sa Papers to Profits (P2P), tuturuan kita ng simple 3-2-1 strategy:
-✅ 3 Steps: Mag-design sa Canva, i-print sa home printer (o sa partner printer namin!), at i-post sa FB groups.
-✅ 2 Products: Pwedeng 'Thank You' stickers para sa online sellers or cute journal stickers para sa mga estudyante.
-✅ 1 Goal: Makakuha ng first sale mo this week!
+'Yan ang promise ng Papers to Profits Starter Kit. This is your complete blueprint to start a sticker business from home. I'll teach you how to design simple stickers on Canva (kahit habang natutulog si baby!), how to print them, and how to sell them online. No clients, no deadlines, no need to be online 24/7. This is about creating real products you can hold and sell.
 
-Hindi mo kailangan ng mamahaling cutting machine or expert skills. Start with what you own! Ang Papers to Profits Starter Kit ay ₱1,300 lang—one-time payment, lifetime access na. Mas mura pa sa isang grocery run, pero ito ang magtuturo sa'yo paano kumita habang nasa tabi lang ng mga anak mo. 
+For a one-time payment of ₱1,300—less than a family trip to the mall—you get lifetime access to the exact steps I used. Ito na 'yung puhunan mo for a business na sa'yo talaga.
 
-Ready ka na bang gawing profit ang paper? Click the link below to get the P2P Starter Kit for only ₱1,300!
-**Image Prompt:** A Filipino woman at a wooden desk, happily peeling a small round sticker from a printed sheet. Beside her is a basic home printer and a cup of coffee. The desk has colorful sticker designs and a laptop open to Canva. Warm, natural lighting in a home setting.
+Stop dreaming and start creating! Comment 'STICKERS' below and I'll personally send you the link to get started.
+**Image Prompt:** A flatlay on a wooden desk. A Filipino woman's hands are neatly arranging freshly printed, die-cut sticker sheets next to a laptop showing a Canva design interface. A cup of coffee is in the corner. The scene is cozy and productive.
 
 ---
 
 ### 8. reels — Comparison (educate)
 **Status:** PASS
 
-**Hook:** ₱20,000 vs. ₱500 to start your sticker business—sino ang panalo?
-**Quality Score:** 98
+**Hook:** Which sticker survives the Pinoy humidity test?
+**Quality Score:** 97
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (4):** COMPARISON SETUP → OPTION A → OPTION B → VERDICT + WHY
+**Blocks (5):** COMPARISON SETUP → OPTION A → OPTION B → VERDICT + WHY → CTA
 
 #### COMPARISON SETUP
 *Timing: 0-3s*
 
-Mommy, akala mo ba kailangan ng 20k para magka-sticker business? Let's compare ₱20,000 vs. ₱500 startup. Sino ang panalo?
+Mommy, aling sticker paper ang mananalo sa Pinoy humidity test? Let's find out!
 
-> Visual: Split screen. On the left, Grace points to a high-end cutting machine. On the right, she holds a simple pack of sticker paper and scissors.
+> Visual: Grace holds up two seemingly identical sticker sheets to the camera, one in each hand. Her craft desk is in the background.
 
-> On-screen: ₱20k vs ₱500 Startup
+> On-screen: Regular Sticker vs. Weatherproof Combo
 
 #### OPTION A
 *Timing: 3-12s*
 
-Option A: The 'Big Investment.' Bibili ka ng cutting machine (₱15k), premium vinyl (₱3k), at pro design software. Ang ganda ng cuts, yes, pero ang laki agad ng labas na pera bago ka pa makabenta.
+Ito yung ordinary glossy sticker paper. Maganda siya and affordable. Ilagay natin sa tumbler. Pero tingnan mo, kapag nabasa or pinawisan lang yung baso... ayun, nag-bleed yung ink at natutuklap yung papel.
 
-> Visual: Close-up of a Cricut or Silhouette machine cutting a sticker. Grace shows a perfectly die-cut vinyl sticker.
+> Visual: Close-up shot of Grace applying the 'regular' sticker to a clear tumbler. Then, she lightly sprays it with a water bottle. The camera zooms in to show the ink running and the paper edge starting to peel and get soggy.
 
-> On-screen: Option A: ₱20,000 Setup
+> On-screen: ❌ Ink Bleeds ❌ Paper Peels
 
 #### OPTION B
 *Timing: 12-22s*
 
-Option B: The ₱500 Strategy. Isang pack ng matte sticker paper (₱150), ink refill (₱200), at gunting. Use Canva free version for designs. Simple lang, manual cut muna, pero ready to sell na agad.
+Now, eto naman yung secret combo: Vinyl sticker paper na may photo top laminate. Same process, idikit natin. Tapos, basain natin. See? The water just slides right off. Kahit punasan, buo pa rin!
 
-> Visual: Grace at her desk, manually cutting a sheet of stickers she just printed. She holds up a sheet of hand-cut 'Thank You' stickers.
+> Visual: Grace applies the 'weatherproof' sticker to an identical tumbler. She sprays it more aggressively with water. The camera shows the water beading and rolling off. She wipes it with a cloth, and the sticker is perfectly fine.
 
-> On-screen: Option B: ₱500 Setup
+> On-screen: ✅ Water-Resistant ✅ Smudge-Proof
 
 #### VERDICT + WHY
 *Timing: 22-30s*
 
-Ang verdict? Panalo ang ₱500 strategy for beginners! Bakit? Kasi you learn the business without the risk. Pag may benta na, saka tayo mag-upgrade. Start small, grow big, Mommy! Check my bio for more tips.
+So, alin ang panalo? Depende! For journals and planners na hindi nababasa, okay na si ordinary paper. Pero for tumblers, lunch boxes, or gadgets, non-negotiable dapat ang weatherproof combo. Para happy ang customer!
 
-> Visual: Grace smiling, holding her ₱500-budget stickers. She gestures to her link in bio while her kids play quietly in the background (out of focus).
+> Visual: Grace holds both tumblers side-by-side, pointing to the damaged one and then the pristine one. She then quickly shows the ordinary sticker inside a planner page to illustrate its proper use.
 
-> On-screen: Verdict: Start with ₱500!
+> On-screen: Use the right paper for the right product!
+
+#### CTA
+*Timing: 30-35s*
+
+Anong paper product ang gusto mong gawan natin ng test next? Comment below!
+
+> Visual: Grace smiles warmly at the camera, holding the winning tumbler.
+
+> On-screen: Comment your suggestion!
 
 ---
 
 ### 9. reels — Full Reel Anatomy (educate)
 **Status:** PASS
 
-**Hook:** ₱500 lang, may sticker business ka na?
-**Quality Score:** 96
+**Hook:** Stop blaming your printer for peeling stickers.
+**Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (8):** HOOK → SUPER HOOK → CONTEXT → THE DANCE → RE-HOOK → VALUE / CLIMAX → RE-LOOP → CTA
+**Blocks (8):** Hook → Super Hook → Context → The Dance → Re-hooks → Value / Climax → Re-loop → CTA
 
-#### HOOK
+#### Hook
 *Timing: 0-1s*
 
-₱500 lang, may sticker business ka na?
+Your stickers are peeling and it's not your printer's fault.
 
-> Visual: Grace holds a single ₱500 bill in one hand and a stack of colorful, professional-looking stickers in the other. High contrast lighting.
+> Visual: Grace holds up a sticker where the top laminate layer is clearly peeling off from the paper base. She looks slightly frustrated.
 
-> On-screen: STARK BIZ WITH ₱500? 💸
+> On-screen: STICKER FAIL?
 
-#### SUPER HOOK
+#### Super Hook
 *Timing: 1-3s*
 
-I built Graceful Homeschooling starting with just a basic printer and a dream.
+After testing 20+ paper and laminate combos para sa P2P students ko...
 
-> Visual: Quick cut to Grace smiling, standing next to her home printer and a stack of finished journals.
+> Visual: Quick B-roll shots: a stack of different sticker paper packages, a roll of laminate, Grace making notes in a journal.
 
-> On-screen: Founder of Papers to Profits 👩‍🏫
+> On-screen: 20+ COMBOS TESTED
 
-#### CONTEXT
+#### Context
 *Timing: 3-7s*
 
-Akala ng maraming Mommy, kailangan ng ₱20,000 na cutting machine bago makapagsimula. Big mistake, 'di ba?
+Nung una, sinisisi ko yung printer or yung ink. Lalo na dito sa Pilipinas, grabe yung humidity, akala ko 'yun lang talaga.
 
-> Visual: Grace shakes her head 'no' while pointing to an empty spot on her desk where an expensive machine would be.
+> Visual: Grace glances at her printer with a sigh, then fans herself with a sheet of paper, looking at the camera like she's sharing a struggle.
 
-> On-screen: Don't buy that machine yet! ❌
+> On-screen: The Pinoy Weather Problem
 
-#### THE DANCE
-*Timing: 7-20s*
+#### The Dance
+*Timing: 7-15s*
 
-Look at this. ₱150 for a pack of sticker paper. ₱0 for Canva. Your existing printer? ₱0. All you need is your creativity. Show them your designs first, bago ka bumili ng stock. It's about starting small but thinking big.
+I was using glossy sticker paper with a cold laminate, tapos after a few days, ganito na itsura niya. Ang sakit sa bulsa, di ba? Sayang ang materials.
 
-> Visual: Fast cuts: 1. Hand touching a pack of sticker paper. 2. Screen recording of a cute sticker design in Canva. 3. Grace's hand feeding paper into the printer. 4. Close up of stickers being printed.
+> Visual: Close-up shot of Grace's hands easily peeling the laminate off a glossy sticker. The separation is clean, showing it never bonded properly. She shakes her head in disappointment.
 
-> On-screen: ₱150 Paper + Canva + Printer = BIZ ✨
+> On-screen: Glossy + Laminate = Sayang
 
-#### RE-HOOK
-*Timing: 20-21s*
+#### Re-hooks
+*Timing: 15-16s*
 
-But here's the part that really saves you money...
+But here's the secret...
 
-> Visual: Grace leans into the camera with a 'secret' expression.
+> Visual: Quick zoom into Grace's face as she leans closer to the camera, lowering her voice as if sharing confidential information.
 
-> On-screen: THE REAL SECRET... 🤫
+#### Value / Climax
+*Timing: 16-35s*
 
-#### VALUE / CLIMAX
-*Timing: 21-35s*
+It's not about the laminate, it's the BASE paper. Never use a glossy base. Dapat, high-quality MATTE sticker paper. The matte surface gives the laminate a much stronger grip na hindi tinatalo ng humidity. Ayan o, perfect! Waterproof pa.
 
-Use the 'Fussy Cut' method. Cut your stickers manually with sharp scissors while watching your favorite show. It gives them a handmade, premium feel that customers actually love and pay more for! No machine needed for your first 50 orders.
+> Visual: Grace holds up a sheet of matte sticker paper. She then shows a finished sticker made with a matte base, trying to scratch and peel the edge of the laminate with her nail, but it won't budge. She then runs it under a little water to show it's secure.
 
-> Visual: Close-up of Grace's hands expertly cutting around a sticker design with a small pair of scissors. The sticker has a nice white border.
+> On-screen: SECRET: MATTE Base Paper
 
-> On-screen: The 'Fussy Cut' Method ✂️
-
-#### RE-LOOP
+#### Re-loop
 *Timing: 35-40s*
 
-But wait, what if you don't even have a printer at home?
+Pero, this only works if your laminate has the right thickness... which is a whole other secret for another day.
 
-> Visual: Grace holds up a finished sticker sheet and looks thoughtfully at the camera.
+> Visual: Grace holds up two different laminate rolls to the light. She winks at the camera, leaving the audience curious.
 
-> On-screen: No printer? No problem! 🖨️
+> On-screen: But there's more...
 
 #### CTA
 *Timing: 40-45s*
 
-Comment 'STICKER' and I’ll tell you how our partner printer can do the work for you while you stay with the kids.
+Save this para 'di masayang ang materials mo! Anong sticker paper brand ang gamit mo ngayon? Share mo sa comments!
 
-> Visual: Grace waving at the camera with her kids playing in the blurred background.
+> Visual: Grace smiles warmly at the camera, holding up the perfect, unpeelable sticker next to her face.
 
-> On-screen: Comment 'STICKER' 💬
+> On-screen: SAVE this tip! 👇
 
 ---
 
 ### 10. reels — Hook-Hold-Reward (educate)
 **Status:** PASS
 
-**Hook:** The 'No-Machine' Sticker Framework
-**Quality Score:** 96
+**Hook:** Bakit 'di mo dapat bilhin ang pinakamahal na sticker paper.
+**Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
 **Blocks (3):** HOOK → HOLD → REWARD
 
 #### HOOK
 *Timing: 0-3s*
 
-Mommy, alam mo ba na pwede kang mag-start ng sticker business kahit wala kang cutting machine? It's called the 'No-Machine' Framework.
+Yung pinakamahal na sticker paper? Baka 'yan pa ang sisira sa business mo.
 
-> Visual: Grace is holding a sheet of colorful stickers and a pair of simple craft scissors. Fast cuts between the stickers and her smiling face.
+> Visual: Quick cuts: 1) A sticker peeling off a planner page. 2) Close up of Grace's fingers showing a smudged, faded sticker. 3) Grace at her desk, holding up two different kinds of sticker paper with a confused look.
 
-> On-screen: STIKER BIZ: ₱0 MACHINE?
+> On-screen: Sticker Business MISTAKE
 
 #### HOLD
 *Timing: 3-25s*
 
-First, use Canva to layout your designs. Ang secret technique? Gumamit ng 'Border' element sa paligid ng design mo para madaling gupitin manually. Second, bumili ka lang ng 120gsm sticker paper sa National Bookstore—mura lang 'to! Third, if wala kang printer, don't worry. I-save mo ang file as PDF and ipa-print sa local 'piso-print' or sa partner printer natin. One sheet costs around ₱15 to ₱20, pero pag ginupit mo, you can sell each small sticker for ₱5 to ₱10.
+Dito sa Pinas, napaka-humid. Kaya kahit 'waterproof' pa 'yan, nag-pe-peel at kumukupas pa rin. Ito yung secret combo na di sinasabi sa Shopee listings: hindi lang sa paper 'yan, nasa 'combo' 'yan. Gumamit ka ng vinyl sticker paper, kahit 'yung local brand lang. Tapos, i-partner mo sa 'photo top' or cold laminate. I-print mo muna sa vinyl... tapos, i-laminate mo nang maigi... bago mo i-cut. Ito 'yung nagbibigay ng extra protection against sa weather natin.
 
-> Visual: Screen recording of Canva adding a white border to a sticker. Close up of 120gsm paper pack. Grace cutting a sticker slowly but neatly following the border.
+> Visual: Grace shows a vinyl sticker paper package. Then she shows a roll of photo top laminate. She places a printed sticker sheet on her desk. She carefully applies the laminate over the sticker sheet, using a squeegee or an old credit card to smooth out bubbles. Then, she shows herself cutting the laminated sticker with scissors.
 
-> On-screen: CANVA TIP: ADD BORDERS
-120GSM PAPER
-PRINT & CUT
+> On-screen: SECRET COMBO: Vinyl Paper + Photo Top
 
 #### REWARD
 *Timing: 25-30s*
 
-The best part? You spent less than ₱500 for your first batch. Simple lang, 'di ba? Kaya mo ring simulan 'to today. Follow for more paper biz tips!
+Ayan! Super professional at Pinoy weather-proof na ang stickers mo. Anong paper products ang gusto mong matutunang gawin next? Comment below!
 
-> Visual: Grace puts the finished stickers into a small cute pouch. She looks at the camera with an encouraging thumbs up.
+> Visual: Grace holds the finished, laminated sticker. She places it on a water bottle and then lightly sprays it with water from a small spray bottle. She wipes it dry with a cloth, showing no smudging or peeling. She smiles at the camera, holding the bottle.
 
-> On-screen: ₱500 STARTUP! 🚀
+> On-screen: Humidity-Proof!
 
 ---
 
 ### 11. reels — Iceberg Effect (educate)
 **Status:** PASS
 
-**Hook:** Most people think you need an expensive cutting machine to start a sticker business.
-**Quality Score:** 96
+**Hook:** Everyone says 'buy expensive sticker paper.' Mali.
+**Quality Score:** 95
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (5):** TINY DETAIL → MASSIVE CONSEQUENCE → DEEP DIVE → ACTIONABLE TAKEAWAY → CTA
+**Blocks (4):** Tiny Detail → Massive Consequence → Deep Dive → Actionable Takeaway
 
-#### TINY DETAIL
+#### Tiny Detail
 *Timing: 0-3s*
 
-Most people think kailangan ng mahal na cutting machine para magka-sticker business, pero ang totoo? It’s all about the 'Gutter Space' sa layout mo.
+Lahat sinasabi, 'invest in expensive sticker paper.' Mali.
 
-> Visual: Grace holding a single sheet of A4 sticker paper, pointing at the small white gaps between the stickers.
+> Visual: Grace holds up two sticker papers: one looks premium and shiny, the other looks ordinary. She shakes her head.
 
-> On-screen: ₱500 Sticker Biz? 🤫
+> On-screen: MALI PALA 'TO?
 
-#### MASSIVE CONSEQUENCE
+#### Massive Consequence
 *Timing: 3-7s*
 
-Pag mali ang spacing mo, itatapon mo lang ang 30% ng puhunan mo sa scrap paper. That’s ₱150 gone every pack—sayang ang budget!
+Kaya pala 'yung stickers mo, after one week sa tumbler, nag-pe-peel na sa gilid. Sayang ang pera at effort.
 
-> Visual: Grace showing a 'bad' layout with huge gaps vs a 'good' layout that is tightly packed. She looks concerned then relieved.
+> Visual: Quick cut to a close-up of a tumbler with a beautifully designed sticker that is visibly peeling at the edges. Grace's finger points to the peeling part.
 
-> On-screen: Wasted ₱₱₱! 📉
+> On-screen: 1 WEEK LANG, BAKBAK AGAD
 
-#### DEEP DIVE
-*Timing: 7-30s*
+#### Deep Dive
+*Timing: 7-25s*
 
-With ₱500, you can buy 1 pack of Glossy Sticker Paper for ₱150 and ink refills for ₱250. Sa Canva, don't just drag and drop. Gamitin ang 'Grid' view and set margins to 0.1 inch. Isang A4 sheet can fit 30 small stickers. If you sell each sheet for ₱50, tatlong sheets pa lang, bawi na ang papel mo! No cutter? Gunting lang muna, Mommy, just like how I started.
+Kasi mommy, it's not just the paper, it's the paper AND laminate combo. Dito sa Pinas, sobrang humid. The wrong laminate traps moisture, kaya lumulutong at nag-li-lift 'yung sticker. See this? Cheaper paper, but with the right cold laminate... perfect seal. Ito, mahal na papel, wrong laminate... ayan, sira.
 
-> Visual: Over-the-shoulder shot of Grace's laptop showing Canva. She uses the 'Duplicate' shortcut. Then shows her hands cutting a sticker with basic scissors.
+> Visual: Grace is at her desk. She holds up a sheet of vinyl sticker paper and a roll of 'cold laminate'. She demonstrates pressing them together smoothly. Then she shows the peeling sticker from before next to a perfectly intact sticker on another tumbler, tapping the good one.
 
-> On-screen: ₱150 Paper + ₱250 Ink
-Canva Hack: 0.1 margins
+> On-screen: Paper + Laminate = Weatherproof Seal
 
-#### ACTIONABLE TAKEAWAY
-*Timing: 30-40s*
+#### Actionable Takeaway
+*Timing: 25-35s*
 
-Next time, search 'Sticker Sheet' sa Canva and use the 'Tidy Up' tool para sagad ang space. Start with what you have. Kaya mo 'to!
+So next time you buy supplies, ask your supplier: 'Ano po ang best laminate para dito na pang-Pinoy weather?' That's the real secret. Save this for later, mommy!
 
-> Visual: Grace smiling, holding a finished, cut sticker. She gives a thumbs up.
+> Visual: Grace smiles warmly at the camera, holding up the tumbler with the perfect sticker. She gives a thumbs-up.
 
-> On-screen: Use 'Tidy Up' Tool! ✨
-
-#### CTA
-*Timing: 40-45s*
-
-Gusto mo bang matutunan pano i-turn ang paper into profits? Comment 'STICKER' and I'll send you my beginner's guide!
-
-> Visual: Grace holding her Papers to Profits (P2P) starter kit binder.
-
-> On-screen: Comment 'STICKER' 👇
+> On-screen: Ask: 'Pang-Pinoy Weather?'
 
 ---
 
 ### 12. reels — Micro-Story Arc (story)
 **Status:** PASS
 
-**Hook:** I'll never forget the night I almost gave up on my ₱500 dream.
+**Hook:** I almost cried when my first batch of stickers started peeling.
 **Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (3):** OPEN LOOP → JOURNEY → RESOLUTION / REVEAL
+**Blocks (3):** Open Loop → Journey → Resolution / Reveal
 
-#### OPEN LOOP
-*Timing: 0-3s*
+#### Open Loop
+*Timing: 0-4s*
 
-I’ll never forget the night na halos sumuko na ako sa ₱500 dream ko.
+Nobody saw me crying in the kitchen that night...
 
-> Visual: Grace is sitting at her kitchen table, holding a crumpled ₱500 bill, looking at a basic home printer. The lighting is warm and dim.
+> Visual: Close-up shot of Grace's hand holding a sticker sheet where the printed ink is smudging and the laminate is peeling off at the corner. The lighting is slightly dim, suggesting it's late at night.
 
-> On-screen: Starting with ₱500 💸
+> On-screen: Akala ko perfect na...
 
-#### JOURNEY
-*Timing: 3-25s*
+#### Journey
+*Timing: 4-22s*
 
-Tuesday night noon, tulog na ang mga bata. I only had five hundred pesos left sa wallet ko. Sabi ko, 'Lord, pambili lang ng isang pack ng sticker paper at ink refill.' Kinabahan ako habang nagde-design sa Canva. Then, narinig ko yung 'whirrr' ng printer ko. The smell of fresh ink filled the kitchen. Bawat sheet na lumalabas, parang dinig ko yung tibok ng puso ko. I spent hours cutting them by hand while everyone was dreaming.
+...kasi yung first batch of sticker orders ko, nag-peel dahil sa humidity. Sobrang nakakahiya sa customer. I felt like a failure. Sabi ko, 'Lord, paano na 'to?' I spent the next weeks testing every paper and laminate I could find sa Shopee.
 
-> Visual: Fast cuts of Grace typing on a laptop, the printer light blinking in the dark, and a close-up of scissors cutting through a glossy sticker sheet. Show her checking on her sleeping kids in the background.
+> Visual: Quick cuts: 1) Grace looking frustrated at her desk, surrounded by failed sticker sheets. 2) A screen recording of her scrolling through different sticker paper listings on Shopee. 3) A time-lapse of her printing, cutting, and applying different laminates to small test squares of paper.
 
-> On-screen: One pack of paper. One old printer.
+> On-screen: The Pinoy Weather Test
 
-#### RESOLUTION / REVEAL
-*Timing: 25-35s*
+#### Resolution / Reveal
+*Timing: 22-30s*
 
-When I saw the finished stickers, naiyak ako. Hindi lang pala ito papel. It was the start of Papers to Profits. From that ₱500, nakayanan kong mag-provide para sa pamilya ko nang hindi sila iniwan.
+Until finally... I found the one. Yung combination na kahit iwan mo pa sa labas, hindi bibigay. Yung saya na alam mong quality yung ipapadala mo... priceless.
 
-> Visual: Grace holds up a beautiful, professional-looking sheet of planner stickers. She is smiling, looking relieved and proud.
+> Visual: A satisfying slow-motion shot. Grace's hand holds a new, perfectly laminated sticker. She lightly sprays it with a water mister, and then wipes it with a cloth. The ink doesn't smudge, the sticker stays perfect. She smiles with relief as she packs it into a clear plastic sleeve for an order.
 
-> On-screen: From ₱500 to a business. ✨
+> On-screen: That feeling of getting it right.
 
 ---
 
 ### 13. reels — Myth, Truth, Move (educate)
 **Status:** PASS
 
-**Hook:** Noong nagsisimula ako, akala ko kailangan ko ng 20k para lang makabenta ng isang sticker sheet.
-**Quality Score:** 96
+**Hook:** The #1 reason your stickers are peeling in this Pinoy heat.
+**Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (4):** MYTH → TRUTH → EXPLAIN → ACTION
+**Blocks (4):** State the Myth → Reveal the Truth → Explain with Example → First Action Step
 
-#### MYTH
-*Timing: 0-2s*
+#### State the Myth
+*Timing: 0-3s*
 
-Akala ng marami, kailangan mo ng ₱20,000 na cutting machine para lang makapag-start ng sticker shop.
+Akala ng maraming nagsisimula, 'sticker paper is sticker paper.' Basta glossy, okay na raw for selling.
 
-> Visual: Grace looking at a picture of a high-end cutting machine on a tablet, looking slightly discouraged.
+> Visual: Grace holds up two sheets of glossy sticker paper that look almost identical. She shrugs with a 'what's the difference?' expression.
 
-> On-screen: Myth: You need ₱20k to start
+> On-screen: Myth: Any glossy paper will do
 
-#### TRUTH
-*Timing: 2-3s*
+#### Reveal the Truth
+*Timing: 3-5s*
 
-Actually, you can start your first batch with less than ₱500 today.
+Pero 'yan ang #1 reason kung bakit nag-pepeel ang stickers ng customers mo, especially sa init ng Pilipinas.
 
-> Visual: Cut to Grace holding a single pack of sticker paper and a pair of scissors, smiling confidently.
+> Visual: Quick, jarring cut to a close-up shot of a sticker's edges lifting and peeling off a notebook cover.
 
-> On-screen: Truth: ₱500 is enough!
+> On-screen: Truth: Humidity is the enemy!
 
-#### EXPLAIN
-*Timing: 3-25s*
+#### Explain with Example
+*Timing: 5-28s*
 
-Here’s the breakdown: One pack of high-quality sticker paper is around ₱180. Kung wala ka pang printer, you can use a local print shop for ₱15 per page. In ten pages, that’s just ₱150. Add ₱50 for a sharp pair of scissors, and you have your first 100 stickers ready to sell! Hindi kailangan ng mamahaling machine, manual cutting is the way to go para tipid sa simula.
+Ito ang difference. Ito 'yung ordinary photo sticker paper. Maganda siya, pero papel pa rin. Once ma-expose sa moisture and heat, aangat 'yung edges. Ito naman, waterproof vinyl sticker paper. Mas mahal ng konti, pero tingnan mo... kapit na kapit. Kahit sa tumbler na pinagpapawisan, hindi siya basta-basta bibigay. This is the secret to happy customers.
 
-> Visual: Close-up of Grace's hands placing items on her desk: the paper pack, then showing a receipt from a print shop, then her scissors. She starts cutting a small sheet of stickers manually.
+> Visual: Side-by-side comparison. Grace shows the photo sticker paper peeling easily off a journal. Then she shows the vinyl sticker on a cold tumbler with condensation, trying to scratch the edge but it won't lift. She can even wipe the water off to show it's fine.
 
-> On-screen: Paper: ₱180
-Printing: ₱150
-Scissors: ₱50
-Total: ₱380
+> On-screen: Paper vs. Waterproof Vinyl
 
-#### ACTION
-*Timing: 25-45s*
+#### First Action Step
+*Timing: 28-40s*
 
-Ang first step mo? Go to Canva, design 5 simple stickers for planners or water bottles, and have them printed sa pinakamalapit na shop. Don't wait for the big machine—start with what you have. If you want to see how I price these for profit, comment 'STICKER' below!
+Gawin mo 'to tonight. Kumuha ka ng sticker na gawa mo at idikit mo sa phone case mo. After 24 hours, check mo kung may nag-angat na edge. Kung meron, it's time to switch your paper supplier. Try mo and let me know in the comments kung pumasa sa Pinoy Weather Test ang stickers mo!
 
-> Visual: Grace showing the finished hand-cut stickers to the camera, then pointing down to the caption area.
+> Visual: Grace takes a sticker she made and firmly presses it onto the back of her own phone case. She holds it up to the camera, pointing at the sticker.
 
-> On-screen: Step 1: Design on Canva today!
+> On-screen: Do the 24-Hour Test!
 
 ---
 
 ### 14. reels — Show Then Tell (educate)
 **Status:** PASS
 
-**Hook:** ₱500 Sticker Business Start
+**Hook:** Your waterproof stickers are still peeling? Here’s why.
 **Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (5):** SHOW RESULT → ONE-LINE PAYOFF → FAST PROOF → 3-STEP PROCESS → CTA
+**Blocks (5):** Show Result → One-Line Payoff → Fast Proof → 3-Step Process → CTA
 
-#### SHOW RESULT
+#### Show Result
 *Timing: 0-1s*
 
-(no text)
+(No dialogue)
 
-> Visual: Close-up of Grace’s hand peeling a perfectly cut, glossy vinyl sticker from a sheet. The background is a clean wooden desk.
+> Visual: Extreme close-up shot of a sticker on a tumbler. Grace's hand sprays it with water. The water beads off perfectly, no peeling edges, no smudged ink.
 
-> On-screen: ₱500 STICKER BIZ
-
-#### ONE-LINE PAYOFF
+#### One-Line Payoff
 *Timing: 1-2s*
 
-Kahit wala kang cutting machine, pwede kang mag-start ng sticker business today.
+Ito yung sikreto para sa stickers na weather-proof talaga sa Pinas.
 
-> Visual: Grace smiling at the camera, holding up a sheet of stickers she just peeled.
+> Visual: The camera pulls back slightly to show the tumbler on Grace's desk, looking perfect.
 
-> On-screen: No Machine Needed!
+> On-screen: Pinoy Humidity-Proof Stickers
 
-#### FAST PROOF
+#### Fast Proof
 *Timing: 2-3s*
 
-Ganyan ko sinimulan yung Papers to Profits with just basic tools.
+(No dialogue)
 
-> Visual: Quick cut to a photo of a Shopee order list showing multiple sticker sales.
+> Visual: Quick flash cut to a shot of the same sticker on the tumbler but now with a piece of paper towel wiping it dry, showing zero ink transfer.
 
-> On-screen: ₱450 Capital Only
+> On-screen: ZERO INK BLEED
 
-#### 3-STEP PROCESS
+#### 3-Step Process
 *Timing: 3-15s*
 
-Step 1: Design your stickers sa Canva gamit ang free templates. Step 2: Print it on 120gsm sticker paper gamit ang home printer mo. Step 3: Fussy cut or gamit lang ng sharp scissors para sa manual cutting. Tiyaga lang, Mommy, quality na yan!
+Step 1: Print on 135gsm glossy sticker paper. Step 2: Bago gupitin, lagyan ng cold laminate o photo top. Ito yung magic! Step 3: Now, cut it out. Sealed na ang ink at di na basta-basta matutuklap.
 
-> Visual: Fast montage: 1. Grace clicking on Canva. 2. A printer spitting out a colorful sheet. 3. Grace carefully cutting around a sticker with scissors.
+> Visual: Sequence of shots: 1) A sheet of stickers coming out of a basic home printer. 2) Grace carefully applying a clear laminate sheet over the printed sticker sheet, using a squeegee or ruler to smooth it out. 3) Grace's hands cutting out one of the laminated stickers with scissors.
 
-> On-screen: 1. Design
-2. Print
-3. Cut
+> On-screen: 1. Print (135gsm Glossy) -> 2. LAMINATE FIRST -> 3. Then Cut
 
 #### CTA
-*Timing: 15-30s*
+*Timing: 15-20s*
 
-Gusto mo bang matutunan ang complete paper biz workflow? Check out our Papers to Profits starter kit for only ₱1,300. Comment 'STICKER' below and I'll send the details sa inbox mo, Mommy!
+Try mo 'to next time, mommy! Save this post para di mo makalimutan. Promise, game-changer 'to.
 
-> Visual: Grace holding the P2P starter kit (physical printed guide or laptop showing the portal) while her child plays quietly in the background.
+> Visual: Grace holds up the finished, laminated, cut-out sticker to the camera, smiling warmly. She then sticks it onto another surface like her laptop or a notebook.
 
-> On-screen: Comment 'STICKER' 👇
+> On-screen: Save this sticker hack! 📌
 
 ---
 
 ### 15. reels — (No structure) (educate)
 **Status:** PASS
 
-**Hook:** Mommy, kung gusto mong mag-start ng small business pero less than 500 pesos lang ang budget mo, watch this.
-**Quality Score:** 98
+**Hook:** This vs. This. Alin dito ang sticker problem mo, Mommy?
+**Quality Score:** 97
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (5):** HOOK → STEP 1 → STEP 2 → STEP 3 → CTA
+**Blocks (5):** HOOK → PROBLEM → SOLUTION → RESULT → CTA
 
 #### HOOK
-*Timing: 0-3s*
+*Timing: 0-4s*
 
-Mommy, kung gusto mong mag-start ng small business pero less than 500 pesos lang ang budget mo, don't worry. Hindi mo kailangan ng mamahaling cutting machine agad.
+This vs. This. Alin dito ang sticker problem mo, Mommy? Yung madaling mag-peel at mag-fade, o yung kapit na kapit at vibrant pa rin?
 
-> Visual: Grace is sitting at her desk, holding a sheet of hand-cut stickers and smiling warmly at the camera.
+> Visual: Grace's hands hold two journals side-by-side. On the left, a journal with a peeling, faded sticker. On the right, a journal with a crisp, vibrant, perfectly flat sticker.
 
-> On-screen: Sticker Biz for < ₱500? 😱
+> On-screen: Peeling Sticker vs. Perfect Sticker
 
-#### STEP 1
-*Timing: 4-10s*
+#### PROBLEM
+*Timing: 5-10s*
 
-First, use Canva Free to design. Gawa ka ng simple 'Thank You' stickers or name labels para sa mga gamit ng bata. Zero pesos 'yan!
+Akala ng marami, nasa mamahaling sticker paper ang sagot. Pero hindi. Ang totoo, ang #1 kalaban natin ay ang humidity ng Pinas.
 
-> Visual: Close-up of Grace’s laptop screen showing a simple, cute sticker sheet layout in Canva.
+> Visual: Grace points to the peeling sticker. Then, a quick shot of a plain, unlaminated sticker paper slightly curling at the edges on her desk.
 
-> On-screen: Step 1: Design on Canva (Free!)
+> On-screen: It's not the paper... It's the weather!
 
-#### STEP 2
-*Timing: 11-18s*
+#### SOLUTION
+*Timing: 11-20s*
 
-Next, bumili ka ng isang pack ng Matte Sticker Paper. Sa Shopee, nasa 150 to 200 pesos lang 'yan for 20 sheets. Print mo lang gamit ang home printer mo.
+Kaya ang sikreto, hindi lang sa paper, kundi sa 'combo'. Eto ang a-apply mo: ordinary sticker paper plus a layer of photo top. Ito yung parang plastic cover, Mommy. It seals the ink and protects it from moisture.
 
-> Visual: Grace showing a pack of sticker paper and then feeding one sheet into her home inkjet printer.
+> Visual: Grace lays a sheet of printed stickers on her craft mat. She then takes a sheet of clear laminate (photo top) and carefully applies it over the stickers, smoothing it out with a squeegee or an old ID card.
 
-> On-screen: Step 2: Sticker Paper (₱150-₱200)
+> On-screen: SECRET: Paper + Photo Top Laminate
 
-#### STEP 3
-*Timing: 19-25s*
+#### RESULT
+*Timing: 21-26s*
 
-Last, use your scissors! Gupitin nang dahan-dahan. Hand-cut stickers are very popular now dahil sa 'handmade' feel nila. Low cost, high heart.
+Tingnan mo, after cutting, you get a sticker that's smudge-proof, waterproof, and perfect for our Pinoy weather. Hindi na basta-basta masisira.
 
-> Visual: Close-up of Grace's hands carefully cutting around a round sticker with a pair of craft scissors.
+> Visual: Grace holds up a newly cut, laminated sticker. She runs her finger over it to show it doesn't smudge. Then, she uses a small dropper to place a single bead of water on it, which rolls right off.
 
-> On-screen: Step 3: Hand-cut with love
+> On-screen: Result: Humidity-Proof Stickers!
 
 #### CTA
-*Timing: 26-30s*
+*Timing: 27-30s*
 
-See? Sa halagang 200 pesos, may products ka na. If you want to learn how to price and sell these, check out Papers to Profits. Let's grow that 500 pesos together!
+Anong paper product ang gusto mong matutunang gawin next? Let me know in the comments!
 
-> Visual: Grace holding up a finished set of stickers, waving them at the camera with a big smile.
+> Visual: Grace smiles warmly at the camera, holding up the journal with the perfect sticker.
 
-> On-screen: Start your Paper Biz today! ✨
+> On-screen: Comment your ideas below!
 
 ---
 
 ### 16. facebook-post — 4 Founder Videos (story)
 **Status:** PASS
 
-**Hook:** I'll never forget the night I was staring at my last 500 pesos, wondering if I should buy extra milk or follow this crazy 'sticker business' idea.
+**Hook:** Nobody saw me crying in the kitchen that night over a ₱500 dream.
 **Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (4):** CHOOSE VIDEO TYPE → HOOK → STORY / WALKTHROUGH → CTA
+**Blocks (4):** Choose Video Type → Hook → Story / Walkthrough → CTA
 
-#### CHOOSE VIDEO TYPE
-Founder Story: How I turned a ₱500 'sugal' into a business that lets me stay home with my kids.
+#### Choose Video Type
+This is a part of my story I don't share often. Yung gabing muntik ko nang sukuan lahat.
 
-> Visual: Grace sitting at her dining table, surrounded by stacks of sticker sheets and a simple home printer, looking thoughtfully at a 500-peso bill.
+> Visual: A dimly lit home office desk at night. A simple laptop is open, casting a glow on stacks of craft paper and a small home printer.
 
-#### HOOK
-I'll never forget the night I was staring at my last 500 pesos, wondering if I should buy extra milk or follow this crazy 'sticker business' idea.
+#### Hook
+A few years ago, all I had was ₱500, a borrowed printer, and this tiny dream of making paper products. Pero nung gabing yun, feeling ko kahit yung ₱500 na yun, nasayang lang.
 
-> Visual: Close up of Grace's hands holding a 500-peso bill, then panning up to her face showing a mix of worry and determination.
+> Visual: Close-up on a hand holding a single ₱500 bill, looking worn.
 
-#### STORY / WALKTHROUGH
-Naka-upo lang ako sa sahig noon, katabi yung luma naming printer na sobrang ingay. I only had a few sheets of matte sticker paper and a whole lot of kaba. Sabi ko sa sarili ko, 'Grace, subukan mo lang.' I spent less than ₱500 for that first batch of supplies. Walang mamahaling cutting machines, walang fancy studio. Just me, my laptop, and the hope na sana may bumili para pandagdag sa budget ni Mommy. Every time the printer hummed, my heart raced. When I finished cutting that first sheet by hand, I felt like I won the lottery.
+#### Story / Walkthrough
+I can still hear the sound of the printer jamming over and over. *Errrk! Grrrk!* Tapos yung ink, kumakalat sa papel na pinag-ipunan ko. The kids were asleep, the house was quiet, and all I could feel was this giant lump in my throat. I whispered a prayer, 'Lord, sign naman po.' Sabi ko sa sarili ko, 'Isa pa. One last try.' If this doesn't work, I'll just stop. Kinuha ko yung huling piraso ng special paper, took a deep breath, and clicked 'Print'.
 
-> Visual: A montage of raw, unpolished clips: Grace's old printer working, her hand-cutting stickers with scissors, and the dim light of a desk lamp in a quiet house.
+> Visual: A dramatic close-up of a Filipino woman's hands carefully feeding a single sheet of paper into a home printer. Her face is out of frame, but her posture shows tension and hope.
 
 #### CTA
-Follow to see how that ₱500 leap changed everything for our family journey.
+That single sheet of paper changed everything for our family. Follow me for more of my journey from that quiet kitchen to Graceful Homeschooling.
 
-> Visual: Grace smiling at the camera while holding a finished, professionally packed sticker set, with her kids playing in the blurred background.
+> Visual: A final shot of a perfectly printed sticker sheet emerging from the printer, vibrant and clean. The woman's hands gently receive it.
 
 ---
 
 ### 17. facebook-post — 6-Step My Story (story)
 **Status:** PASS
 
-**Hook:** Sabi nila, kailangan mo ng libo-libong puhunan para mag-business. I disagree—isang 500 peso bill lang ang hawak ko noon sa kusina.
+**Hook:** Gabi-gabi, umiiyak ako sa kusina. Akala ko, hanggang pangarap na lang yung extra ₱500.
 **Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
 **Blocks (6):** The Intro / Problem → Inflection Point → Rising Action / Failed Solutions → The Climax / Solution Found → Results → Resolution + CTA
 
 #### The Intro / Problem
-Sabi nila, kailangan mo ng libo-libong puhunan para mag-business. I strongly disagree. Isang hapon, nakaupo lang ako sa kusina, hawak yung huling 500 pesos sa wallet ko habang nakatingin sa luma naming printer. I felt so small—parang hindi sapat yung meron ako para mabigyan ng extra ang pamilya ko.
+I felt so stuck. Gusto kong tumulong kay hubby sa mga gastusin, but I felt helpless. Being a stay-at-home mom was my choice, pero may part sa akin na parang nawawala. Wala akong sariling pera, and I felt like I was just 'mommy' and nothing else.
 
-> Visual: Grace sitting at a wooden kitchen table, looking thoughtfully at a single 500-peso bill next to a basic home inkjet printer.
+> Visual: Close-up shot of Grace's hands clutching a coffee mug on a kitchen table late at night. The background is dark and quiet.
 
 #### Inflection Point
-Hinding-hindi ko makakalimutan yung moment sa mall nung hinila ng anak ko yung laylayan ng damit ko. Tinuturo niya yung isang set ng stickers sa National Bookstore. I had to say, 'Next time na lang, anak,' kasi yung 500 pesos na hawak ko, pambili na dapat 'yun ng ulam namin. Masakit sa loob na pati maliit na sticker, hindi ko maibigay.
+The moment I almost gave up was when my son needed new shoes for school. It was just around ₱500. And I didn't have it. I had to ask my husband, and the shame I felt... grabe. That night, I cried silently sa kusina, asking God, 'Lord, hanggang dito na lang ba ako?'
 
-> Visual: A close-up of a Filipino woman's hand gently putting a colorful sticker sheet back on a store shelf.
+> Visual: A shot from over Grace's shoulder, looking at a small, worn-out pair of kids' shoes on the floor. Her posture is slumped.
 
 #### Rising Action / Failed Solutions
-Sinubukan ko naman lahat. Nag-try ako mag-resell ng ulam pero napapanis lang. Nag-try ako ng online encoding pero puyat lang ang nakuha ko sa kakarampot na pay. Halos sumuko na ako dahil akala ko, kailangan talaga ng malaking puhunan o special skills para kumita habang nasa bahay.
+I tried everything I could think of. Nag-try ako mag-online selling ng mga damit, sumali sa kung anu-anong networking, I even tried applying for VA jobs kahit nanginginig ako sa interview. Nothing worked. Palagi akong bagsak, palaging kulang sa oras, palaging pagod.
 
-> Visual: Grace looking tired at her desk, surrounded by scattered papers and a half-eaten meal, with her laptop screen glowing in the dim light.
+> Visual: A quick montage: a cluttered closet with clothes for selling, a laptop screen showing a generic webinar, Grace looking tired and shaking her head.
 
 #### The Climax / Solution Found
-Then it hit me. Bakit hindi ako gumawa ng sarili kong stickers gamit yung printer na maalikabok na sa gilid? Ginamit ko yung 500 pesos ko para bumili ng sticker paper at ink refills. Nag-design ako sa Canva, nag-print, at doon ko nabuo ang Papers to Profits. Hindi ko akalain na yung simpleng papel, pwedeng maging negosyo.
+Then one night, habang nagliligpit, I found my old box of crafting supplies. Mga papel, gunting, stickers from years ago. I opened my laptop, not to look for another 'raket', but just to design something on Canva. I made a simple sticker sheet for my daughter's journal. And for the first time in a long time, I felt like... me. I realized, what if eto na pala 'yun? What if I could turn this into something?
 
-> Visual: Grace carefully feeding a sheet of glossy sticker paper into her home printer, her face lit by the printer's status light.
+> Visual: Grace's hands opening an old shoebox filled with colorful paper and craft tools. The shot transitions to her smiling softly while designing on Canva.
 
 #### Results
-In just three days, yung 500 pesos ko, naging 1,500 pesos. Binenta ko lang sa mga kapwa ko homeschooling moms. Hindi lang pambili ng sticker ng anak ko ang nakuha ko—nakuha ko rin yung confidence na kaya ko palang maging provider nang hindi iniiwan ang mga bata.
+I posted my first design online, just to see what would happen. A fellow mom from a parenting group sent me a message. She bought two sheets. My first sale was exactly ₱500. Yung iyak ko that night, hindi na dahil sa hiya, but because of pure joy. That small amount proved na kaya pala.
 
-> Visual: A pile of freshly printed and cut stickers arranged neatly on a desk, with several 100-peso bills tucked under a paperweight.
+> Visual: A close-up of a phone screen showing a GCash notification for ₱500. Grace's hand is covering her mouth in happy disbelief.
 
 #### Resolution + CTA
-Ngayon, mission ko nang tulungan ang mga mommies na simulan ang sarili nilang paper business kahit maliit lang ang budget. You don't need a huge capital, you just need to start. Kung gusto mong matutunan kung paano, my Papers to Profits Starter Kit is only ₱1,300 for lifetime access. Comment 'STICKER' if you want to turn your 500 pesos into a real business too.
+That ₱500 changed everything. It wasn't just about the money; it was about knowing that I could provide for my family using my own hands, right from our dining table. It reminded me that I am more than just a mom; I am a creator, too. 
 
-> Visual: Grace smiling as she packs a small order of stickers into a brown paper envelope, with a 'Thank You' stamp visible.
+This is my story, and it's still unfolding. Follow along if you want to see more of the journey.
+
+> Visual: Grace looking out a window with a gentle, hopeful expression, holding a finished paper product. The morning light is streaming in.
 
 ---
 
 ### 18. facebook-post — Three-Part Brand Story (story)
 **Status:** PASS
 
-**Hook:** I know that heavy feeling when you want to help with bills but your wallet says 'not today.'
-**Quality Score:** 96
+**Hook:** I'll never forget that night, staring at the last ₱500 in my wallet.
+**Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (3):** THE CATALYST → THE CORE TRUTH → THE PROOF
+**Blocks (3):** The Catalyst → The Core Truth → The Proof
 
-#### THE CATALYST
-I’ll never forget sitting at my kitchen table, watching my old inkjet printer struggle to finish a single page while I scrolled through ₱30,000 cutting machines online. I felt so defeated. Akala ko, para lang sa mayayaman ang paper business. I saw so many moms like me na gustong-gusto mag-start, pero naba-block dahil sa 'entrance fee' ng gadgets. I realized there was a huge gap: no one was teaching us how to start with just a pair of scissors and a dream.
+#### The Catalyst
+I used to scroll through Facebook and see so many moms, just like me, asking, 'Paano ba kumita kahit nasa bahay lang?' We wanted to help our husbands, to buy things for our kids without guilt, but the options felt so limited. Parang ang choices lang ay bumalik sa office at iwan ang mga anak, or just accept na wala tayong sariling pera. I saw that gap, that feeling of being 'stuck', and it broke my heart because I felt it too.
 
-> Visual: Grace's hand resting on a worn-out wooden table next to a stack of plain white sticker paper and a simple ₱15 utility knife.
+> Visual: A dimly lit shot of a phone screen showing a Facebook group for moms, with posts about finding work-from-home jobs.
 
-#### THE CORE TRUTH
-Dito ko narealize ang isang katotohanan na madalas nating makalimutan: Hindi mo kailangan ng mamahaling makina para mapakain ang pamilya mo. I believe that resourcefulness is better than resources. In the world of paper crafting, your creativity is the engine, and the tools are just extras. You don't need a Cricut to be a CEO; you just need to start where you are, with what you have. Kahit ₱500 lang ang budget mo, sapat na 'yun.
+#### The Core Truth
+And that’s when a thought hit me, something that felt so different from all the online business gurus: What if we don't need thousands of pesos in capital? What if we don't need a business degree? Ang paniniwala ko, what if ang kailangan lang natin ay 'yung mga bagay na nasa bahay na: a simple printer, some paper, and the creativity that God gave every mother?
 
-> Visual: A close-up shot of a 'Papers to Profits' sticker being hand-peeled from a sheet, showing the clean edges despite being hand-cut.
+> Visual: A shot of a simple home printer on a desk, with stacks of colorful paper next to it. The shot is hopeful and brightly lit.
 
-#### THE PROOF
-Look at these 'Thank You' stickers—I made these for less than ₱5.00 a sheet using a simple printer and a ₱10 blade. Today, my P2P community is full of mommies who started with less than ₱500. Sila 'yung mga dating nanghihingi lang ng panggatas, pero ngayon, sila na ang nagbabayad ng kuryente gamit ang kinita nila sa stickers. We prove every day that a small start leads to a big blessing. If I did it with a broken printer, you can do it too.
+#### The Proof
+But believing it is one thing, proving it is another. I'll never forget that one Tuesday night, staring at the last ₱500 in my wallet. My capital. My dream. Sobrang tempted ko nang sumuko. I just whispered a prayer, 'Lord, bahala ka na po.' I used that money to buy my first small batch of sticker paper. I designed all night on Canva, printed my first sheets, and posted them on my personal FB page with shaking hands. The next day, a friend ordered. Then a former colleague. That ₱500 became ₱1,200 in three days. It was the proof. Pwede pala. Totoo pala.
 
-> Visual: A flatlay of various paper products—stickers, gift tags, and mini-notepads—arranged neatly next to a calculator and a small pouch of coins.
+> Visual: imagePrompt: A top-down shot of a Filipino woman's hands carefully placing a single ₱500 bill on a wooden desk at night. Next to the bill are a few freshly printed sheets of stickers and a pair of scissors. The scene is lit by a warm desk lamp, creating a focused and intimate mood.
 
 ---
 
 ### 19. facebook-post — Year-by-Year (story)
 **Status:** PASS
 
-**Hook:** Three years ago, I sat at our wooden dining table with exactly ₱500 and a heavy heart...
-**Quality Score:** 96
+**Hook:** Nobody saw me crying in the kitchen that night over our last ₱500.
+**Quality Score:** 97
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
 **Blocks (3):** Write Timeline → Match Photos → Stitch Together
 
 #### Write Timeline
-Three years ago, I’ll never forget the day I sat at our scratched wooden dining table, holding exactly ₱500 and wondering if it was enough to start something. 
+Nobody saw me crying in the kitchen that night. It was 2019. My baby was asleep in the other room, and all we had was ₱500 left. Naisip ko, 'Lord, hanggang dito na lang ba?'
 
-2021: Nanginginig pa yung kamay ko habang ginugupit yung unang batch ng stickers na pinrint ko lang sa luma naming Epson printer.
-2022: I felt so much joy nung may unang nag-order sa akin ng name labels—₱150 lang yun pero parang nanalo ako sa lotto.
-2023: Dito ko na-realize na hindi ko kailangan ng mamahaling machines, basta may Canva at diskarte, pwedeng-pwedeng kumita.
-2024: Ngayon, I’m so blessed to show other mommies how that same ₱500 can grow into a business that lets them stay with their kids.
+Looking back now, that night was a starting line I didn't see.
 
-> Visual: imagePrompt: A Filipino woman sitting at a simple wooden dining table, carefully cutting small colorful stickers with scissors. Beside her is a basic home printer and a few sheets of sticker paper. The room is softly lit by natural light from a nearby window.
+2020: My first ever order! Isang set ng baptismal invitations from a neighbor. Nanginginig pa kamay ko habang pinipindot yung 'print' sa luma kong printer.
+
+2021: The first time a customer sent me a photo of my product being used at her child's party. Iyak ulit, but this time, happy tears.
+
+2022: A fellow mom messaged me, 'Ate Grace, paano po?' That's when I realized this wasn't just for me anymore.
+
+2023: Nakapag-ipon for a small family trip, all from paper and ink. Something I only dreamed of back in that dark kitchen.
+
+> Visual: A quiet, slightly moody photo of a home desk at night. A single lamp is on, illuminating some craft paper, scissors, and a cold cup of coffee. The feeling is one of solitude and late-night work.
 
 #### Match Photos
-Looking back at these photos, nakikita ko yung pagod pero ramdam ko rin yung fulfillment ng isang nanay na lumalaban para sa pamilya.
+It's all there in my camera roll. The blurry photo of my first secondhand printer. The screenshot of that first Shopee 'order received' notification. The picture of my daughter 'helping' me cut stickers, puro tabingi pa. Hindi siya glamorous, hindi siya biglaan. It was just... one small step, one photo at a time.
 
-> Visual: imagePrompt: A series of four candid photos laid out: 1. A close-up of a 500-peso bill next to a pack of sticker paper. 2. A messy desk with sticker scraps and a pair of scissors. 3. A Filipino woman smiling while holding a small brown envelope with a 'Thank You' sticker. 4. A bright, organized workspace with various paper products like journals and stickers.
+> Visual: This could be a carousel post. The second image is a grainy photo of an old printer. The third is a screenshot of a Shopee notification. The fourth is a candid shot of a child's hands clumsily holding scissors and paper.
 
 #### Stitch Together
-Hindi kailangan ng malaking puhunan para magsimula, kailangan lang ng lakas ng loob at tamang gabay. If you’ve been waiting for a sign na kaya mo ring mag-business habang nasa bahay, this is it. It all starts with one sheet of paper and a lot of faith. ❤️
+That night in the kitchen, feeling hopeless with just ₱500, felt like the end. But it wasn't. It was the beginning.
 
-> Visual: imagePrompt: A Filipino woman standing in a cozy home office, looking at a finished sticker sheet with a peaceful smile. In the background, a child's toy is visible on the floor, emphasizing the home-based setting.
+Minsan, yung pinaka-mabigat na gabi, yun pala yung start ng pinaka-magandang umaga. All it took was a little paper, a lot of prayer, and the courage to just start, right where I was, with what I had.
+
+To the mom reading this who feels like she's at her 'last ₱500' moment... kapit lang. Your morning is coming.
+
+> Visual: The final image is warm and bright. Grace's hands are neatly arranging finished sticker sheets on a clean surface, with sunlight streaming in from a nearby window. The mood is hopeful and accomplished.
 
 ---
 
 ### 20. facebook-post — (No structure) (story)
 **Status:** PASS
 
-**Hook:** Five years ago, habang mahimbing na ang tulog ng mga anak ko, nakatitig lang ako sa huling 500 pesos sa wallet ko.
+**Hook:** Akala ko, this was it. The answer to my prayers. But there I was at 2 AM, staring at my laptop with only ₱500 left in my Gcash wallet… and I almost deleted all my designs.
 **Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
 **Caption:**
-Five years ago, habang mahimbing na ang tulog ng mga anak ko, nakatitig lang ako sa huling 500 pesos sa wallet ko. Ramdam ko 'yung kaba sa dibdib ko—paano ko ba mapapalago 'to nang hindi umaalis sa tabi ng mga bata?
+Nobody saw me crying in the kitchen that night. 
 
-I remember the exact smell of the glossy sticker paper I bought for less than 300 pesos, and the hum of our old, shaky printer sa gilid. Gamit ang gunting na medyo mapurol na, dahan-dahan kong ginupit 'yung unang batch ng stickers ko. Naririnig ko pa 'yung 'snip, snip' sound habang tinitiyak kong pantay ang bawat kanto. Pinagpawisan ako noon kasi ayaw kong masayang kahit isang piraso ng papel.
+I was so sure this paper crafting business was God’s answer for me. A way to earn while being a full-time mom. I invested my small savings, bought a printer, and spent countless nights on Canva designing stickers and planners. Akala ko, madali lang.
 
-Nung gabing 'yun, hindi ko akalain na 'yung maliit na simula na 'yun ang magiging Graceful Homeschooling. Akala ko dati, kailangan ng mamahaling machines o malaking warehouse para matawag na 'business.' Pero doon sa maliit naming hapag-kainan, narealize ko na ang kailangan lang pala ay diskarte at lakas ng loob na magsimula sa kung anong meron ako.
+But weeks turned into a month, and halos walang benta. The doubt was so loud. "Sayang lang ang pagod mo, Grace." "Nagkamali ka ng desisyon." That night, the silence of the house felt heavy. All I could hear was the hum of the refrigerator and my own quiet sobs. I opened my Gcash, saw the last ₱500, and my heart just sank. Ito na lang ‘yon. Suko na ba?
 
-Sa mga kapwa ko mommy na feeling niyo ay kulang ang budget niyo, please know that your small start is valid. Hindi kailangan ng bonggang setup agad. Minsan, sapat na ang isang pack ng papel at ang pangarap mong makatulong sa pamilya.
+I was one click away from deleting everything. But then, I glanced at the baby monitor and saw my little one sleeping peacefully. Bigla akong tinamaan: I wasn’t just doing this for the money. I was doing this to show him that Mommy is strong, that Mommy can create something beautiful. 
 
-**Hashtags:** #GracefulHomeschooling #MompreneurPH #StickerBusiness #SmallBeginnings #PapersToProfits
+I took a deep breath, wiped my tears, and used that last ₱500 to run one more ad. Hindi siya nag-boom overnight. But it was the start. That night taught me that our biggest breakthroughs often come right after our biggest breakdowns.
+
+**Hashtags:** #GracefulHomeschooling #MompreneurPH #PaperToProfits #HomebasedBusinessPH #MadeWithFaith #FilipinaMom
 
 ---
 
 ### 21. youtube — 4 Cs YouTube Intro (educate)
 **Status:** PASS
 
-**Hook:** How to launch a real sticker business with only ₱500 and zero expensive machines.
+**Hook:** 90% of new sticker businesses fail. Here's the #1 reason why.
 **Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
 **Blocks (6):** CALL OUT → CREDIBILITY → COMPASS → CORE LEARNING → MAIN CONTENT → OUTRO
 
 #### CALL OUT
 *Timing: 0:00-0:10*
 
-Calling all my fellow stay-at-home mommies! Gusto niyo bang mag-start ng sariling sticker business pero feeling niyo kailangan ng libu-libong puhunan? This video is specifically for the mommy na may 500 pesos lang sa bulsa pero gustong kumita habang nasa bahay.
+Para sa mga mommies diyan na laging nagse-search sa Shopee ng 'sticker paper' or 'cutting machine' kasi nangangarap magkaroon ng sariling sticker business from home... this video is for you.
 
-> Visual: Grace sitting at her crafting desk, holding a colorful sheet of stickers. Soft, warm lighting. She looks directly at the camera with a big smile.
+> Visual: Grace is at her crafting desk, holding up her phone showing a Shopee search for 'sticker paper'. She smiles warmly at the camera.
 
-> On-screen: Sticker Biz for <₱500?
+> On-screen: Dreaming of a sticker business?
 
 #### CREDIBILITY
 *Timing: 0:10-0:20*
 
-I’m Grace, and I turned my love for paper crafting into a business that supports my family. I’ve taught over a hundred moms how to turn simple paper into profits without ever leaving their kids, and today, it's your turn.
+My name is Grace, and for the past few years, I've been blessed to guide hundreds of fellow moms in starting their own paper product businesses, many of them starting with stickers.
 
-> Visual: Quick montage: Grace packing a small order, a close-up of a finished sticker sheet, and a shot of her teaching on a laptop screen.
+> Visual: Quick B-roll montage: Grace packing a small order with stickers, a screenshot of a positive comment from a student, Grace smiling while looking at a sheet of freshly printed stickers.
 
-> On-screen: Founder, Graceful Homeschooling
+> On-screen: Helped 100s of Pinay Moms Start
 
 #### COMPASS
 *Timing: 0:20-0:35*
 
-In the next few minutes, I’m going to break down exactly how to spend that 500 pesos. I'll show you the 3 essential items you need, how to design for free, and a secret way to get your stickers printed even if you don't own a printer yet.
+And in the next 5 minutes, I will share with you the number one reason why 90% of these sticker businesses fail in their first month. Hindi ito tungkol sa design, and it's not about marketing. It's something much more basic.
 
-> Visual: Grace counting out five 100-peso bills on her desk, then pointing to three items: paper, scissors, and a phone.
+> Visual: Grace looks directly at the camera, speaking earnestly. She gestures with her hands to emphasize her points. A simple graphic appears on screen.
 
-> On-screen: The ₱500 Roadmap
+> On-screen: In the next 5 mins: The #1 Reason for Failure
 
 #### CORE LEARNING
 *Timing: 0:35-1:00*
 
-Before we dive deep, here is the #1 secret to saving money: Wag muna kayong bumili ng Cricut or Silhouette machine. Ang technique na gagamitin natin is 'fussy cutting.' Using a sharp pair of detail scissors, you can give your stickers a 'handmade' look that buyers actually prefer because it feels more personal and artisanal.
+Okay, ready ka na? The biggest mistake is... choosing the wrong sticker paper. Akala ng marami, 'sticker paper is sticker paper.' Mali. Using a cheap, non-waterproof paper for a tumbler sticker will get you a 1-star review agad-agad. 'Yan ang business killer.
 
-> Visual: Close-up of Grace’s hands carefully cutting around a small flower sticker with small, sharp scissors. The cut is smooth and precise.
+> Visual: Grace holds up two different stickers. One is on flimsy, cheap-looking paper. The other is on thick, vinyl-like paper. She then points to a tumbler with a nice sticker on it to illustrate the use case.
 
-> On-screen: Secret: Skip the Machine!
+> On-screen: MISTAKE: Using the WRONG paper!
 
 #### MAIN CONTENT
-*Timing: 1:00-6:00*
+*Timing: 1:00-4:30*
 
-Ang core principle natin today is 'The Lean Sticker Method'—starting small to grow big. Let me share five stories of how this works in real life. 
+Let's break it down. First, the 'Mura Kasi' trap. Nakakita ka ng sobrang murang sticker paper sa online store. Pero pagdating, ang nipis pala, madaling mapunit, at 'yung print, hindi ganun ka-vibrant. (shows example) A customer will not pay premium for a product that feels cheap. Your paper is part of your product quality.
 
-First, take Mommy Beth. She didn't have a printer, so she spent ₱150 on sticker paper and went to a local 'Piso Print' shop. She sold her first 10 sheets to her co-parents and doubled her money in one day. 
+Second, the finish matters. Matte, glossy, glitter... hindi lang 'yan itsura. (shows a vibrant, cartoony design) For a design like this, a glossy finish makes the colors pop! Pero for something more elegant, like for journals... (shows a soft, watercolor floral design) a matte finish looks more premium. Your paper finish must match your design's personality.
 
-Second, think about design. You don't need Photoshop. I use Canva's free elements to create 'Name Labels' for kids' school supplies. It’s a high-demand, low-cost product. 
+Third, and pinaka-importante: be honest about your paper's capability. If it's not waterproof, SAY it's not waterproof. It's better to say 'perfect for journals and planners' than to claim it's for tumblers tapos mag-smudge lang after one wash. (demonstrates a drop of water smudging one sticker and repelling from another) Trust me, honesty will get you more loyal customers than false advertising.
 
-Third, look at Mommy Sarah. She used scrap cardboard from her grocery deliveries to make 'backing cards' for her stickers. It cost her ₱0 but made her packaging look professional. 
+> Visual: Scene transitions for each point. 
+1. Grace holds a flimsy sticker and tears it easily. Then shows a vibrant, high-quality one. 
+2. Side-by-side comparison of the same design on matte vs. glossy paper. 
+3. A mini-science experiment: Grace puts a drop of water on a non-waterproof sticker (it smudges) and a vinyl waterproof sticker (it stays perfect).
 
-Fourth, maximize your paper space. Don't just print one big sticker; fill the whole A4 sheet with 20-30 small ones. More stickers per page means more profit per print. 
-
-Fifth, start with 'Pre-orders.' Post your designs on Facebook first. Pag may nag-order na, saka mo i-print. This way, your 500 pesos is never wasted on stock na hindi mabebenta.
-
-> Visual: Grace showing different examples: a Piso-print receipt, a Canva screen on her tablet, a sticker attached to a recycled cardboard backing, a densely packed sticker sheet, and a Facebook post draft on a phone.
-
-> On-screen: 1. Use Local Printers
-2. Free Canva Designs
-3. Recycled Packaging
-4. Maximize Paper
-5. Pre-order Strategy
+> On-screen: Trap #1: The 'Mura Kasi' Paper
+Tip: Match Finish to Design
+Rule #1: Honesty is Key (Waterproof?)
 
 #### OUTRO
-*Timing: 6:00-7:30*
+*Timing: 4:30-5:00*
 
-So, Mommy, ₱500 is more than enough to start. Ang kailangan mo lang ay sipag at tamang strategy. Start small, learn the craft, and the profits will follow. If you want to see exactly how I price these stickers to make sure you're actually gaining profit, click the next video right here where I talk about the 'Sticker Pricing Formula.' Kaya mo 'yan, Mommy!
+So there you have it, mommy. Bago ka pa man mag-invest sa mamahaling equipment, master your foundation first: your paper. Test different types, find what works for your designs, and be honest with your customers. An ounce of prevention is worth a pound of cure. Ano ang biggest question mo about starting a paper business? Let me know in the comments below, I'd love to help!
 
-> Visual: Grace holding up a finished, packaged sticker pack. She waves to the camera. An end-screen card appears with a link to the next video.
+> Visual: Grace is back at her desk, smiling and tidying up some sticker sheets. She looks up at the camera for the final call to action.
 
-> On-screen: Next: How to Price Your Stickers
+> On-screen: What's your biggest question? Ask below!
 
 ---
 
 ### 22. youtube — HEIT Framework (educate)
 **Status:** PASS
 
-**Hook:** Start your own sticker business today for less than ₱500, without buying an expensive ₱20,000 cutting machine.
+**Hook:** 9 out of 10 sticker businesses fail in the first month. Here's the #1 reason why.
 **Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (4):** HOOK → EXPLAIN → ILLUSTRATE → TEACH
+**Blocks (5):** HOOK → EXPLAIN → ILLUSTRATE → TEACH → CTA
 
 #### HOOK
 *Timing: 0:00-0:15*
 
-Mommy, alam mo ba na pwede kang mag-start ng sarili mong sticker business kahit wala kang 20,000 pesos para sa cutting machine? Yes, you heard it right! Today, ituturo ko sa inyo how to launch your paper business for less than 500 pesos lang.
+Did you know, mga mommies, that 9 out of 10 aspiring sticker business owners give up in their very first month? Akala ng marami it's because of bad designs or poor marketing. But the real reason is something na hindi masyadong napag-uusapan.
 
-> Visual: Grace is sitting at her crafting desk, holding up a colorful sheet of stickers and smiling warmly at the camera. In the background, a basic inkjet printer is visible.
+> Visual: Grace at her craft desk, holding up two sticker sheets. One is beautifully designed, the other is a simple one. She looks directly at the camera with a knowing, 'ate' smile.
 
-> On-screen: Sticker Business for <₱500?
+> On-screen: 9 out of 10 Sticker Businesses Fail?
 
 #### EXPLAIN
-*Timing: 0:15-2:00*
+*Timing: 0:16-1:45*
 
-Maraming mga mommies ang hindi tumutuloy sa pangarap nilang mag-business kasi akala nila kailangan agad ng malaking puhunan at mamahaling equipment like Cricut or Silhouette. Ang totoo, if you wait until you have the 'perfect' tools, baka maunahan ka na ng iba. Ang goal natin dito sa Graceful Homeschooling is to start small but start now. If you don't learn how to use what you have, masasayang lang yung oras na sana kumikita ka na habang kasama ang mga anak mo sa bahay. We want to prove na creativity and resourcefulness ang puhunan, hindi lang pera.
+The number one mistake is wrong costing. Or worse, no costing at all! Sobrang exciting kasi gumawa ng magagandang designs, 'di ba? You see it on Pinterest, you get inspired, tapos bili kaagad ng mamahaling sticker paper, maybe even a brand new cutting machine. You get your first sale, and you're so happy! Pero ang tanong, kumita ka ba talaga? Most of the time, the answer is no. Kasi we forget to account for everything: the cost of paper per sheet, the ink, the packaging, the electricity, even Shopee fees. You end up selling at a loss without even knowing it. After a month of being busy but not earning, mapapagod ka lang and you'll think, 'This isn't for me.' Sayang ang pangarap, di ba?
 
-> Visual: Grace leans in closer to the camera, speaking like a trusted ate. Cut to a shot of her looking at a laptop screen with Canva open, then back to her face.
+> Visual: B-roll montage: Hands scrolling through Pinterest for sticker ideas. A shot of an online cart with expensive craft supplies. Hands looking stressed while packing a small order. A phone screen showing a small sale notification, but the person's face looks tired. Grace points to a simple whiteboard or digital tablet showing 'Sticker Paper + Ink + Packaging + Fees = ???'.
 
-> On-screen: Don't wait for 'Perfect' Tools
+> On-screen: The Hidden Costs They Don't Tell You
 
 #### ILLUSTRATE
-*Timing: 2:00-5:00*
+*Timing: 1:46-4:30*
 
-Let me show you my 500-peso breakdown. Isang pack ng 120gsm matte sticker paper, ₱150 lang sa Shopee. Isang pair ng sharp detail scissors, ₱80. And the rest? Pang-print na yan sa local computer shop or pang-refill ng ink niyo. Look at these stickers I made using just my hands and a basic printer. Hindi halata na 'fussy cut' lang sila, 'di ba? Last week, isang mommy student natin ang nakabenta ng 20 sets nito sa school fair ng anak niya using this exact low-budget method. It’s not about the machine; it’s about the heart you put into the design.
+Let me give you a real example. Let's call her Mommy Jen. Super galing ni Mommy Jen mag-design sa Canva. She bought a pack of premium vinyl sticker paper, ₱500 for 10 sheets. So that's ₱50 per sheet. She priced her sticker sheet at ₱80. Ganda ng design, so may bumili agad! She made ₱30, right? Wrong. Let's break it down. Yung paper, ₱50. Let's estimate the printer ink cost at around ₱15 per full-color page. Packaging pa—yung plastic and backing card, let's say ₱7. So, 50 plus 15 plus 7 is ₱72. Her actual profit is just ₱8 per sheet. Hindi pa kasama diyan yung oras niya, kuryente, at platform fees! For all her hard work, she earned less than the price of a candy. This is why mommies get discouraged. They work so hard pero walang napupuntahan. It's not about being bad at business; it's about not knowing the numbers from the start.
 
-> Visual: Grace lays out the items on her desk: a pack of sticker paper, a pair of small scissors, and a stack of finished sticker sheets. She picks up a sticker and shows the clean edges.
+> Visual: Grace uses a whiteboard or a large notepad. She writes down the numbers as she explains them. Show a close-up of a premium sticker paper package with a visible price tag. Show a simple packaging setup (plastic sleeve, cardstock). A hand uses a calculator, showing the math: 50 + 15 + 7 = 72. Then 80 - 72 = 8. End with a shot of a single 10-peso coin on the desk next to a beautifully made sticker sheet to represent the tiny profit.
 
-> On-screen: The ₱500 Breakdown:
-- Paper: ₱150
-- Scissors: ₱80
-- Printing/Ink: ₱270
+> On-screen: Sample Costing: Profit or Loss?
 
 #### TEACH
-*Timing: 5:00-8:00*
+*Timing: 4:31-7:00*
 
-Step 1: Open Canva and use a 'Letter Size' canvas. Choose 'Free' elements and arrange them close together to maximize the space. Step 2: Print on 120gsm sticker paper. If wala kayong printer, save it as a PDF and dalhin sa partner printer or local shop. Step 3: Use the 'Fussy Cut' technique. Leave a small white border around your design—ito ang secret para magmukhang professional kahit hand-cut lang. Step 4: Pack them in simple plastic sleeves with a DIY card header. Ayan, ready to sell na! You can start selling these for ₱50 to ₱85 per pack. Simple, practical, at kayang-kaya gawin habang natutulog ang mga bata. If you want to learn the full system, my Papers to Profits starter kit is always there to guide you.
+So, how do we fix this? Simple lang. Here's what you can do TODAY before you even sell your first sheet. Step 1: Use what you have. Don't buy a new printer yet! Use your existing one. Instead of expensive vinyl, try a regular, affordable sticker paper from National Bookstore first for your test batch. Step 2: Calculate your 'Cost of Goods.' Kunin mo yung price ng paper pack, divide it by the number of sheets. Add an estimate for ink and your packaging. That's your total cost per product. Step 3: Price it right. A good starting point is Cost of Goods x 3. This 'x3' rule covers your materials, your time and effort (your sweldo!), and other fees. So if your cost is ₱25, you sell it for ₱75. Now, that's a real profit. This simple math is the foundation of a business that lasts.
 
-> Visual: Screen recording of Canva layout, followed by Grace demonstrating the 'white border' cutting technique. She then places the stickers into a small clear bag.
+> Visual: Grace is back at her desk, looking encouraging. For Step 1, she holds up a generic pack of sticker paper. For Step 2, she shows a screen recording of a super simple spreadsheet or even just a Canva page where she types out the formula: (Paper Pack Price / # of sheets) + Ink + Packaging = Total Cost. For Step 3, she writes 'Total Cost x 3 = Selling Price' on her notepad and circles it. She ends by holding up a finished product with a price tag that reflects the 'x3' pricing.
 
-> On-screen: Step 1: Canva Design
-Step 2: Print on 120gsm
-Step 3: Fussy Cut (Leave white border)
-Step 4: Pack & Sell!
+> On-screen: 1. Use What You Have | 2. Calculate Your Cost | 3. Price with the 'x3' Rule
+
+#### CTA
+*Timing: 7:01-7:30*
+
+Ayan, mommy! Now you know the secret to building a paper business that actually earns. It's not just about being creative, it's also about being smart with our numbers. If this tip helped you today, please follow my channel for more practical tips on how you can turn your paper crafting hobby into a real source of income for your family, right from your home. Anong paper product ang gusto mong subukang i-costing? Let me know in the comments!
+
+> Visual: Grace smiles warmly at the camera. She tidies up her desk slightly, holding a few of her finished products (journals, stickers). A clear and simple 'Subscribe' button animation appears on screen, along with her channel name.
+
+> On-screen: Follow for more tips! | Comment below: Anong product ang gagawin mo?
 
 ---
 
 ### 23. youtube — One Concept, Five Stories (educate)
 **Status:** PASS
 
-**Hook:** ₱500 vs ₱50,000: The truth about starting a sticker business.
-**Quality Score:** 95
+**Hook:** Why 90% of sticker businesses fail (and the one thing that separates them from the 10% that succeed).
+**Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Blocks (7):** INTRO + CONTEXT → STORY 1 + TACTIC → STORY 2 + TACTIC → STORY 3 + TACTIC → STORY 4 + TACTIC → STORY 5 + TACTIC → SUMMARY + NEXT VIDEO
+**Blocks (7):** Intro + Context → Story 1 + Tactic → Story 2 + Tactic → Story 3 + Tactic → Story 4 + Tactic → Story 5 + Tactic → Summary + Next Video
 
-#### INTRO + CONTEXT
+#### Intro + Context
 *Timing: 0:00-2:00*
 
-Akala ng marami, kailangan mo ng dambuhalang puhunan para mag-start ng sticker business. 'Yung iba, bibili agad ng ₱20,000 na cutting machine at ₱15,000 na printer. Pero did you know na with ₱500, pwedeng-pwede ka na mag-start? Today, ituturo ko sa inyo ang 'Lean Start' concept. Ang goal natin: Design today, print tonight, sell this week. Within the first 60 seconds, heto ang math: ₱120 for sticker paper, ₱100 for photo top, at ₱200 for printing services kung wala ka pang printer. May sukli ka pa! I'm Grace, and I built Papers to Profits para ipakita sa inyo na hindi kailangan ng mahal na gamit, diskarte lang at tamang guide.
+Hi mommies! Grace here. Alam niyo ba, so many moms get excited to start their own sticker business from home... pero after just one month, wala na. They give up. Nakaka-sad, 'di ba? The reason is almost always the same. Akala nila, the secret is having the best designs or the cheapest price. But that's not it. Today, I'm going to share the ONE concept that separates the businesses that fail from the ones that provide a steady income for their family. It's not about being the most artistic or having the fanciest equipment. It’s about this one shift in mindset: Stop chasing trends, and start building a tribe. I'll show you exactly what that means through five real-life scenarios I've seen over and over again.
 
-> Visual: Grace holding a 500 peso bill in one hand and a pack of high-quality stickers in the other. A breakdown of costs appears on screen.
+> Visual: Grace at her desk, smiling warmly. She holds up two different sticker sheets: one with generic, trendy designs (e.g., random aesthetic blobs) and one with a very specific niche theme (e.g., Bible verses for planners).
 
-> On-screen: ₱500 STICKER BUSINESS CHALLENGE
+> On-screen: The #1 Reason Sticker Shops Fail
 
-#### STORY 1 + TACTIC
+#### Story 1 + Tactic
 *Timing: 2:00-5:00*
 
-May isang mommy sa community natin, si Mommy Jen. Wala siyang Silhouette or Cricut cutter. Ang ginawa niya? She used the 'Fussy Cutting' technique. Ang tactic dito is simple: design your stickers with a thick white offset border sa Canva. Bakit? Kasi 'pag ginupit mo siya manually using scissors, hindi halata kung medyo tabingi ang gupit dahil sa white border. She spent only ₱120 for paper and used her kids' school scissors. She sold her first 10 sheets to her co-mommies sa school and made ₱600 agad. Principle: Use what you have until you can afford what you want.
+Okay, first story. Let's call her Mommy Tina. Super excited si Mommy Tina. She goes on Shopee, and nakita niya, sobrang benta ng K-pop and anime stickers. So what does she do? She spends one week designing stickers that look exactly like the top sellers. Nag-print, nag-cut... pero when she lists them, halos walang bumibili. Why? Kasi there are 500 other shops selling the exact same thing, some for even cheaper. She's invisible. The principle here is, you can't win by copying. So here’s the tactic: The Passion-Profit Diagram. Kumuha ka ng papel. Draw two circles. Sa first circle, list everything you genuinely love—gardening, baking, your faith, pagiging nurse. Sa second circle, list things people actually spend money on related to those topics. The magic happens in the middle, kung saan sila nag-o-overlap. That's your tribe. That's your starting point.
 
-> Visual: Close-up of Grace's hands cutting a sticker with a white border using simple scissors. Slow and steady movement.
+> Visual: Grace draws two overlapping circles on a whiteboard or a piece of paper. In the first circle, she writes 'My Passions (Faith, Homeschooling)'. In the second, 'What People Buy (Planners, Journals)'. In the middle, she writes 'Faith-based Planner Stickers'.
 
-> On-screen: TACTIC: THE WHITE BORDER TRICK
+> On-screen: Tactic #1: The Passion-Profit Diagram
 
-#### STORY 2 + TACTIC
+#### Story 2 + Tactic
 *Timing: 5:00-9:00*
 
-Next is the story of 'The Mobile Designer.' Marami ang nagsasabi, 'Grace, wala akong laptop.' Isang mommy used only her smartphone and the Canva Free app. Ang tactic? Use 'Elements' and 'Frames' instead of complex illustrations. Sa Canva, search for 'organic shapes' or 'cute doodles.' I-layout mo siya sa A4 size template. Hindi mo kailangan ng Pro version para gumawa ng benta-bentang designs. This mommy created planner stickers using just her phone habang pinapatulog ang baby niya. Building on our lean concept, your phone is your office.
+Second story, another common problem: design paralysis. Meet Mommy Jen. She opens Canva, ready to design. Pero sobrang daming ideas! May nakikita siyang minimalist, may cute cartoons, may vintage. She tries to make a little bit of everything. Ang ending? Her shop looks confused. Hindi malaman ng customer kung para kanino ba talaga yung shop niya. So after a few weeks of getting no sales, she quits, feeling like she's not 'creative enough'. The problem isn't creativity, it's clarity. The tactic here is The 'One Person' Profile. Instead of designing for 'moms', design for one specific mom. Give her a name. Let's say, 'Homeschooling Mama Rina'. 35 years old, may tatlong anak, medyo overwhelmed, needs encouragement. Ano ang kailangan niya sa planner niya? Words of affirmation? Bible verses? Funny quotes about homeschooling chaos? Now, when you design, you're not guessing anymore. You're creating for a real person. You're serving your tribe.
 
-> Visual: Screen recording of Canva mobile app being used to drag and drop cute elements onto an A4 canvas.
+> Visual: Grace opens Canva on her laptop, showing a screen filled with clashing, different-styled sticker templates. Then, she pulls out a journal and starts writing a profile for 'Mama Rina', listing her characteristics. Close up on the journal page.
 
-> On-screen: NO LAPTOP? NO PROBLEM.
+> On-screen: Tactic #2: Design for ONE Person
 
-#### STORY 3 + TACTIC
+#### Story 3 + Tactic
 *Timing: 9:00-13:00*
 
-Ito ang 'I never thought of that' moment. What if wala kang printer? Heto ang tactic: The Partner Printer method. Imbes na bumili ng ₱10,000 na printer, humanap ka ng local print shop or use our P2P partner printer. You just send the design, sila ang mag-print, at ikaw ang magbebenta. Isang mommy started this way—she focused purely on marketing and sales. She didn't worry about ink or paper jams. She just collected orders, had them printed, and packed them beautifully. Your business isn't about owning machines; it's about solving a problem for your customers.
+Ready for story number three? This is where it gets really interesting. Dito mo makikita na building a tribe is not just about the product itself. Let's talk about Mommy Sarah. Her niche is stickers for book lovers. Okay, specific na 'di ba? But here's what she did differently. Every time someone orders, she includes a free, beautifully designed bookmark with a quote from a classic novel. It probably costs her less than 5 pesos to make. But the impact? Sobrang laki! Her customers feel so special. They post unboxing videos not just of the stickers, but of the whole experience. They feel like they're part of an exclusive book club. The tactic? The Tribe Touchpoint. List down every single point your customer interacts with you—your Shopee banner, your DMs, your packaging, your thank you card. Then, ask yourself: 'How can I make this feel like it's specially made for my tribe?' That's how you turn customers into loyal fans.
 
-> Visual: Grace showing a finished sticker sheet and then pointing to a delivery pouch from a 'partner' printer.
+> Visual: Grace shows an example of a packed order. She places a sticker sheet in a small envelope, then adds a custom-designed bookmark and a handwritten thank you note before sealing it. The whole package looks cohesive and thoughtful.
 
-> On-screen: OUTSOURCE YOUR PRINTING
+> On-screen: Tactic #3: Master Your Tribe Touchpoints
 
-#### STORY 4 + TACTIC
+#### Story 4 + Tactic
 *Timing: 13:00-18:00*
 
-Pero beware, may 'Messy Middle' din. Isang student tried to save too much by buying ₱50 generic sticker paper na hindi waterproof. Noong binenta niya, nag-fade ang ink at nag-reklamo ang customers. Sayang ang ₱500! Ang lesson? Always use 'Photo Top' or laminating film. Kahit mura ang paper, 'pag nilagyan mo ng 120gsm na glitter or matte photo top, nagiging premium and waterproof ang feel. Don't skip the quality test. Subukan mong basain ang sample mo bago mo ibenta. Trust is harder to build than a business.
+Now, for story number four... this one is my own. My failure story. Nung nagsisimula pa lang ako, I did exactly what I'm telling you not to do. I chased a trend. Planner stickers were huge. So I made generic ones: 'To Do', 'Bills Due', 'Appointment'. Maganda naman sila, pero... generic. I think in my first month, kumita ako ng maybe 500 pesos. Mas malaki pa yung ginastos ko sa sticker paper at ink. I felt like a complete failure. I thought, 'Hay, hindi para sa akin 'to.' I was just another face in a giant crowd. I almost gave up homeschooling support and this business entirely. The lesson here, mommies, is that the pain of being invisible is so much worse than the fear of being 'too niche'. Being generic is the fastest way to quit. Don't be afraid to be for someone, and not for everyone.
 
-> Visual: Grace showing a 'failed' faded sticker vs. a protected sticker with photo top being splashed with water.
+> Visual: Grace sits back from her desk, speaking more personally to the camera. She might pick up an old, generic-looking sticker sheet from her early days and show it, shaking her head with a small smile.
 
-> On-screen: MISTAKE: SKIPPING PHOTO TOP
+> On-screen: My First Month: ₱500 Sales. Why?
 
-#### STORY 5 + TACTIC
+#### Story 5 + Tactic
 *Timing: 18:00-23:00*
 
-Finally, the transformation. One mommy started with exactly ₱500. She followed our P2P framework: Start small, sell to friends, then reinvest. 'Yung kinita niyang first ₱1,000, hindi niya ginastos. Binili niya ng mas maraming supplies. After 3 months of reinvesting, she finally bought her own Epson printer. Ngayon, she earns ₱5,000 to ₱10,000 a month comfortably from home. From ₱500 to a consistent income without leaving her kids. Ang tactic? The 100% Reinvest Rule for the first 5 batches. Doon lumalaki ang negosyo.
+And that leads to my final story: the transformation. After that 500-peso month, I stopped looking at Shopee for ideas. I looked inward. Tinanong ko sarili ko, 'Grace, ano ba ang kailangan MO? Ano ang kailangan ng mga nanay na katulad mo?' I'm a homeschooling mom who loves God. So I made my very first niche product: a small sheet of Bible verse stickers to put in my planner for encouragement. Hindi siya para sa lahat. Para siya sa akin, and for moms like me. I posted it in a small Facebook group for Christian homeschooling moms. And mommies... the response was incredible. They said, 'This is exactly what I need!' I wasn't just selling a sticker anymore. I was serving a community. I found my tribe. And that's when this business truly started to provide for our family. The final tactic is simple: Serve, Don't Sell. When you focus on serving the specific needs of your small tribe, the sales will naturally follow.
 
-> Visual: Grace showing a small stack of stickers growing into a large pile, then gesturing to her printer at home.
+> Visual: Grace holds up one of her current, faith-based sticker sheets. The design is personal and specific. B-roll of her using the stickers in her own planner. Show a blurred screenshot of positive comments from a Facebook group.
 
-> On-screen: ₱500 → ₱10,000 MONTHLY
+> On-screen: The Shift: From Selling Stickers to Serving a Tribe
 
-#### SUMMARY + NEXT VIDEO
+#### Summary + Next Video
 *Timing: 23:00-25:00*
 
-In summary: You don't need a fortune to start; you just need ₱500 and the right strategy to stay lean. If you want the exact step-by-step list of materials and where to buy them, check out our Papers to Profits Starter Kit—it's just ₱1,300 for lifetime access. And if you're wondering what specific stickers sell the fastest right now, click this next video where I break down the top 5 best-selling paper products for 2024. Kita-kits doon, Mommy!
+So, to summarize everything, mommies: The one thing that determines if your sticker business will survive is if you focus on building a tribe instead of chasing trends. Find your passion, design for one person, make every touchpoint special, learn from failures, and always, always focus on serving. I hope this helped you so much! Now that you know the 'why', maybe you're wondering about the 'how'. In my next video, I'll show you the exact 3-step Canva process I use to test a new niche idea before spending a single peso on materials. Make sure you're subscribed so you don't miss it. Let me know in the comments, what's a passion of yours that you could turn into a sticker niche?
 
-> Visual: Grace smiling, waving, with an end-screen pointing to the next video and a link to P2P.
+> Visual: Grace is back at her desk, smiling at the camera. An end screen card pops up on one side of the screen, teasing the next video about the '3-Step Canva Niche Test'.
 
-> On-screen: WATCH NEXT: TOP 5 BESTSELLERS
+> On-screen: NEXT VIDEO: 3-Step Canva Niche Test (Without Spending ₱1)
 
 ---
 
 ### 24. youtube — (No structure) (educate)
 **Status:** PASS
 
-**Hook:** Floating text sticker: '₱500 Sticker Biz Challenge'
-**Quality Score:** 96
+**Hook:** Ito ang #1 dahilan kung bakit 9 out of 10 sticker businesses ay sumusuko agad. At hindi ito dahil sa design.
+**Quality Score:** 98
+**CTA Check:** ✅ No product pitch (correct)
+**Provider:** GeminiPro/gemini-2.5-pro
 
-**Sections (7):**
+**Sections (14):**
 
-- **0:00:** Mommies, akala niyo ba kailangan ng ₱20,000 para magsimula ng sticker business? Today, I'll show you how to start with less than ₱500. No expensive cutting machine, just your heart and basic tools.
-- **0:45:** Step 1: Budget breakdown. Bibili tayo ng 1 pack ng 135gsm Photo Sticker Paper (₱150), 1 pack ng Cold Laminating Film (₱120), at scissors (₱50). Ang matitira, pang-print natin sa labas or pang-load sa Canva Pro.
-- **1:30:** Step 2: The Design. Use Canva. Here's a trick: search for 'sticker sheet templates' para hindi kayo mahirapan sa layout. Make sure to leave a 2mm 'gutter' or space between stickers para madali silang gupitin manually later.
-- **2:45:** Step 3: The Secret Sauce—Lamination. Kahit hindi waterproof ang ink mo, if you apply cold laminating film manually, magiging smudge-proof at premium ang feel ng stickers mo. Just use a ruler to press it down slowly para walang bubbles.
-- **4:15:** Step 4: Manual Cutting. You don't need a Cricut yet. Use a sharp pair of scissors. The trick is to move the paper, not the scissors, while cutting. This gives you those smooth, rounded edges na parang machine-cut.
-- **5:30:** See? These 10 sheets can make 200 small stickers. If you sell them at ₱5 each, that's ₱1,000 na agad. Double your money with just ₱500 capital. Kaya mo 'to, Mommy!
-- **6:15:** If you want the full list of my trusted suppliers and more design templates, check out our Papers to Profits Starter Kit for only ₱1,300. Lifetime access na po ito para sa mga mommies na gustong mag-start ng paper business from home. Click the link below!
+- **0:00:** (Upbeat, warm music starts) Mga Mommies! Gusto mo bang malaman ang #1 dahilan kung bakit 9 out of 10 na nagta-try mag-sticker business ay sumusuko in their first month?
+- **0:08:** Promise, hindi ito dahil sa design skills. Sa video na 'to, ituturo ko sa'yo 'yung exact mistake na 'yun at kung paano mo 'to iiwasan para makuha mo ang first sale mo agad-agad, without spending thousands of pesos on expensive machines.
+- **0:22:** This is the secret na sana nalaman ko when I was starting. So I'll share with you the Machine Myth, the Paper Secret, and your First Sale Strategy. Ready na?
+- **0:35:** Okay, The Machine Myth. Ito 'yung pinaka-common na advice na makikita mo: 'Bumili ka ng cutting machine!' And mommies, that is the business killer. Bakit? Kasi itong mga machine na 'to, they cost anywhere from 15 to 25 thousand pesos. Ang laki ng cash out agad!
+- **1:05:** Tapos, may steep learning curve. Aaralin mo pa 'yung software, 'yung calibration, 'yung blades... bago ka pa man makabenta, ubos na oras at pasensya mo. You feel overwhelmed, tapos sasabihin mo na lang, 'Ay, hindi pala para sa akin 'to.' Sayang, 'di ba?
+- **1:30:** Parang gusto mo lang matutong magluto ng adobo, pero ang binili mo agad buong professional kitchen set. Hindi naman kailangan, 'di ba? Pwede namang magsimula sa simpleng kawali at sandok.
+- **1:48:** So, ano'ng solusyon? Ito na, mga mommies. The Paper Secret. Instead of a machine that cuts, we use paper that is... pre-cut!
+- **2:15:** Ito, nabibili 'to online sa Shopee or Lazada. Maraming sizes—may circles, squares, rectangles. Ang gagawin mo na lang is to design your stickers sa Canva to fit these templates. Super simple.
+- **2:45:** Let's do it right now. Ito 'yung design ko sa Canva for circle stickers. Ang gagawin ko lang, i-print ko siya using my regular home printer dito sa pre-cut sticker paper. Walang special settings, just print as you would a normal document.
+- **3:20:** Tingnan n'yo! (Holds up the printed sheet) Instant sticker sheet! Pwede nang ibenta. No cutting, no calibration, no stress. Design today, print tonight, sell tomorrow. Gano'n kabilis.
+- **3:45:** And now, for your First Sale Strategy. Dahil hindi ka gumastos ng malaki sa machine, you can price your stickers competitively. Ang goal natin is not to be the most perfect sticker shop overnight. Ang goal natin is to get your *first sale*.
+- **4:10:** That first sale, 'yun 'yung magbibigay sa'yo ng confidence. 'Yun 'yung proof na, 'Kaya ko pala 'to!' From there, you can build your momentum. You can use your earnings to buy more paper, or eventually, if you want, 'yung machine. But you start simple.
+- **4:35:** So to recap, mommies: Huwag munang bumili ng mamahaling machine. Unahin n'yo ang pre-cut sticker paper. Focus on making your first sale to build your confidence and your capital. This is how you start a paper products business na sustainable at hindi nakaka-overwhelm.
+- **5:02:** It's all about starting with what you have, right here at home. Kung nakatulong sa'yo 'tong tip na 'to, please comment 'start simple' down below. I'd love to hear from you! And don't forget to follow for more practical tips on how you can turn paper into profit. See you in the next video!
 
 ---
 

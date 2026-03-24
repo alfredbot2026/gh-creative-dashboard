@@ -473,6 +473,8 @@ Generate ${variants} distinct variants now. Each variant MUST take a DIFFERENT a
       platform,
       contentType,
       generatedAt: new Date().toISOString(),
+      provider: result.provider,
+      model: result.model,
       kbEntriesUsed: kbContext.entries.length,
       hooksUsed: kbContext.hooks.length,
     })
