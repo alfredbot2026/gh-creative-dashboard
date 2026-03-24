@@ -167,10 +167,18 @@ Target 5-8 minutes. Include a strong intro hook, value delivery, and CTA.`
       }
       break
     case 'carousel':
-      platformRules = `Format: Instagram carousel (5-7 slides).
+      if (hasStructure) {
+        platformRules = `Format: Instagram carousel with structure-aware slides (5-7 slides).
+Each variant must have a "hook" and a "content" object with a "scenes" array.
+Each scene represents ONE slide: { "block_id": "slide_id", "block_label": "SLIDE LABEL", "script_text": "the main text on this slide (short, punchy, 1-3 sentences max)", "visual_direction": "what the slide image should show", "on_screen_text": "the large display text for this slide" }.
+Slide 1 = HOOK slide (pattern interrupt). Last slide = CTA slide. Middle slides follow the structure blocks.
+Each slide should have enough text to fill ONE Instagram carousel card — not too long, not too short. Think: headline + 1-2 supporting sentences.`
+      } else {
+        platformRules = `Format: Instagram carousel (5-7 slides).
 Each variant must have a "hook" and a "content" object with a "slides" array.
-Each slide: { "text": "the text on the slide", "imagePrompt": "visual description" }.
-Slide 1 = hook. Last slide = CTA. Middle slides = value.`
+Each slide: { "slide_number": 1, "text": "the main text on this slide (short, punchy)", "subtext": "supporting detail (1 sentence)", "imagePrompt": "visual description for the slide background" }.
+Slide 1 = hook (pattern interrupt). Last slide = CTA. Middle slides = value. Keep text SHORT — this is a visual format.`
+      }
       break
     case 'static-image':
       platformRules = `Format: Static image post.

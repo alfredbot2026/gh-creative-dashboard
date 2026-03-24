@@ -616,6 +616,16 @@ function CreateWizard() {
                       </div>
                     ))}
                   </div>
+                ) : variant.content.slides?.length ? (
+                  <div className={styles.slidesList}>
+                    {variant.content.slides.map((s: any, i: number) => (
+                      <div key={i} className={styles.slideCard}>
+                        <span className={styles.slideBadge}>Slide {s.slide_number || i + 1}</span>
+                        <p className={styles.slideText}>{s.text}</p>
+                        {s.subtext && <p className={styles.slideSubtext}>{s.subtext}</p>}
+                      </div>
+                    ))}
+                  </div>
                 ) : variant.content.headline ? (
                   <div className={styles.adContent}>
                     <h3>{variant.content.headline}</h3>
