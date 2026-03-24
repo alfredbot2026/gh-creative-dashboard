@@ -294,10 +294,72 @@
 
 ## Phase 4c — Competitive Intelligence
 **Goal:** Top creator identification, niche trend analysis, integration into suggestions.
-**Status:** `NOT_STARTED`
+**Status:** `COMPLETE` ✅
 **Depends on:** Phase 3.5 (same classification framework)
 
+**Delivered:**
+- Auto-discovery of top creators via YouTube API (30 creators found)
+- Video classification using same Gemini framework as Grace's content
+- Niche trends dashboard: top hooks, structures, topics, content mix
+- UI: `/insights/competitive` (Trends tab + Creators tab)
+
 **Spec:** `specs/CONTENT-ENGINE-V2-VISION.md` (section: Top Creator Analysis)
+
+---
+
+## Phase 4d — Ad Performance Feedback Loop
+**Goal:** Close the loop between organic content → ad spend → real conversions → smarter content generation.
+**Status:** `READY` — spec written
+**Depends on:** Phase 3.5 (classified content), FB Ads skill (existing)
+**Inspired by:** Ryan Mathews / Alex Hormozi content-first ad strategy
+
+**Spec:** `specs/phase-4d-ad-feedback-loop.md`
+
+### 4d-1. Ad Performance Ingest (~2 hrs)
+- Pull Grace's Meta Ads data via existing FB Ads skill
+- Match ads to classified organic content (by post ID, URL, or content hash)
+- Store: ad_id, content_item_id, spend, impressions, clicks, conversions, ROAS, CPA
+- New table: `ad_performance` linked to `content_items`
+
+### 4d-2. Saves-Weighted Scoring (~1 hr)
+- Bump "saves" to 3x weight in performance scoring (best predictor of ad conversion per Hormozi data)
+- Update performance correlation engine to factor in saves
+- Surface saves count prominently in `/insights/[id]` post detail
+
+### 4d-3. Ad ↔ Content Correlation Dashboard (~3 hrs)
+- New section in `/insights`: "Ad Performance"
+- Show: which classified content performs best as ads
+- Breakdown by: structure type, hook type, topic, content goal
+- Key metrics: ROAS, CPA, CTR per structure/hook/topic
+- "Best organic → ad candidates" — posts with high saves but not yet boosted
+
+### 4d-4. Feedback into Generation (~2 hrs)
+- When generating new scripts, pull top-performing ad patterns
+- Weight structure/hook/topic recommendations by actual ad ROAS, not just organic metrics
+- Prompt injection: "Structures that convert best as ads in your niche: [X, Y, Z]"
+- Quality gate: flag if generated script uses a pattern that historically underperforms as an ad
+
+### 4d-5. Synthetic Audience Testing (Future — lower priority)
+- Build customer personas from Grace's actual engagement data
+- Test generated scripts against AI personas before going live
+- Score: "predicted conversion likelihood" based on persona triggers/objections
+- **Future enhancement:** integrate chatbot conversation data for richer persona modeling
+
+---
+
+## Phase 4e — Chatbot Intelligence Integration (FUTURE)
+**Goal:** Mine GH Creative chatbot conversations for customer insights that improve content generation.
+**Status:** `QUEUED` — data available, spec needed
+**Depends on:** Chatbot data access, Phase 4d (feedback loop infrastructure)
+
+**Concept:**
+- Extract buying triggers, objections, pain points, and FAQ patterns from chatbot logs
+- Build customer persona profiles from real conversation data
+- Feed into synthetic audience testing (Phase 4d-5)
+- Surface "what customers actually ask about" as topic suggestions in `/create`
+- Identify product/content gaps: "Customers keep asking about X but Grace has no content on it"
+
+**Data source:** Existing chatbot conversations (muni-chatbot or GH chatbot data)
 
 ---
 
