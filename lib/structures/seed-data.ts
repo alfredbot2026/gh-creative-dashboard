@@ -383,18 +383,21 @@ export const CONTENT_STRUCTURES: ContentStructure[] = [
   {
     name: 'PASTOR',
     slug: 'pastor',
-    description: 'Problem → Solution → CTA. The simplest ad framework — state the roadblock, fix it, direct them.',
+    description: 'Problem → Amplify → Story → Transformation → Offer → Response. The complete 6-step persuasion framework.',
     source_creator: 'CRO KB',
     content_type: 'ad',
-    purpose: ['sell'],
-    difficulty: 'beginner',
+    purpose: ['sell', 'announce', 'prove'],
+    difficulty: 'intermediate',
     blocks: [
-      { id: 'problem', label: 'Problem / Roadblock', timing: '0-8s', duration_hint: '8s', instruction: 'State the specific roadblock the viewer is facing. Be direct.', example: '"Stuck figuring out which binding machine to buy? There are hundreds and they all look the same."', rules: ['Specific roadblock, not general frustration', 'Show you understand their situation'] },
-      { id: 'solution', label: 'Solution', timing: '8-18s', duration_hint: '10s', instruction: 'Explain how your product/expertise solves the specific roadblock.', example: '"I\'ve tested 12 machines over 5 years. Only 2 are worth buying. Here\'s the one I use every day: [show product]"', rules: ['Authority + solution', 'Show the product in action'] },
-      { id: 'cta', label: 'CTA', timing: '18-25s', duration_hint: '7s', instruction: 'Direct them to take action immediately.', example: '"Comment MACHINE and I\'ll send you my comparison sheet with prices and links"', rules: ['Low friction', 'Keyword comment CTAs drive reach'] }
+      { id: 'problem', label: 'P — Problem', timing: 'Section 1', instruction: 'Identify and describe the specific problem your audience is experiencing. Paint a vivid picture of their pain.', example: '"Ang hirap mag-start ng business kapag walang capital."', rules: ['Be specific to their situation', 'Use their own language', 'Make them feel seen'] },
+      { id: 'amplify', label: 'A — Amplify', timing: 'Section 2', instruction: 'Amplify the consequences of NOT solving the problem. Make the pain more urgent.', example: '"Habang nag-iisip ka pa lang, yung kapitbahay mo nagsimula na."', rules: ['Show cost of inaction', 'Create urgency without manipulation', 'Connect to emotional consequences'] },
+      { id: 'story', label: 'S — Story / Solution', timing: 'Section 3', instruction: 'Share a relatable story or introduce the solution. Bridge from pain to hope.', example: '"Same situation ko dati. 3 years akong nag-plan lang."', rules: ['Use personal or customer story', 'Make transition natural', 'Keep it authentic'] },
+      { id: 'transformation', label: 'T — Transformation', timing: 'Section 4', instruction: 'Show the before-and-after. What does life look like AFTER the solution?', example: '"Now, I earn 30-50K a month from my kitchen table."', rules: ['Show concrete results', 'Make it aspirational but believable', 'Connect to original pain'] },
+      { id: 'offer', label: 'O — Offer', timing: 'Section 5', instruction: 'Present your specific offer. What exactly are you selling? Make it clear and compelling.', example: '"My Starter Kit — 5 sheets, 50 designs, cutter, and video guide. Only P499."', rules: ['Be specific about what they get', 'Include price if applicable', 'Frame as investment'] },
+      { id: 'response', label: 'R — Response / CTA', timing: 'Section 6', instruction: 'Tell them exactly what to do next. Simple and immediate.', example: '"Comment STARTER and I will send you the link."', rules: ['One clear action', 'Low friction', 'Add urgency without being pushy'] }
     ],
-    ideal_length_min: 15,
-    ideal_length_max: 25,
+    ideal_length_min: 60,
+    ideal_length_max: 120,
     is_cutting_edge: false,
     sort_order: 35
   }
