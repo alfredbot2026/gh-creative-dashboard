@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Upload, X, Download, RotateCw, ChevronLeft, ChevronRight, Edit3, Sparkles, FileDown } from 'lucide-react'
+import { Upload, X, Download, RotateCw, ChevronLeft, ChevronRight, Edit3, Sparkles, FileDown, Save, Check } from 'lucide-react'
+import { downloadSlidesAsZip } from '@/lib/studio/download-utils'
 import styles from './CarouselBuilder.module.css'
 
 interface SlideData {
@@ -237,16 +238,16 @@ export default function CarouselBuilder() {
     }
   }
 
-  const handleDownloadAll = async () => {
-    for (const slide of slides) {
-      const res = await fetch(slide.image_url)
-      const blob = await res.blob()
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `carousel-slide-${slide.slide_number}.png`
-      a.click()
-      // Small delay between downloads
-      await new Promise(r => setTimeout(r, 300))
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [zipping, setZipping] = useState(false)
+
+  const handleDownloadZip = async () => {
+    setZipping(true)
+    try {
+      await downloadSlidesAsZip(slides.map(s => s.image_url), topic)
+    } finally {
+      setZipping(false)
     }
   }
 
@@ -257,6 +258,32 @@ export default function CarouselBuilder() {
     a.href = URL.createObjectURL(blob)
     a.download = `carousel-slide-${slide.slide_number}.png`
     a.click()
+  }
+
+  const handleSaveToLibrary = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/library/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'carousel',
+          title: topic ? `Carousel: ${topic}` : `Carousel ${new Date().toLocaleDateString()}`,
+          platform: 'carousel',
+          slideUrls: slides.map(s => s.image_url),
+          scriptData: {
+            slides: slides.map(s => ({ text: s.text, image_url: s.image_url })),
+            style: carouselStyle,
+          },
+        }),
+      })
+      if (res.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+      }
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -520,8 +547,11 @@ export default function CarouselBuilder() {
             <button className={styles.actionBtn} onClick={() => handleDownloadSlide(slides[currentSlide])}>
               <Download size={14} /> Download Slide
             </button>
-            <button className={styles.actionBtnPrimary} onClick={handleDownloadAll}>
-              <FileDown size={14} /> Download All
+            <button className={styles.actionBtnPrimary} onClick={handleDownloadZip} disabled={zipping}>
+              <FileDown size={14} /> {zipping ? 'Zipping...' : 'Download ZIP'}
+            </button>
+            <button className={styles.actionBtn} onClick={handleSaveToLibrary} disabled={saving || saved}>
+              {saved ? <Check size={14} /> : <Save size={14} />} {saved ? 'Saved' : saving ? 'Saving...' : 'Save to Library'}
             </button>
             <button className={styles.actionBtn} onClick={() => { setSlides([]); setSlideTexts([]) }}>
               Start Over

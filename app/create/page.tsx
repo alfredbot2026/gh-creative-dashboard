@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2, Save, Download } from 'lucide-react'
+import { formatScriptForExport, downloadScriptAsText } from '@/lib/studio/download-utils'
 import BlockEditor from '@/components/create/BlockEditor'
 import type { RegenerateContext } from '@/components/create/BlockEditor'
 import type { ScriptScene } from '@/lib/create/types'
@@ -236,10 +237,45 @@ function CreateWizard() {
     ))
   }
 
+  const [savingId, setSavingId] = useState<string | null>(null)
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
+
   function handleCopy(text: string, id: string) {
     navigator.clipboard.writeText(text)
     setCopiedId(id)
     setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  async function handleSaveVariant(variant: Variant) {
+    setSavingId(variant.id)
+    try {
+      const res = await fetch('/api/library/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'script',
+          title: variant.hook?.substring(0, 100) || topic || 'Untitled script',
+          platform,
+          hook: variant.hook,
+          cta: variant.content?.scenes?.slice(-1)?.[0]?.script_text,
+          contentType: goal,
+          structureSlug: selectedStructure?.slug,
+          scriptData: {
+            scenes: variant.content?.scenes,
+            qualityScore: variant.qualityScore,
+          },
+        }),
+      })
+      if (res.ok) {
+        setSavedIds(prev => new Set([...prev, variant.id]))
+      }
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  function handleDownloadVariant(variant: Variant) {
+    downloadScriptAsText(variant, `script-${goal}-${Date.now()}.txt`)
   }
 
   function formatVariantText(variant: Variant): string {
@@ -513,6 +549,20 @@ function CreateWizard() {
                   >
                     {copiedId === variant.id ? <Check size={16} /> : <Copy size={16} />}
                     {copiedId === variant.id ? 'Copied' : 'Copy'}
+                  </button>
+                  <button
+                    className={styles.iconBtn}
+                    onClick={() => handleDownloadVariant(variant)}
+                  >
+                    <Download size={16} /> Download
+                  </button>
+                  <button
+                    className={`${styles.iconBtn} ${savedIds.has(variant.id) ? styles.iconBtnSuccess : ''}`}
+                    onClick={() => handleSaveVariant(variant)}
+                    disabled={savingId === variant.id || savedIds.has(variant.id)}
+                  >
+                    {savedIds.has(variant.id) ? <Check size={16} /> : <Save size={16} />}
+                    {savedIds.has(variant.id) ? 'Saved' : savingId === variant.id ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </div>

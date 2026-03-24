@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, X, Download, RotateCw, User, Sparkles, Image as ImageIcon, LayoutGrid } from 'lucide-react'
+import { Upload, X, Download, RotateCw, User, Sparkles, Image as ImageIcon, LayoutGrid, Save, Check } from 'lucide-react'
 import CarouselBuilder from '@/components/studio/CarouselBuilder'
 import styles from './studio.module.css'
 
@@ -131,6 +131,9 @@ function StudioPage() {
     }
   }
 
+  const [savingImage, setSavingImage] = useState(false)
+  const [imageSaved, setImageSaved] = useState(false)
+
   const handleDownload = async (url: string) => {
     const res = await fetch(url)
     const blob = await res.blob()
@@ -138,6 +141,34 @@ function StudioPage() {
     a.href = URL.createObjectURL(blob)
     a.download = `studio-${Date.now()}.png`
     a.click()
+  }
+
+  const handleSaveImage = async (url: string) => {
+    setSavingImage(true)
+    try {
+      const res = await fetch('/api/library/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'image',
+          title: prompt ? `Image: ${prompt.substring(0, 80)}` : `Studio Image ${new Date().toLocaleDateString()}`,
+          platform: 'static-image',
+          imageUrl: url,
+          scriptData: {
+            prompt,
+            style: stylePreset,
+            aspectRatio,
+            includeGrace,
+          },
+        }),
+      })
+      if (res.ok) {
+        setImageSaved(true)
+        setTimeout(() => setImageSaved(false), 3000)
+      }
+    } finally {
+      setSavingImage(false)
+    }
   }
 
   return (
@@ -284,6 +315,10 @@ function StudioPage() {
               <div className={styles.resultActions}>
                 <button className={styles.actionBtn} onClick={() => handleDownload(result.url)}>
                   <Download size={16} /> Download
+                </button>
+                <button className={styles.actionBtn} onClick={() => handleSaveImage(result.url)} disabled={savingImage || imageSaved}>
+                  {imageSaved ? <Check size={16} /> : <Save size={16} />}
+                  {imageSaved ? 'Saved' : savingImage ? 'Saving...' : 'Save to Library'}
                 </button>
                 <button className={styles.actionBtn} onClick={handleGenerate}>
                   <RotateCw size={16} /> Regenerate

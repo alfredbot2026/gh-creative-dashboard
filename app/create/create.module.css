@@ -510,6 +510,16 @@
   color: var(--color-text);
 }
 
+.iconBtnSuccess {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.iconBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .bottomActions {
   display: flex;
   gap: var(--space-sm);
