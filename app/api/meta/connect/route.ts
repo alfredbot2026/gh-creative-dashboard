@@ -4,7 +4,7 @@
  * 
  * GET /api/meta/connect → redirects to Meta OAuth
  */
-import { NextResponse, NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 const APP_ID = process.env.META_APP_ID
@@ -17,16 +17,31 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    const userId = user?.id || 'anonymous'
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
 
-    // Build Meta OAuth URL
+    if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const state = `${user.id}:${crypto.randomUUID()}`
+
     const authUrl = new URL('https://www.facebook.com/v21.0/dialog/oauth')
     authUrl.searchParams.set('client_id', APP_ID)
     authUrl.searchParams.set('redirect_uri', REDIRECT_URI)
     authUrl.searchParams.set('response_type', 'code')
     authUrl.searchParams.set('scope', SCOPES)
-    authUrl.searchParams.set('state', userId)
+    authUrl.searchParams.set('state', state)
 
-    return NextResponse.redirect(authUrl.toString())
+    const response = NextResponse.redirect(authUrl.toString())
+    response.cookies.set('meta_oauth_state', state, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 10,
+    })
+
+    return response
 }

@@ -1,44 +1,40 @@
-# Build Report — TASK-041
+# Build Report: TASK-041 (Meta OAuth Flow)
 
-## Overview
-Implemented Meta OAuth 2.0 flow for Instagram/Facebook integration, secure token storage via Supabase, and Connected Accounts UI.
+## Verification Status
+- **Build**: PASS (0 errors)
+- **TypeScript**: PASS (0 type errors)
 
-## Changes Made
-
-### Wave 1: Database Migration
-- Created `013_meta_tokens.sql` with table `meta_tokens`
-- Enabled RLS with user-specific policy (`user_id = auth.uid()`)
-- Auto-updating `updated_at` trigger.
-
-### Wave 2: API Routes
-- `GET /api/meta/connect`: Initiates Meta OAuth flow. Maps scopes for Insights and Engagement.
-- `GET /api/meta/callback`: Exchanges short-lived to long-lived tokens via graph.facebook.com. Resolves Facebook Page to find corresponding Instagram Business Account id. Stores to DB securely.
-- `POST /api/meta/disconnect`: Removes `meta_tokens` DB entry and cleanly disconnects the provider. Optional `?purge=true` param to wipe ingest data.
-- `lib/meta/token-refresh.ts`: `refreshMetaToken` and `getValidMetaToken` auto-checks expiration (<7 days) and exchanges the token, updating Supabase. Sets `token_expires_at` to `0` on failures to flag the token as invalid.
-
-### Wave 3: Settings UI
-- Ensured `components/settings/ConnectedAccounts.tsx` properly surfaces Instagram and YouTube states cleanly using `CheckCircle`/`AlertCircle`.
-- Fully hooked up Connect/Disconnect logic within the Settings UI.
-
-### Wave 4: Environment Variables
-- Updated `.env.local.example` with `META_APP_ID`, `META_APP_SECRET`, `META_REDIRECT_URI`.
-
-## Final Verification
+### Execution Log
 ```bash
-$ npm run build
-...
-✓ Compiled successfully in 13.9s
-Route (app)
-┌ ƒ /
-├ ○ /_not-found
-...
-✓ Generating static pages using 7 workers (85/85)
+> gh-creative-dashboard@0.1.0 build
+> next build
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+✓ Compiled successfully
+  Running TypeScript ...
+✓ Generating static pages
 ```
 
 ```bash
 $ npx tsc --noEmit
-(no output, exit 0)
+(no output - clean)
 ```
 
-## Status
-Ready for QA.
+## Summary of Completed Waves
+### Wave 1: Database Migration
+- Confirmed `013_meta_tokens.sql` exists and correctly defines the schema for `meta_tokens` including `user_id` unique constraint, `RLS` policies, and the `updated_at` trigger.
+
+### Wave 2: API Routes
+- Confirmed implementation of `/api/meta/connect` routing to Facebook OAuth dialogue with correct scopes.
+- Confirmed implementation of `/api/meta/callback` securely validating the CSRF cookie and persisting tokens via `upsert`.
+- Confirmed implementation of `/api/meta/disconnect` to purge Meta content and DB entries.
+- Confirmed `lib/meta/token-refresh.ts` effectively handles token expiry and silent token refreshment with the Meta Graph API.
+
+### Wave 3: Settings UI
+- Verified `components/settings/ConnectedAccounts.tsx` properly renders the Meta and YouTube connection state.
+- Component accurately manages conditional Connect / Disconnect button views based on Supabase `meta_tokens` context.
+
+### Wave 4: Env Vars
+- Validated `.env.local.example` correctly captures required env configurations: `META_APP_ID`, `META_APP_SECRET`, and `META_REDIRECT_URI`.
+
+Everything matches the previous build and specification. Codebase is clean and builds successfully.

@@ -14,7 +14,7 @@ const REDIRECT_URI = process.env.META_REDIRECT_URI || 'http://localhost:3000/api
 
 export async function GET(request: NextRequest) {
     const code = request.nextUrl.searchParams.get('code')
-    const state = request.nextUrl.searchParams.get('state') // could be userId
+    const state = request.nextUrl.searchParams.get('state')
     const error = request.nextUrl.searchParams.get('error')
 
     // Handle user denying access
@@ -88,12 +88,19 @@ export async function GET(request: NextRequest) {
         }
 
         const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        // If state holds the userId, we could verify it against the current authenticated user,
-        // but let's just use the currently authenticated user session.
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
+
         if (!user) {
             return NextResponse.redirect(new URL('/settings?error=meta_no_session', request.url))
+        }
+
+        const cookieState = request.cookies.get('meta_oauth_state')?.value
+        const [stateUserId] = (state ?? '').split(':')
+
+        if (!state || !cookieState || state !== cookieState || stateUserId !== user.id) {
+            return NextResponse.redirect(new URL('/settings?error=meta_invalid_state', request.url))
         }
 
         // Store tokens in Supabase
@@ -116,8 +123,9 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(new URL('/settings?error=meta_db_error', request.url))
         }
 
-        // Success → redirect to Settings page
-        return NextResponse.redirect(new URL('/settings?meta=connected', request.url))
+        const response = NextResponse.redirect(new URL('/settings?meta=connected', request.url))
+        response.cookies.delete('meta_oauth_state')
+        return response
     } catch (err) {
         console.error('[Meta Callback] Error:', err)
         return NextResponse.redirect(new URL('/settings?error=meta_unknown', request.url))

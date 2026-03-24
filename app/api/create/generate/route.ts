@@ -128,14 +128,30 @@ The scenes should follow a clear structure with labeled blocks (HOOK, SUPER HOOK
 Keep it 4-6 blocks max. Visual directions must be things Grace can actually film at home — her desk, her printer, her paper products, her kids nearby.`
       break
     case 'facebook-post':
-      platformRules = `Format: Facebook post.
+      if (hasStructure) {
+        platformRules = `Format: Facebook post with structure-aware blocks.
+Each variant must have a "hook" and a "content" object with a "scenes" array.
+Each scene must use this EXACT format: { "block_id": "section_id", "block_label": "SECTION NAME", "script_text": "the post text for this section (Taglish, conversational)", "visual_direction": "optional: what image/visual could accompany this" }.
+The scenes should follow the selected structure's blocks with labeled sections.
+Total post length: 150-400 words. Write like Grace is talking to a friend — casual, warm, real.`
+      } else {
+        platformRules = `Format: Facebook post.
 Each variant must have a "hook" and a "content" object with "caption" (string) and "hashtags" (array).
 Caption should be conversational Taglish — like Grace is talking to a friend. 150-300 words.`
+      }
       break
     case 'facebook-ad':
-      platformRules = `Format: Facebook ad.
+      if (hasStructure) {
+        platformRules = `Format: Facebook ad with structure-aware blocks.
+Each variant must have a "hook" and a "content" object with a "scenes" array.
+Each scene must use this EXACT format: { "block_id": "section_id", "block_label": "SECTION NAME", "script_text": "the ad copy for this section", "visual_direction": "what the ad image should show for this section" }.
+The scenes should follow the selected structure's blocks (e.g., PASTOR = Problem, Amplify, Story, Transformation, Offer, Response).
+Must include a clear CTA. Price anchoring encouraged. Keep total ad copy 100-250 words.`
+      } else {
+        platformRules = `Format: Facebook ad.
 Each variant must have a "hook" and a "content" object with "headline" (short, punchy), "primaryText" (the ad body, 100-200 words), and "imagePrompt" (what the ad image should show).
 Must include a clear CTA. Price anchoring encouraged.`
+      }
       break
     case 'youtube':
       if (hasStructure) {

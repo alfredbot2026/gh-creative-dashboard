@@ -93,8 +93,8 @@ Stores Meta (Instagram/Facebook) OAuth 2.0 access tokens.
 - **Columns**: `id`, `user_id`, `access_token`, `token_expires_at`, `ig_user_id`, `page_id`, `page_name`, `ig_username`, `scopes`, `created_at`, `updated_at`.
 
 ### Meta OAuth Routes Added (TASK-041)
-- `GET /api/meta/connect` — Redirects to Meta OAuth consent screen with CSRF protection (cookie-based).
-- `GET /api/meta/callback` — Exchanges short-lived tokens for long-lived tokens and saves to `meta_tokens` table.
+- `GET /api/meta/connect` — Redirects to Meta OAuth consent screen, requires authenticated user, and issues cookie-backed CSRF state (`userId:nonce`).
+- `GET /api/meta/callback` — Validates CSRF state + session user match, exchanges short-lived tokens for long-lived tokens, resolves IG account details, and saves to `meta_tokens`.
 - `POST /api/meta/disconnect` — Removes the token from Supabase and purges Meta content (optional).
 
 ### Connect Accounts UI (TASK-041)

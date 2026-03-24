@@ -5,8 +5,13 @@ import { getConnectionStatus } from '@/app/actions/connections'
 import styles from '@/app/settings/page.module.css'
 import { AlertCircle, CheckCircle } from 'lucide-react'
 
+type ConnectionStatus = {
+  youtube: { connected: boolean; channel_title: string | null }
+  meta: { connected: boolean; page_name: string | null; ig_username: string | null }
+}
+
 export default function ConnectedAccounts() {
-  const [status, setStatus] = useState<any>(null)
+  const [status, setStatus] = useState<ConnectionStatus | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
