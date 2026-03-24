@@ -1,4 +1,5 @@
-.editor {
+/* Block Editor */
+.blockEditor {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -12,21 +13,15 @@
   transition: border-color 0.15s;
 }
 
-.block:hover {
-  border-color: var(--color-border-strong);
-}
-
-.blockEditing {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent);
-}
+.block:hover { border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-text)); }
+.blockExpanded { border-color: var(--color-text); }
 
 /* Header */
 .blockHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-sm) var(--space-md);
+  padding: 10px 14px;
   cursor: pointer;
   user-select: none;
 }
@@ -34,28 +29,14 @@
 .blockLabel {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
 
-.blockNumber {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-full);
-  background: var(--color-accent);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.blockName {
+.label {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
@@ -63,9 +44,9 @@
 }
 
 .timing {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-text-muted);
-  background: var(--color-surface-low);
+  background: color-mix(in srgb, var(--color-border) 30%, transparent);
   padding: 2px 8px;
   border-radius: var(--radius-full);
   white-space: nowrap;
@@ -73,126 +54,83 @@
 }
 
 .blockActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
-/* Script content */
-.scriptContent {
-  padding: 0 var(--space-md) var(--space-sm);
-}
-
-.scriptText {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: var(--color-text);
-  margin: 0;
-}
-
-.visualDir {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  margin: var(--space-xs) 0 0;
-  font-style: italic;
-}
-
-/* Expanded content */
-.expandedContent {
-  padding: var(--space-sm) var(--space-md) var(--space-md);
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface-low);
-}
-
-.onScreenText, .prodNotes {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-xs);
-  line-height: 1.4;
-}
-
-.onScreenText strong, .prodNotes strong {
-  color: var(--color-text);
-}
-
-/* Action buttons */
-.actionRow {
+.iconBtn {
   display: flex;
-  gap: var(--space-sm);
-  margin-top: var(--space-sm);
-}
-
-.editBtn, .regenBtn {
-  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
   cursor: pointer;
+  border-radius: var(--radius-sm);
   transition: all 0.15s;
 }
 
-.editBtn:hover, .regenBtn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+.iconBtn:hover {
+  background: color-mix(in srgb, var(--color-border) 40%, transparent);
+  color: var(--color-text);
 }
 
-.regenBtnLoading {
-  opacity: 0.7;
-  pointer-events: none;
+.iconBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinning { animation: spin 0.7s linear infinite; }
+
+/* Script text */
+.scriptText {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  margin: 0;
+  padding: 0 14px 10px;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.spinning {
-  animation: spin 0.8s linear infinite;
-}
-
-/* Edit form */
-.editForm {
+/* Edit area */
+.editArea {
+  padding: 8px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 6px;
 }
 
 .editLabel {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
 }
 
 .editTextarea {
   width: 100%;
   min-height: 60px;
-  padding: var(--space-sm);
-  font-size: 0.9rem;
+  padding: 8px 10px;
+  font-size: 0.88rem;
   line-height: 1.5;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
-  resize: none;
+  resize: vertical;
   font-family: inherit;
 }
 
-.editTextarea:focus {
-  outline: none;
-  border-color: var(--color-accent);
-}
+.editTextarea:focus { outline: none; border-color: var(--color-text); }
 
 .editInput {
   width: 100%;
-  padding: var(--space-sm);
-  font-size: 0.9rem;
+  padding: 8px 10px;
+  font-size: 0.88rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
@@ -200,15 +138,12 @@
   font-family: inherit;
 }
 
-.editInput:focus {
-  outline: none;
-  border-color: var(--color-accent);
-}
+.editInput:focus { outline: none; border-color: var(--color-text); }
 
-.editActions {
+.editButtons {
   display: flex;
-  gap: var(--space-sm);
-  margin-top: var(--space-xs);
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .saveBtn, .cancelBtn {
@@ -225,18 +160,163 @@
 }
 
 .saveBtn {
-  background: var(--color-accent);
-  color: white;
+  background: var(--color-text);
+  color: var(--color-surface);
 }
 
 .saveBtn:hover { opacity: 0.9; }
 
 .cancelBtn {
-  background: var(--color-surface-low);
+  background: var(--color-surface);
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
 }
 
-.cancelBtn:hover {
+.cancelBtn:hover { color: var(--color-text); }
+
+/* Alternatives picker */
+.alternativesPanel {
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 95%, var(--color-text));
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.altHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.altTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--color-text);
+}
+
+.altDismiss {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.altDismiss:hover { color: var(--color-text); }
+
+.altGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.altCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+}
+
+.altCard:hover {
+  border-color: var(--color-text);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.altNumber {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+}
+
+.altScript {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.altVisual {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Block details (expanded) */
+.blockDetails {
+  padding: 8px 14px 14px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+}
+
+.detailRow p {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.notesToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.notesToggle:hover { color: var(--color-text); }
+
+.notesText {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
+.historyHint {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+  padding-top: 4px;
 }

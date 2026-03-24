@@ -12,6 +12,7 @@ interface GenerateRequest {
   topic?: string
   generateImages?: boolean
   variants?: number
+  structure_slug?: string
 }
 
 /**
@@ -121,8 +122,9 @@ MUST NOT: Be vague. Don't bury the announcement in a story. Lead with the news. 
     case 'tiktok':
       platformRules = `Format: Short-form video script (30-60 seconds).
 Each variant must have a "hook" (the first thing said on camera) and a "content" object with a "scenes" array.
-Each scene: { "sceneNumber": 1, "visual": "what the viewer sees", "voiceover": "what Grace says" }.
-Keep it 3-4 scenes max. Visual directions must be things Grace can actually film at home — her desk, her printer, her paper products, her kids nearby.`
+Each scene must use this EXACT format: { "block_id": "hook", "block_label": "HOOK", "timing": "0-3s", "script_text": "what Grace says (Taglish)", "visual_direction": "what the viewer sees", "on_screen_text": "text overlay (short, punchy)", "production_notes": "filming tips" }.
+The scenes should follow a clear structure with labeled blocks (HOOK, SUPER HOOK, CONTEXT, VALUE, CTA, etc.).
+Keep it 4-6 blocks max. Visual directions must be things Grace can actually film at home — her desk, her printer, her paper products, her kids nearby.`
       break
     case 'facebook-post':
       platformRules = `Format: Facebook post.
@@ -210,7 +212,7 @@ No markdown blocks, no extra text.`
 export async function POST(req: Request) {
   try {
     const body: GenerateRequest = await req.json()
-    const { platform, contentType, productId, topic, generateImages = false, variants = 3 } = body
+    const { platform, contentType, productId, topic, generateImages = false, variants = 3, structure_slug } = body
 
     if (!platform || !contentType) {
       return NextResponse.json({ error: 'Missing platform or contentType' }, { status: 400 })
@@ -255,6 +257,27 @@ export async function POST(req: Request) {
       }
     }
 
+    // 3b. Load structure if selected
+    let structureContext = ''
+    if (structure_slug) {
+      const supabase = await createClient()
+      const { data: structure } = await supabase
+        .from('content_structures')
+        .select('*')
+        .eq('slug', structure_slug)
+        .single()
+
+      if (structure) {
+        const blocks = (structure.blocks as any[]) || []
+        structureContext = `\nSELECTED STRUCTURE: "${structure.name}"
+Description: ${structure.description}
+REQUIRED BLOCKS (generate scenes matching these EXACTLY):
+${blocks.map((b: any) => `- block_id: "${b.id}", block_label: "${b.label}", timing: "${b.timing || ''}", purpose: "${b.purpose || ''}"`).join('\n')}
+
+Each variant MUST follow this exact block structure. Use the block_id and block_label from above for each scene.`
+      }
+    }
+
     // 4. Build Prompts
     const systemPrompt = buildSystemPrompt(bizContext, platform, contentType)
     
@@ -273,7 +296,7 @@ ${JSON.stringify(kbContext.entries.slice(0, 8).map(e => ({ title: e.title, conte
 
 HOOK STYLES TO USE (each variant must use a DIFFERENT hook):
 ${JSON.stringify(kbContext.hooks.map(h => ({ title: h.title, content: h.content?.substring(0, 300) })))}
-${productContext}${imageInstructions}
+${productContext}${structureContext}${imageInstructions}
 
 Generate ${variants} distinct variants now. Remember: every variant must be specifically about PAPER CRAFTING business, reference real things Grace does, and sound like natural Taglish.`
 

@@ -46,22 +46,43 @@ ${block.on_screen_text ? `- Current on-screen text: "${block.on_screen_text}"` :
 
 ${nextBlock ? `NEXT BLOCK (${nextBlock.block_label || 'Scene ' + nextBlock.scene_number}): "${nextBlock.script_text}"` : 'This is the LAST block.'}
 
-TASK: Write a DIFFERENT version of this block. Keep the same structure role (${block.block_label || 'same type'}) and timing, but give a fresh take — different wording, different angle, different visual approach. Must flow naturally from the previous block and into the next.
+TASK: Write ${body.alternativeCount || 3} DIFFERENT versions of this block. Keep the same structure role (${block.block_label || 'same type'}) and timing, but each should be a distinctly fresh take — different wording, different angle, different visual approach. They must each flow naturally from the previous block and into the next.
 
 Return ONLY valid JSON:
 {
-  "script_text": "new script text (Taglish)",
-  "visual_direction": "new visual direction",
-  "on_screen_text": "new text overlay (short, punchy)",
-  "production_notes": "any production tips"
+  "alternatives": [
+    {
+      "script_text": "version 1 (Taglish)",
+      "visual_direction": "visual direction 1",
+      "on_screen_text": "text overlay 1 (short, punchy)",
+      "production_notes": "tips 1"
+    },
+    {
+      "script_text": "version 2 (Taglish)",
+      "visual_direction": "visual direction 2",
+      "on_screen_text": "text overlay 2",
+      "production_notes": "tips 2"
+    },
+    {
+      "script_text": "version 3 (Taglish)",
+      "visual_direction": "visual direction 3",
+      "on_screen_text": "text overlay 3",
+      "production_notes": "tips 3"
+    }
+  ]
 }`
 
   try {
-    const result = await generateJSON(
+    const result = await generateJSON<{ alternatives: any[] }>(
       'You are a creative content strategist specializing in short-form video scripts for Filipino creators.',
       prompt
     )
-    return NextResponse.json(result.data)
+    // Return alternatives array + first one as default (backward compat)
+    const alternatives = result.data.alternatives || [result.data]
+    return NextResponse.json({
+      ...alternatives[0],
+      alternatives,
+    })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
