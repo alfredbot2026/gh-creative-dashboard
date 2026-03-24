@@ -161,6 +161,19 @@ function CreateWizard() {
   const goTo = (next: WizardStep, dir: 'forward' | 'back' = 'forward') => {
     setDirection(dir)
     setStep(next)
+    // Auto-load topic suggestions when entering topic step
+    if (next === 'topic' && topicSuggestions.length === 0 && !loadingSuggestions) {
+      setLoadingSuggestions(true)
+      fetch('/api/create/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ platform, contentType: goal }),
+      })
+        .then(res => res.json())
+        .then(data => setTopicSuggestions(data.subtopics || []))
+        .catch(() => {})
+        .finally(() => setLoadingSuggestions(false))
+    }
   }
 
   // === GENERATE ===
@@ -461,7 +474,6 @@ function CreateWizard() {
             <ArrowLeft size={16} /> Back
           </button>
           <h1 className={styles.stepTitle}>What&apos;s it about?</h1>
-          <p className={styles.stepHint}>Optional — leave blank and AI will pick a topic based on your goal</p>
 
           {/* Summary chips */}
           <div className={styles.summaryRow}>
@@ -470,64 +482,77 @@ function CreateWizard() {
             {selectedStructure && <span className={styles.summaryChip}>{selectedStructure.name}</span>}
           </div>
 
-          <textarea
-            className={styles.topicTextarea}
-            placeholder="e.g. How to make stickers using Canva, or a story about your first Shopee sale..."
-            value={topic}
-            onChange={e => setTopic(e.target.value)}
-            autoFocus
-            rows={3}
-          />
-
-          {/* Topic suggestions */}
-          <div className={styles.topicSuggestRow}>
-            <button
-              className={styles.suggestBtn}
-              onClick={async () => {
-                setTopicSuggestions([])
-                setLoadingSuggestions(true)
-                try {
-                  const res = await fetch('/api/create/topics', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mainTopic: topic || undefined, platform, contentType: goal }),
-                  })
-                  const data = await res.json()
-                  setTopicSuggestions(data.subtopics || [])
-                } catch { /* ignore */ }
-                setLoadingSuggestions(false)
-              }}
-              disabled={loadingSuggestions}
-            >
-              <Wand2 size={14} />
-              {loadingSuggestions ? 'Finding topics...' : 'Suggest topics'}
-            </button>
-          </div>
-
-          {topicSuggestions.length > 0 && (
-            <div className={styles.topicChips}>
-              {topicSuggestions.map((s: any, i: number) => (
-                <button
-                  key={i}
-                  className={`${styles.topicChip} ${topic === s.title ? styles.topicChipActive : ''}`}
-                  onClick={() => setTopic(s.title)}
-                  title={s.hook_idea}
-                >
-                  <span className={styles.topicChipCategory}>{s.category}</span>
-                  {s.title}
-                </button>
-              ))}
+          {/* Topic suggestions — auto-loaded */}
+          {loadingSuggestions && topicSuggestions.length === 0 && (
+            <div className={styles.suggestionsLoading}>
+              <Wand2 size={16} className={styles.spin} />
+              <span>Finding topic ideas...</span>
             </div>
           )}
 
+          {topicSuggestions.length > 0 && (
+            <>
+              <p className={styles.stepHint}>Pick a topic or type your own below</p>
+              <div className={styles.topicCards}>
+                {topicSuggestions.slice(0, 8).map((s: any, i: number) => (
+                  <button
+                    key={i}
+                    className={`${styles.topicCard} ${topic === s.title ? styles.topicCardActive : ''}`}
+                    onClick={() => setTopic(s.title)}
+                  >
+                    <span className={styles.topicCardCategory}>{s.category}</span>
+                    <span className={styles.topicCardTitle}>{s.title}</span>
+                    <span className={styles.topicCardHook}>{s.hook_idea}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                className={styles.refreshBtn}
+                onClick={async () => {
+                  setTopicSuggestions([])
+                  setLoadingSuggestions(true)
+                  try {
+                    const res = await fetch('/api/create/topics', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ mainTopic: topic || undefined, platform, contentType: goal }),
+                    })
+                    const data = await res.json()
+                    setTopicSuggestions(data.subtopics || [])
+                  } catch { /* ignore */ }
+                  setLoadingSuggestions(false)
+                }}
+                disabled={loadingSuggestions}
+              >
+                <RotateCw size={14} /> {loadingSuggestions ? 'Loading...' : 'More ideas'}
+              </button>
+            </>
+          )}
+
+          {!loadingSuggestions && topicSuggestions.length === 0 && (
+            <p className={styles.stepHint}>Type a topic or let AI surprise you</p>
+          )}
+
+          <div className={styles.topicInputRow}>
+            <textarea
+              className={styles.topicTextarea}
+              placeholder="Or type your own topic here..."
+              value={topic}
+              onChange={e => setTopic(e.target.value)}
+              rows={2}
+            />
+          </div>
+
           {error && <div className={styles.errorMsg}>{error}</div>}
 
-          <button
-            className={styles.generateBtn}
-            onClick={handleGenerate}
-          >
-            {topic.trim() ? 'Generate Script' : 'Generate (AI picks topic)'}
-          </button>
+          <div className={styles.topicActions}>
+            <button
+              className={styles.generateBtn}
+              onClick={handleGenerate}
+            >
+              {topic.trim() ? 'Generate Script →' : 'Surprise me — AI picks topic →'}
+            </button>
+          </div>
         </div>
       )}
 
