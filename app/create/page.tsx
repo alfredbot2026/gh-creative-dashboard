@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2, Save, Download, ImageIcon, Sparkles } from 'lucide-react'
 import { formatScriptForExport, downloadScriptAsText } from '@/lib/studio/download-utils'
 import BlockEditor from '@/components/create/BlockEditor'
-import CarouselCreator from '@/components/create/CarouselCreator'
+import CarouselPreview from '@/components/create/CarouselPreview'
 import type { RegenerateContext } from '@/components/create/BlockEditor'
 import type { ScriptScene } from '@/lib/create/types'
 import styles from './create.module.css'
@@ -96,6 +96,7 @@ function CreateWizard() {
   const [topic, setTopic] = useState('')
   const [topicSuggestions, setTopicSuggestions] = useState<any[]>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+  const [slideCount, setSlideCount] = useState(7)
   const [selectedStructure, setSelectedStructure] = useState<any>(null)
   const [structures, setStructures] = useState<any[]>([])
 
@@ -185,26 +186,54 @@ function CreateWizard() {
     setError(null)
 
     try {
-      const res = await fetch('/api/create/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          platform,
-          contentType: goal,
-          topic: topic.trim() || undefined,
-          variants: 3,
-          structure_slug: selectedStructure?.slug || undefined,
-        }),
-      })
+      if (platform === 'carousel') {
+        // Carousel: use dedicated carousel-text API
+        const res = await fetch('/api/create/carousel-text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic: topic.trim() || 'Paper crafting tips',
+            slideCount,
+            goal,
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.error || 'Generation failed')
+        }
+        const data = await res.json()
+        // Wrap carousel slides as a single "variant" for the results view
+        setResults([{
+          id: 'carousel-1',
+          number: 1,
+          hook: data.slides?.[0]?.headline || '',
+          qualityScore: 0,
+          content: { carouselSlides: data.slides || [] },
+        }])
+        goTo('results')
+      } else {
+        // Normal script generation
+        const res = await fetch('/api/create/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            platform,
+            contentType: goal,
+            topic: topic.trim() || undefined,
+            variants: 3,
+            structure_slug: selectedStructure?.slug || undefined,
+          }),
+        })
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Generation failed')
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.error || 'Generation failed')
+        }
+
+        const data = await res.json()
+        setResults(data.variants || [])
+        goTo('results')
       }
-
-      const data = await res.json()
-      setResults(data.variants || [])
-      goTo('results')
     } catch (err: any) {
       setError(err.message)
       goTo('topic', 'back')
@@ -403,11 +432,7 @@ function CreateWizard() {
                 onClick={() => {
                   setPlatform(p.id)
                   setSelectedStructure(null)
-                  if (p.id === 'carousel') {
-                    setTimeout(() => goTo('carousel'), 150)
-                  } else {
-                    setTimeout(() => goTo('goal'), 150)
-                  }
+                  setTimeout(() => goTo('goal'), 150)
                 }}
               >
                 {p.label}
@@ -573,6 +598,22 @@ function CreateWizard() {
             <p className={styles.stepHint}>Type a topic or let AI surprise you</p>
           )}
 
+          {/* Slide count picker for carousel */}
+          {platform === 'carousel' && (
+            <div className={styles.slideCountRow}>
+              <span className={styles.slideCountLabel}>Slides:</span>
+              {[5, 7, 10].map(n => (
+                <button
+                  key={n}
+                  className={`${styles.slideCountBtn} ${slideCount === n ? styles.slideCountActive : ''}`}
+                  onClick={() => setSlideCount(n)}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className={styles.topicInputRow}>
             <textarea
               className={styles.topicTextarea}
@@ -607,7 +648,22 @@ function CreateWizard() {
       )}
 
       {/* === RESULTS === */}
-      {step === 'results' && (
+      {step === 'results' && platform === 'carousel' && results[0]?.content?.carouselSlides && (
+        <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
+          <button className={styles.backBtn} onClick={() => goTo('topic', 'back')}>
+            <ArrowLeft size={16} /> Start over
+          </button>
+          <h1 className={styles.stepTitle}>Your Carousel</h1>
+          <CarouselPreview
+            slides={results[0].content.carouselSlides}
+            onSlidesChange={(newSlides) => {
+              setResults([{ ...results[0], content: { carouselSlides: newSlides } }])
+            }}
+          />
+        </div>
+      )}
+
+      {step === 'results' && !(platform === 'carousel' && results[0]?.content?.carouselSlides) && (
         <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
           <button className={styles.backBtn} onClick={() => goTo('topic', 'back')}>
             <ArrowLeft size={16} /> Start over
@@ -743,15 +799,6 @@ function CreateWizard() {
               <RotateCw size={16} /> Regenerate All
             </button>
           </div>
-        </div>
-      )}
-
-      {/* === CAROUSEL CREATOR === */}
-      {step === 'carousel' && (
-        <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
-          <CarouselCreator
-            onBack={() => goTo('platform', 'back')}
-          />
         </div>
       )}
 

@@ -621,6 +621,19 @@
   display: flex;
 }
 
+/* Slide count picker */
+.slideCountRow {
+  display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-sm);
+}
+.slideCountLabel { font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); }
+.slideCountBtn {
+  padding: 6px 16px; font-size: 0.82rem; font-weight: 600;
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  background: var(--color-surface); cursor: pointer; transition: all 0.15s;
+}
+.slideCountBtn:hover { border-color: var(--color-text); }
+.slideCountActive { border-color: var(--color-text); background: color-mix(in srgb, var(--color-text) 8%, transparent); }
+
 .sceneList {
   display: flex;
   flex-direction: column;

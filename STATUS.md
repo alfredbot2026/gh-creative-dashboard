@@ -1,35 +1,30 @@
 # GH Creative Dashboard — STATUS
 
-**Last Updated:** 2026-03-25 10:10 PHT
+**Last Updated:** 2026-03-25 12:51 PHT
 
-## Current Phase: UX Polish & Image Generation Fix
+## Current Phase: UI/UX Polish + Carousel Creator
 
-### Active Work
-- **My Content (UX Audit Fix):** DONE — Replaced separate Calendar+Library with unified My Content page.
-- **Image Generation Fix:** INVESTIGATED — Native Gemini API (`gemini-3.1-flash-image-preview`) tested and working. Replaces missing Python script.
-- **Phase 4a Generation Quality Overhaul:** DONE — Topic engine, goal-appropriate CTAs, KB-enriched generation, Claude provider added. 
-- **Script Generation Audit:** DONE — 24/24 passed on Gemini 3.1 Pro Preview. KB compliance verified.
-- **Phase 4c (Competitive Intelligence):** DONE — Niche trends dashboard, auto-discovery of top creators.
+### Today's Work
+- ✅ **Image Generation Fixed** — Replaced broken nano-banana-pro (missing skill) with direct Gemini API (`gemini-3.1-flash-image-preview`). Works on Vercel.
+- ✅ **Carousel Creator** — Purpose-built 4-step flow: Topic+slides → Edit → Design (upload bg + styles) → Preview+Download. No more bolting tools together.
+- ✅ **My Content Page** — Merged Calendar + Library into unified feed. Drafts → Ready → Published. Clean detail pages with formatted blocks.
+- ✅ **Settings Simplified** — 5 tabs → 3 tabs. Removed redundant product form.
+- ✅ **Nav Simplified** — 7 items → 4 items (Home, Create, My Content, Insights).
+- ✅ **Bundled Inter font** for text compositor rendering on Vercel.
 
-### What's Done Today / Recently
-- ✅ **UX Audit Fixes**: Unified Calendar and Library into a single "My Content" feed with Drafts/Ready/Upcoming/Published sections. Simplified sidebar navigation from 7 items to 4.
-- ✅ **Carousel Integration**: Carousel format integrated natively into the main `/create` wizard. Inline image generation added for visual formats (FB Ad, Carousel, Static Image).
-- ✅ **Generation Quality Overhaul**: Built `/api/create/topics` engine to suggest specific sub-topics with unique angles. Injected KB hook libraries, virality science, and angle shift techniques into prompt. Modified system prompt so "educate/story" content doesn't hard-sell products (only "sell" does).
-- ✅ **LLM Provider Upgrade**: Upgraded generation from Gemini Flash to Gemini 3.1 Pro Preview.
-- ✅ **Full Script Audit**: Generated 24 scripts covering every platform+structure combination. 100% CTA enforcement. Excellent hook diversity and KB structure compliance.
-- ✅ **Business Profile Refresh**: Corrected DB profile to fully reflect the scope of Papers to Profits (journals, planners, bookmarks, magnets, partner printer, course-first model). Fixed the repetition issues by expanding the AI's idea space.
-- ✅ **Settings UI Cleanup**: Merged 5 confusing tabs into 3 clear views (My Business, My Brand, Connected Accounts). Removed redundant products list.
+### What Works on Production (Vercel)
+- Script creation (all platforms except carousel visual output)
+- Topic suggestions (auto-loaded, diverse)
+- My Content feed + detail pages
+- Login (fixed redirect)
+- Settings (3 tabs)
 
-### Background Processing
-| Platform | Done | Remaining | ETA |
-|----------|------|-----------|-----|
-| YouTube deep analysis (v2) | 481 | 522 | ~6 hrs |
-| YouTube retention curves | 503 | 500 | ~3 days |
-| Instagram deep analysis | 5 | 807 | ~14 hrs |
-| Facebook deep analysis | 20 | 1,447 | ~24 hrs |
+### Needs Vercel Testing
+- Image generation (new Gemini API)
+- Carousel text compositor (bundled fonts)
+- Carousel end-to-end flow
 
 ### Next Up
-- **Rewrite Image Generator:** Move from missing Python `uv` script to native `@google/genai` SDK using `gemini-3.1-flash-image-preview`.
-- **My Content Polish:** Formatting detail pages, adding pagination, adding slide count picker for carousels.
-- **Phase 4d:** Ad Performance Feedback Loop (Ingest Meta Ads data and correlate with organic classification).
-- **Note:** ARCHITECTURE.md is >24h old. Regenerate before starting new tasks.
+1. Test carousel flow end-to-end on Vercel
+2. Calendar rethink (Rob flagged as "too clunky, needs deeper dive")
+3. Phase 4d: Ad Performance Feedback Loop
