@@ -5,12 +5,12 @@ import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2, Save, Download, ImageIcon, Sparkles } from 'lucide-react'
 import { formatScriptForExport, downloadScriptAsText } from '@/lib/studio/download-utils'
 import BlockEditor from '@/components/create/BlockEditor'
-import CarouselBuilder from '@/components/studio/CarouselBuilder'
+import CarouselCreator from '@/components/create/CarouselCreator'
 import type { RegenerateContext } from '@/components/create/BlockEditor'
 import type { ScriptScene } from '@/lib/create/types'
 import styles from './create.module.css'
 
-type WizardStep = 'mode' | 'platform' | 'goal' | 'structure' | 'topic' | 'loading' | 'results' | 'improve-input' | 'improve-loading' | 'improve-results'
+type WizardStep = 'mode' | 'platform' | 'goal' | 'structure' | 'topic' | 'loading' | 'results' | 'carousel' | 'improve-input' | 'improve-loading' | 'improve-results'
 type Platform = 'reels' | 'youtube' | 'facebook-post' | 'facebook-ad' | 'carousel' | 'static-image'
 type ContentGoal = 'educate' | 'story' | 'sell' | 'inspire' | 'prove' | 'trend' | 'debunk' | 'process' | 'journey' | 'announce'
 
@@ -403,8 +403,11 @@ function CreateWizard() {
                 onClick={() => {
                   setPlatform(p.id)
                   setSelectedStructure(null)
-                  // Skip structure step for non-video platforms
-                  setTimeout(() => goTo('goal'), 150)
+                  if (p.id === 'carousel') {
+                    setTimeout(() => goTo('carousel'), 150)
+                  } else {
+                    setTimeout(() => goTo('goal'), 150)
+                  }
                 }}
               >
                 {p.label}
@@ -730,17 +733,7 @@ function CreateWizard() {
                   </div>
                 )}
 
-                {/* Carousel visual builder — upload background + overlay text */}
-                {platform === 'carousel' && (
-                  <CarouselBuilder
-                    initialTexts={
-                      variant.content?.slides?.map((s: any) => s.text || '') ||
-                      variant.content?.scenes?.map((s: any) => `${s.block_label || ''}\n${s.script_text || s.voiceover || ''}`.trim()) ||
-                      []
-                    }
-                    compact={true}
-                  />
-                )}
+
               </div>
             ))}
           </div>
@@ -750,6 +743,15 @@ function CreateWizard() {
               <RotateCw size={16} /> Regenerate All
             </button>
           </div>
+        </div>
+      )}
+
+      {/* === CAROUSEL CREATOR === */}
+      {step === 'carousel' && (
+        <div className={`${styles.stepContainer} ${direction === 'forward' ? styles.slideIn : styles.slideBack}`}>
+          <CarouselCreator
+            onBack={() => goTo('platform', 'back')}
+          />
         </div>
       )}
 

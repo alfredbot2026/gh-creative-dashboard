@@ -32,3 +32,4 @@
 - **Rewrite Image Generator:** Move from missing Python `uv` script to native `@google/genai` SDK using `gemini-3.1-flash-image-preview`.
 - **My Content Polish:** Formatting detail pages, adding pagination, adding slide count picker for carousels.
 - **Phase 4d:** Ad Performance Feedback Loop (Ingest Meta Ads data and correlate with organic classification).
+- **Note:** ARCHITECTURE.md is >24h old. Regenerate before starting new tasks.
