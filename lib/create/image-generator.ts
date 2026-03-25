@@ -1,74 +1,46 @@
-import { execFile } from 'child_process'
-import { promisify } from 'util'
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+/**
+ * Image Generator — uses Gemini API directly (no Python dependency).
+ * Works on both local dev and Vercel.
+ */
 import { randomUUID } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 import type { ImageGenerationRequest, ImageGenerationResponse } from './image-types'
 import type { BrandStyleGuide } from '@/lib/brand/types'
 
-const execFileAsync = promisify(execFile)
-
-const NANO_BANANA_SCRIPT =
-  '/home/rob/.npm-global/lib/node_modules/openclaw/skills/nano-banana-pro/scripts/generate_image.py'
+const { GoogleGenAI, Modality } = require('@google/genai')
 
 /**
- * Build a brand-prefix prompt from the style guide.
+ * Build brand-aware prompt prefix from style guide.
  */
-function buildBrandPrefix(brand: BrandStyleGuide, style: ImageGenerationRequest['style']): string {
-  const paletteStr = brand.color_palette
-    .map((c) => `${c.name} (${c.hex}, ${c.usage})`)
-    .join(', ')
+function buildBrandPrefix(brand: BrandStyleGuide, style: string): string {
+  const parts: string[] = []
 
-  let prefix = `BRAND GUIDE: Use these brand colors: ${paletteStr}. Photography style: ${brand.photography_style}. Product styling: ${brand.product_styling_rules}.`
+  if (brand.photography_style) {
+    parts.push(`Photography style: ${brand.photography_style}.`)
+  }
+  if (brand.color_palette?.length) {
+    const colors = brand.color_palette.map((c: any) => typeof c === 'string' ? c : c.hex || c.name).filter(Boolean)
+    if (colors.length) parts.push(`Brand colors: ${colors.join(', ')}.`)
+  }
+  // Visual mood not in type — skip
 
-  if (style === 'creator_featured') {
-    prefix += ` Creator: ${brand.creator_description}.`
-    if (brand.wardrobe_notes) {
-      prefix += ` Wardrobe: ${brand.wardrobe_notes}.`
-    }
+  const styleContext: Record<string, string> = {
+    product_shot: 'Professional product photography. Clean background, even lighting. Product is the hero.',
+    lifestyle: 'Lifestyle photography. Product naturally in a real-life Filipino home setting. Warm, inviting.',
+    promotional: 'Promotional social media graphic. Bold, eye-catching. Clean layout with space for text overlay.',
+    faceless_quote: 'Beautiful background image with no people. Soft focus, warm tones. Space for text overlay.',
+    creator_featured: 'The creator/founder is featured prominently. Warm, approachable, in her home workspace.',
   }
 
-  if (style === 'faceless_quote') {
-    prefix += ` Use brand colors with clean typography. No human faces.`
-    if (brand.typography && Object.keys(brand.typography).length > 0) {
-      const typographyStr = Object.entries(brand.typography)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join(', ')
-      prefix += ` Typography: ${typographyStr}.`
-    }
+  if (styleContext[style]) {
+    parts.push(styleContext[style])
   }
 
-  return prefix
+  return parts.join(' ')
 }
 
 /**
- * Download a file from Supabase Storage to a local temp path.
- * Returns the local temp file path.
- */
-async function downloadFromStorage(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  storagePath: string,
-  tempDir: string
-): Promise<string> {
-  const [bucket, ...rest] = storagePath.split('/')
-  const objectPath = rest.join('/')
-
-  const { data, error } = await supabase.storage.from(bucket).download(objectPath)
-  if (error || !data) {
-    throw new Error(`Failed to download reference image ${storagePath}: ${error?.message}`)
-  }
-
-  const ext = path.extname(storagePath) || '.png'
-  const localPath = path.join(tempDir, `${randomUUID()}${ext}`)
-  const buffer = Buffer.from(await data.arrayBuffer())
-  await fs.writeFile(localPath, buffer)
-  return localPath
-}
-
-/**
- * Main image generation function.
+ * Generate an image using Gemini's native image generation.
  */
 export async function generateAdImage(
   request: ImageGenerationRequest,
@@ -76,192 +48,115 @@ export async function generateAdImage(
 ): Promise<ImageGenerationResponse> {
   const supabase = await createClient()
 
-  // 1. Load brand style guide — mandatory
-  const { data: brand, error: brandError } = await supabase
+  // 1. Load brand style guide
+  const { data: brand } = await supabase
     .from('brand_style_guide')
     .select('*')
     .limit(1)
     .single()
 
-  if (brandError || !brand) {
-    console.warn('[image-generator] Brand style guide not found — using defaults')
-  }
-
-  // 1b. Load brand persona for identity-consistent reference images
-  // Auto-inject for ANY style that features a person (not just creator_featured)
-  let personaRefImages: string[] = []
-  let identityLockPrompt = ''
+  // 2. Load brand persona for identity consistency
+  let identityPrompt = ''
   if (request.style !== 'faceless_quote') {
     const { data: persona } = await supabase
       .from('brand_persona')
-      .select('*')
+      .select('appearance')
       .limit(1)
       .maybeSingle()
-    if (persona) {
-      // Use reference_images array (up to 6 photos) for identity consistency
-      const refs = (persona.reference_images as string[] | null) || []
-      if (refs.length > 0) {
-        personaRefImages = refs
-      } else if (persona.avatar_url) {
-        // Fallback: single avatar
-        personaRefImages = [persona.avatar_url]
-      }
-      if (personaRefImages.length > 0) {
-        // Use persona appearance description (detailed identity lock) if available
-        const appearanceDesc = persona.appearance
-          ? `\n\nEXACT APPEARANCE: ${persona.appearance}`
-          : ''
-        identityLockPrompt = `CRITICAL IDENTITY REQUIREMENT: The person in this image must have the EXACT same facial features as the person shown in the reference photos. Maintain identical: eye shape, eye size, eye spacing, nose shape, nose bridge, lip shape, jawline contour, cheekbone structure, skin tone, skin texture, face proportions, and hair style. Do NOT generate a new face — reproduce the reference person's face exactly. All facial features must remain identical to the reference, including eyelid thickness, iris proportion, and expression style.${appearanceDesc}`
-      }
+
+    if (persona?.appearance) {
+      identityPrompt = `IMPORTANT: The person in this image is a Filipino woman with these exact features: ${persona.appearance}. `
     }
   }
 
-  // 2. Build full prompt with identity lock
+  // 3. Build full prompt
   const brandPrefix = brand ? buildBrandPrefix(brand as BrandStyleGuide, request.style) : ''
-  const fullPrompt = identityLockPrompt
-    ? `${identityLockPrompt}\n\n${brandPrefix} ${request.prompt}`
-    : `${brandPrefix} ${request.prompt}`
+  const fullPrompt = `${identityPrompt}${brandPrefix} ${request.prompt}`.trim()
 
-  // 3. Create temp directory
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gh-creative-'))
-  const outputPath = path.join(tempDir, `output-${randomUUID()}.png`)
+  // 4. Generate via Gemini API
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY not configured')
+  }
 
-  let localRefPaths: string[] = []
+  const ai = new GoogleGenAI({ apiKey })
 
-  try {
-    // 4. Load reference images
-    // Prefer local files from public/ (avoids Supabase auth issues in API routes)
-    const allRefImages = [...(request.reference_images || [])]
+  const RETRY_DELAYS = [0, 5_000, 15_000]
+  let lastError: Error | null = null
+  let imageBuffer: Buffer | null = null
 
-    if (personaRefImages.length > 0) {
-      // Use local reference images instead of downloading from Supabase Storage
-      const { getGraceReferenceImagePaths } = await import('./reference-images')
-      const localPaths = getGraceReferenceImagePaths()
-      if (localPaths.length > 0) {
-        localRefPaths = localPaths
-      } else {
-        // Fallback: download from Supabase
-        localRefPaths = await Promise.all(
-          personaRefImages.map((refPath) =>
-            downloadFromStorage(supabase, refPath, tempDir)
-          )
-        )
-      }
+  for (let attempt = 0; attempt < RETRY_DELAYS.length; attempt++) {
+    if (attempt > 0) {
+      console.log(`[image-generator] Retry ${attempt}/${RETRY_DELAYS.length - 1}...`)
+      await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]))
     }
 
-    // Also download any extra request reference images (e.g. uploaded product photo)
-    if (allRefImages.length > 0) {
-      const extraPaths = await Promise.all(
-        allRefImages.map((refPath) =>
-          downloadFromStorage(supabase, refPath, tempDir)
-        )
-      )
-      localRefPaths = [...localRefPaths, ...extraPaths]
-    }
-
-    // 5. Build args for nano-banana-pro script
-    const args: string[] = [
-      'run',
-      NANO_BANANA_SCRIPT,
-      '--prompt', fullPrompt,
-      '--filename', outputPath,
-      '--resolution', '2K',
-      '--aspect-ratio', request.aspect_ratio,
-    ]
-
-    for (const refPath of localRefPaths) {
-      args.push('-i', refPath)
-    }
-
-    // 6. Execute via uv with retry logic (Gemini 503s during peak hours)
-    const RETRY_DELAYS = [0, 5_000, 15_000, 30_000] // immediate, 5s, 15s, 30s
-    let lastError: Error | null = null
-
-    for (let attempt = 0; attempt < RETRY_DELAYS.length; attempt++) {
-      if (attempt > 0) {
-        console.log(`[image-generator] Retry ${attempt}/${RETRY_DELAYS.length - 1} after ${RETRY_DELAYS[attempt] / 1000}s delay...`)
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt]))
-      }
-
-      try {
-        const { stdout, stderr } = await execFileAsync('uv', args, {
-          env: { ...process.env },
-          timeout: 180_000, // 3 min timeout per attempt
-        })
-
-        if (stderr && stderr.trim()) {
-          // Check if it's a 503/UNAVAILABLE error — retry
-          if (stderr.includes('503') || stderr.includes('UNAVAILABLE') || stderr.includes('overloaded')) {
-            lastError = new Error(`Gemini 503: ${stderr.trim()}`)
-            console.warn(`[image-generator] Attempt ${attempt + 1} got 503, ${attempt < RETRY_DELAYS.length - 1 ? 'retrying...' : 'giving up.'}`)
-            continue
-          }
-          console.warn('[image-generator] stderr:', stderr.trim())
-        }
-        if (stdout) {
-          console.log('[image-generator] stdout:', stdout.trim())
-        }
-
-        // Success — break out of retry loop
-        lastError = null
-        break
-      } catch (err: any) {
-        const errMsg = err.stderr || err.message || String(err)
-        if (errMsg.includes('503') || errMsg.includes('UNAVAILABLE') || errMsg.includes('overloaded')) {
-          lastError = new Error(`Gemini unavailable (attempt ${attempt + 1}): ${errMsg.substring(0, 200)}`)
-          console.warn(`[image-generator] Attempt ${attempt + 1} failed with 503`)
-          continue
-        }
-        // Non-503 error — don't retry
-        throw err
-      }
-    }
-
-    if (lastError) {
-      throw new Error(`Image generation failed after ${RETRY_DELAYS.length} attempts. Gemini is currently overloaded — try again in a few minutes. Last error: ${lastError.message.substring(0, 200)}`)
-    }
-
-    // 7. Verify output file exists
-    await fs.access(outputPath)
-
-    // 8. Upload to Supabase Storage: ad-creatives/{user_id}/{YYYY-MM-DD}/{uuid}.png
-    const dateStr = new Date().toISOString().slice(0, 10)
-    const filename = `${randomUUID()}.png`
-    const storagePath = `${userId}/${dateStr}/${filename}`
-
-    const fileBuffer = await fs.readFile(outputPath)
-    const { error: uploadError } = await supabase.storage
-      .from('ad-creatives')
-      .upload(storagePath, fileBuffer, {
-        contentType: 'image/png',
-        upsert: false,
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-image-preview',
+        contents: `Generate an image: ${fullPrompt}`,
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
       })
 
-    if (uploadError) {
-      throw new Error(`Failed to upload image to storage: ${uploadError.message}`)
-    }
+      const parts = response.candidates?.[0]?.content?.parts || []
+      for (const part of parts) {
+        if (part.inlineData?.data) {
+          imageBuffer = Buffer.from(part.inlineData.data, 'base64')
+          break
+        }
+      }
 
-    // 9. Get signed URL (bucket is private — signed URL valid for 1 hour)
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from('ad-creatives')
-      .createSignedUrl(storagePath, 3600)
+      if (imageBuffer) {
+        lastError = null
+        break
+      } else {
+        lastError = new Error('Gemini returned no image data')
+      }
+    } catch (err: any) {
+      const msg = err.message || String(err)
+      if (msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('overloaded')) {
+        lastError = new Error(`Gemini unavailable: ${msg.substring(0, 200)}`)
+        continue
+      }
+      throw err
+    }
+  }
 
-    if (signedUrlError || !signedUrlData) {
-      throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`)
-    }
+  if (!imageBuffer || lastError) {
+    throw new Error(lastError?.message || 'Image generation failed — no image returned')
+  }
 
-    return {
-      image_url: signedUrlData.signedUrl,
-      storage_path: `ad-creatives/${storagePath}`,
-      prompt_used: fullPrompt,
-      model: 'gemini-3-pro-image-preview',
-    }
-  } finally {
-    // Cleanup temp files
-    try {
-      await fs.rm(tempDir, { recursive: true, force: true })
-    } catch {
-      // Best-effort cleanup
-    }
+  // 5. Upload to Supabase Storage
+  const dateStr = new Date().toISOString().slice(0, 10)
+  const filename = `${randomUUID()}.png`
+  const storagePath = `${userId}/${dateStr}/${filename}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('ad-creatives')
+    .upload(storagePath, imageBuffer, {
+      contentType: 'image/png',
+      upsert: false,
+    })
+
+  if (uploadError) {
+    throw new Error(`Failed to upload image: ${uploadError.message}`)
+  }
+
+  // 6. Get signed URL
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from('ad-creatives')
+    .createSignedUrl(storagePath, 3600)
+
+  if (signedUrlError || !signedUrlData) {
+    throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`)
+  }
+
+  return {
+    image_url: signedUrlData.signedUrl,
+    storage_path: `ad-creatives/${storagePath}`,
+    prompt_used: fullPrompt,
+    model: 'gemini-3.1-flash-image-preview',
   }
 }
