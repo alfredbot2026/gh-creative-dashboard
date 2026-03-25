@@ -51,7 +51,7 @@ export interface CompositeResult {
 
 const DEFAULT_OPTIONS: Required<TextOverlayOptions> = {
   text: '',
-  fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+  fontFamily: 'DejaVu Sans, Noto Sans, Arial, sans-serif',
   fontSize: 0, // auto
   textStyle: 'classic',
   highlightColor: '#000000',
