@@ -44,13 +44,20 @@ export default function CarouselPreview({ slides, onSlidesChange }: CarouselPrev
 
   // Download
   const [downloading, setDownloading] = useState(false)
+  const bgImgRef = useRef<HTMLImageElement | null>(null)
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setBgFile(file)
     const reader = new FileReader()
-    reader.onload = () => setBgImage(reader.result as string)
+    reader.onload = () => {
+      setBgImage(reader.result as string)
+      // Pre-load for canvas rendering
+      const img = new Image()
+      img.onload = () => { bgImgRef.current = img }
+      img.src = reader.result as string
+    }
     reader.readAsDataURL(file)
   }
 
@@ -103,38 +110,139 @@ export default function CarouselPreview({ slides, onSlidesChange }: CarouselPrev
     }
   }
 
-  // Download all slides via server-side composition
+  // Client-side canvas rendering — what you see = what you download
+  const renderSlideToCanvas = (slide: SlideData): Promise<string> => {
+    return new Promise((resolve) => {
+      const W = 1080, H = 1350 // Instagram 4:5
+      const canvas = document.createElement('canvas')
+      canvas.width = W
+      canvas.height = H
+      const ctx = canvas.getContext('2d')!
+
+      // Draw background
+      if (bgImgRef.current) {
+        const img = bgImgRef.current
+        const scale = Math.max(W / img.width, H / img.height)
+        const w = img.width * scale, h = img.height * scale
+        ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h)
+      } else {
+        ctx.fillStyle = '#1a1a1a'
+        ctx.fillRect(0, 0, W, H)
+      }
+
+      // Dark overlay
+      ctx.fillStyle = `rgba(0,0,0,${overlayOpacity})`
+      ctx.fillRect(0, 0, W, H)
+
+      // Text position
+      let textY: number
+      if (position === 'top') textY = H * 0.2
+      else if (position === 'bottom') textY = H * 0.75
+      else textY = H * 0.48
+
+      const headlineSize = 64
+      const sublineSize = 36
+      const padding = 16
+      const maxWidth = W * 0.85
+
+      // Helper: word wrap
+      const wrapText = (text: string, maxW: number, fontSize: number): string[] => {
+        ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`
+        const words = text.split(' ')
+        const lines: string[] = []
+        let line = ''
+        for (const word of words) {
+          const test = line ? `${line} ${word}` : word
+          if (ctx.measureText(test).width > maxW && line) {
+            lines.push(line)
+            line = word
+          } else {
+            line = test
+          }
+        }
+        if (line) lines.push(line)
+        return lines
+      }
+
+      // Render text
+      const renderText = (text: string, y: number, fontSize: number, isBold: boolean) => {
+        const weight = isBold ? 'bold' : 'normal'
+        const family = textStyle === 'strong' ? 'Georgia, serif' : 'Inter, system-ui, sans-serif'
+        ctx.font = `${weight} ${fontSize}px ${family}`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+
+        const lines = wrapText(text, maxWidth, fontSize)
+        const lineHeight = fontSize * 1.4
+        let currentY = y
+
+        for (const line of lines) {
+          const metrics = ctx.measureText(line)
+
+          if (textStyle === 'highlight') {
+            // Highlight box behind text
+            const boxW = metrics.width + padding * 2
+            const boxH = fontSize * 1.2
+            ctx.fillStyle = bgColor + 'dd'
+            ctx.beginPath()
+            ctx.roundRect(W / 2 - boxW / 2, currentY - boxH / 2, boxW, boxH, 6)
+            ctx.fill()
+          }
+
+          if (textStyle === 'outline') {
+            ctx.strokeStyle = textColor
+            ctx.lineWidth = 3
+            ctx.strokeText(line, W / 2, currentY)
+          } else {
+            if (textStyle === 'classic' || textStyle === 'strong') {
+              ctx.shadowColor = 'rgba(0,0,0,0.7)'
+              ctx.shadowBlur = 8
+              ctx.shadowOffsetY = 3
+            }
+            ctx.fillStyle = textColor
+            ctx.fillText(line, W / 2, currentY)
+            ctx.shadowColor = 'transparent'
+            ctx.shadowBlur = 0
+            ctx.shadowOffsetY = 0
+          }
+
+          currentY += lineHeight
+        }
+        return currentY
+      }
+
+      const afterHeadline = renderText(slide.headline, textY, headlineSize, true)
+      if (slide.subline) {
+        renderText(slide.subline, afterHeadline + 12, sublineSize, false)
+      }
+
+      resolve(canvas.toDataURL('image/png'))
+    })
+  }
+
   const handleDownloadAll = async () => {
-    if (!bgFile) return
     setDownloading(true)
     try {
       for (let i = 0; i < slides.length; i++) {
-        const text = `${slides[i].headline}\n${slides[i].subline}`
-        const fd = new FormData()
-        fd.append('image', bgFile)
-        fd.append('text', text)
-        fd.append('textStyle', textStyle)
-        fd.append('textColor', textColor)
-        fd.append('highlightColor', bgColor)
-        fd.append('position', position)
-        fd.append('fontWeight', 'bold')
-        fd.append('overlayOpacity', String(overlayOpacity))
-
-        const res = await fetch('/api/studio/carousel/recomposite', { method: 'POST', body: fd })
-        const data = await res.json()
-
-        if (data.image_base64) {
-          const a = document.createElement('a')
-          a.href = `data:image/png;base64,${data.image_base64}`
-          a.download = `slide-${i + 1}.png`
-          a.click()
-          await new Promise(r => setTimeout(r, 300))
-        }
+        const dataUrl = await renderSlideToCanvas(slides[i])
+        const a = document.createElement('a')
+        a.href = dataUrl
+        a.download = `slide-${i + 1}.png`
+        a.click()
+        await new Promise(r => setTimeout(r, 400))
       }
     } catch (err) {
       console.error('Download failed:', err)
     }
     setDownloading(false)
+  }
+
+  const handleDownloadCurrent = async () => {
+    const dataUrl = await renderSlideToCanvas(slides[currentSlide])
+    const a = document.createElement('a')
+    a.href = dataUrl
+    a.download = `slide-${currentSlide + 1}.png`
+    a.click()
   }
 
   const slide = slides[currentSlide]
