@@ -3,6 +3,34 @@
  * Used for text carousel slides (same background image, different text per slide).
  */
 import sharp from 'sharp'
+import { execSync } from 'child_process'
+import path from 'path'
+import fs from 'fs'
+
+// Register bundled fonts on first use (for Vercel/serverless where system fonts are limited)
+let fontsRegistered = false
+function ensureFonts() {
+  if (fontsRegistered) return
+  try {
+    const fontDir = path.join(process.cwd(), 'public', 'fonts')
+    if (fs.existsSync(fontDir)) {
+      const homeDir = process.env.HOME || '/tmp'
+      const targetDir = path.join(homeDir, '.fonts')
+      if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true })
+      
+      for (const file of fs.readdirSync(fontDir)) {
+        if (file.endsWith('.ttf') || file.endsWith('.otf')) {
+          const src = path.join(fontDir, file)
+          const dst = path.join(targetDir, file)
+          if (!fs.existsSync(dst)) fs.copyFileSync(src, dst)
+        }
+      }
+      
+      try { execSync('fc-cache -f ' + targetDir, { timeout: 5000 }) } catch { /* best effort */ }
+    }
+  } catch { /* non-fatal */ }
+  fontsRegistered = true
+}
 
 /**
  * Instagram-style text modes:
@@ -51,7 +79,7 @@ export interface CompositeResult {
 
 const DEFAULT_OPTIONS: Required<TextOverlayOptions> = {
   text: '',
-  fontFamily: 'DejaVu Sans, Noto Sans, Arial, sans-serif',
+  fontFamily: 'Inter, DejaVu Sans, sans-serif',
   fontSize: 0, // auto
   textStyle: 'classic',
   highlightColor: '#000000',
@@ -126,6 +154,7 @@ export async function compositeTextOnImage(
   imageBuffer: Buffer,
   options: TextOverlayOptions
 ): Promise<CompositeResult> {
+  ensureFonts()
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   // Get image metadata
