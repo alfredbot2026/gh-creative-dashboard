@@ -106,6 +106,7 @@ function CreateWizard() {
 
   // Results
   const [results, setResults] = useState<Variant[]>([])
+  const [regeneratingSlide, setRegeneratingSlide] = useState<number | null>(null)
   const [improveResult, setImproveResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -664,6 +665,34 @@ function CreateWizard() {
                   <span className={styles.slideNum}>{idx + 1}</span>
                   {slide.role === 'hook' && <span className={styles.slideRole}>🎯 Hook</span>}
                   {slide.role === 'cta' && <span className={styles.slideRole}>👆 CTA</span>}
+                  <button
+                    className={styles.slideRegenBtn}
+                    disabled={regeneratingSlide === idx}
+                    onClick={async () => {
+                      setRegeneratingSlide(idx)
+                      try {
+                        const allSlides = results[0].content.carouselSlides
+                        const res = await fetch('/api/create/carousel-text', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            topic: topic,
+                            slideCount: 1,
+                            regenerateSlide: { index: idx, role: slide.role, currentHeadline: slide.headline, context: allSlides.map((s: any) => s.headline).join(' | ') },
+                          }),
+                        })
+                        const data = await res.json()
+                        if (data.slides?.[0]) {
+                          const updated = [...allSlides]
+                          updated[idx] = { ...updated[idx], headline: data.slides[0].headline, subline: data.slides[0].subline }
+                          setResults([{ ...results[0], content: { carouselSlides: updated } }])
+                        }
+                      } catch (err) { console.error('Regenerate failed:', err) }
+                      setRegeneratingSlide(null)
+                    }}
+                  >
+                    <RotateCw size={13} className={regeneratingSlide === idx ? styles.spinning : ''} />
+                  </button>
                 </div>
                 <input
                   className={styles.slideHeadlineInput}
@@ -689,9 +718,34 @@ function CreateWizard() {
             ))}
           </div>
 
-          <button className={styles.continueBtn} onClick={() => goTo('carousel-design')}>
-            Design Slides →
-          </button>
+          <div className={styles.carouselActions}>
+            <button
+              className={styles.regenAllBtn}
+              disabled={regeneratingSlide !== null}
+              onClick={async () => {
+                setRegeneratingSlide(-1)
+                try {
+                  const slideCount = results[0].content.carouselSlides.length
+                  const res = await fetch('/api/create/carousel-text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topic, slideCount }),
+                  })
+                  const data = await res.json()
+                  if (data.slides?.length) {
+                    setResults([{ ...results[0], content: { carouselSlides: data.slides } }])
+                  }
+                } catch (err) { console.error('Regenerate all failed:', err) }
+                setRegeneratingSlide(null)
+              }}
+            >
+              <RotateCw size={14} className={regeneratingSlide === -1 ? styles.spinning : ''} />
+              {regeneratingSlide === -1 ? 'Regenerating...' : 'Regenerate All'}
+            </button>
+            <button className={styles.continueBtn} onClick={() => goTo('carousel-design')}>
+              Design Slides →
+            </button>
+          </div>
         </div>
       )}
 

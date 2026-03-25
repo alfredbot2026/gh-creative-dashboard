@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { topic, slideCount = 7, goal = 'educate' } = await request.json()
+    const { topic, slideCount = 7, goal = 'educate', regenerateSlide } = await request.json()
 
     if (!topic?.trim()) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 })
@@ -38,7 +38,26 @@ CAROUSEL RULES:
 - Headlines should be readable in 2 seconds — NO paragraphs
 - Think of each slide as a billboard, not a blog post`
 
-    const userPrompt = `Create a ${slideCount}-slide Instagram carousel about: "${topic}"
+    let userPrompt: string
+
+    if (regenerateSlide) {
+      // Single slide regeneration
+      const { index, role, currentHeadline, context } = regenerateSlide
+      userPrompt = `Regenerate slide ${index + 1} of an Instagram carousel about: "${topic}"
+This slide's role: ${role} (${role === 'hook' ? 'opening hook slide' : role === 'cta' ? 'call to action slide' : 'content point'})
+Current headline that needs a fresh take: "${currentHeadline}"
+Other slides for context: ${context}
+
+Write a COMPLETELY DIFFERENT headline and subline. Don't just rephrase — take a new angle.
+
+Return JSON:
+{
+  "slides": [
+    { "slideNumber": ${index + 1}, "role": "${role}", "headline": "new punchy headline", "subline": "new supporting sentence" }
+  ]
+}`
+    } else {
+      userPrompt = `Create a ${slideCount}-slide Instagram carousel about: "${topic}"
 Goal: ${goal}
 
 Return JSON:
@@ -50,6 +69,7 @@ Return JSON:
     { "slideNumber": ${slideCount}, "role": "cta", "headline": "CTA headline", "subline": "what to do next" }
   ]
 }`
+    }
 
     const result = await generateCreativeJSON<{ slides: any[] }>(systemPrompt, userPrompt)
 
