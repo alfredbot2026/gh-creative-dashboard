@@ -664,10 +664,6 @@ function CreateWizard() {
                         </div>
                       ))}
                     </div>
-                    <CarouselBuilder
-                      initialTexts={variant.content.slides.map((s: any) => s.text || '')}
-                      compact={true}
-                    />
                   </>
                 ) : variant.content.headline ? (
                   <div className={styles.adContent}>
@@ -732,6 +728,18 @@ function CreateWizard() {
                       <Download size={14} /> Download Image
                     </a>
                   </div>
+                )}
+
+                {/* Carousel visual builder — upload background + overlay text */}
+                {platform === 'carousel' && (
+                  <CarouselBuilder
+                    initialTexts={
+                      variant.content?.slides?.map((s: any) => s.text || '') ||
+                      variant.content?.scenes?.map((s: any) => `${s.block_label || ''}\n${s.script_text || s.voiceover || ''}`.trim()) ||
+                      []
+                    }
+                    compact={true}
+                  />
                 )}
               </div>
             ))}
