@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, ArrowRight, Check, Copy, RotateCw, CalendarPlus, Wand2, Save, Download, ImageIcon, Sparkles } from 'lucide-react'
 import { formatScriptForExport, downloadScriptAsText } from '@/lib/studio/download-utils'
 import BlockEditor from '@/components/create/BlockEditor'
+import CarouselBuilder from '@/components/studio/CarouselBuilder'
 import type { RegenerateContext } from '@/components/create/BlockEditor'
 import type { ScriptScene } from '@/lib/create/types'
 import styles from './create.module.css'
@@ -82,98 +83,7 @@ interface Variant {
   imageUrl?: string
 }
 
-/** Inline carousel composer — upload background, overlay slide texts */
-function CarouselComposer({ slideTexts, variantId }: { slideTexts: string[]; variantId: string }) {
-  const [bgImage, setBgImage] = useState<File | null>(null)
-  const [bgPreview, setBgPreview] = useState<string | null>(null)
-  const [composedSlides, setComposedSlides] = useState<string[]>([])
-  const [composing, setComposing] = useState(false)
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setBgImage(file)
-    const reader = new FileReader()
-    reader.onload = () => setBgPreview(reader.result as string)
-    reader.readAsDataURL(file)
-  }
-
-  const handleCompose = async () => {
-    if (!bgImage) return
-    setComposing(true)
-    setComposedSlides([])
-    try {
-      const results: string[] = []
-      for (const text of slideTexts) {
-        const fd = new FormData()
-        fd.append('image', bgImage)
-        fd.append('text', text)
-        fd.append('textStyle', 'highlight')
-        fd.append('textColor', '#FFFFFF')
-        fd.append('highlightColor', '#000000')
-        fd.append('position', 'center')
-        fd.append('fontWeight', 'bold')
-        fd.append('overlayOpacity', '0.35')
-
-        const res = await fetch('/api/studio/carousel/recomposite', {
-          method: 'POST',
-          body: fd,
-        })
-        const data = await res.json()
-        if (data.image_base64) {
-          results.push(`data:image/png;base64,${data.image_base64}`)
-        } else if (data.image_url) {
-          results.push(data.image_url)
-        }
-      }
-      setComposedSlides(results)
-    } catch (err) {
-      console.error('Compose failed:', err)
-    }
-    setComposing(false)
-  }
-
-  return (
-    <div className={styles.carouselComposer}>
-      {!bgPreview ? (
-        <label className={styles.uploadZone}>
-          <input type="file" accept="image/*" onChange={handleUpload} hidden />
-          <ImageIcon size={20} />
-          <span>Upload a background photo to create visual slides</span>
-        </label>
-      ) : (
-        <div className={styles.composerPreview}>
-          <div className={styles.composerBg}>
-            <img src={bgPreview} alt="Background" className={styles.composerBgImg} />
-            <button className={styles.changeBg} onClick={() => { setBgImage(null); setBgPreview(null); setComposedSlides([]) }}>
-              Change
-            </button>
-          </div>
-          {composedSlides.length === 0 ? (
-            <button className={styles.composeBtn} onClick={handleCompose} disabled={composing}>
-              {composing ? (
-                <><Sparkles size={14} className={styles.spin} /> Creating {slideTexts.length} slides...</>
-              ) : (
-                <><Sparkles size={14} /> Create {slideTexts.length} visual slides</>
-              )}
-            </button>
-          ) : (
-            <div className={styles.composedGrid}>
-              {composedSlides.map((src, i) => (
-                <div key={i} className={styles.composedSlide}>
-                  <img src={src} alt={`Slide ${i + 1}`} />
-                  <a href={src} download={`slide-${i + 1}.png`} className={styles.slideDownload}>
-                    <Download size={12} />
-                  </a>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function CreateWizard() {
   // Wizard state
@@ -754,9 +664,9 @@ function CreateWizard() {
                         </div>
                       ))}
                     </div>
-                    <CarouselComposer
-                      slideTexts={variant.content.slides.map((s: any) => s.text || '')}
-                      variantId={variant.id}
+                    <CarouselBuilder
+                      initialTexts={variant.content.slides.map((s: any) => s.text || '')}
+                      compact={true}
                     />
                   </>
                 ) : variant.content.headline ? (

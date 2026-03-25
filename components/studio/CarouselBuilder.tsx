@@ -59,14 +59,19 @@ const COLOR_OPTIONS = [
   { id: '#10B981', label: 'Green' },
 ]
 
-export default function CarouselBuilder() {
+interface CarouselBuilderProps {
+  initialTexts?: string[]  // Pre-filled slide texts from Create wizard
+  compact?: boolean        // Compact mode for inline embedding
+}
+
+export default function CarouselBuilder({ initialTexts, compact }: CarouselBuilderProps = {}) {
   // Image upload
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null)
   const [backgroundPreview, setBackgroundPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Content
-  const [topic, setTopic] = useState('')
+  const [topic, setTopic] = useState(initialTexts?.length ? 'From script' : '')
   const [slideCount, setSlideCount] = useState(7)
 
   // Style
@@ -82,7 +87,7 @@ export default function CarouselBuilder() {
 
   // Results
   const [slides, setSlides] = useState<SlideData[]>([])
-  const [slideTexts, setSlideTexts] = useState<string[]>([])
+  const [slideTexts, setSlideTexts] = useState<string[]>(initialTexts || [])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [editingSlide, setEditingSlide] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
