@@ -1,5 +1,3 @@
-.container { width: 100%; }
-
 /* Upload */
 .uploadZone {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -14,74 +12,32 @@
 /* Editor layout */
 .editorLayout {
   display: grid;
-  grid-template-columns: 1fr 260px;
+  grid-template-columns: 1fr 280px;
   gap: var(--space-md);
   align-items: start;
 }
 @media (max-width: 768px) { .editorLayout { grid-template-columns: 1fr; } }
 
-/* Preview */
+/* Canvas preview */
 .previewSection { display: flex; flex-direction: column; gap: 12px; }
 
-.slideFrame {
-  position: relative;
+.canvasWrap { position: relative; }
+
+.canvas {
+  width: 100%;
   aspect-ratio: 4/5;
   border-radius: var(--radius-md);
-  overflow: hidden;
-  background: #1a1a1a;
-  cursor: pointer;
+  display: block;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.bgImg {
-  width: 100%; height: 100%; object-fit: cover;
-  position: absolute; top: 0; left: 0;
-}
-
-.overlay {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: black; pointer-events: none;
-}
-
-.textLayer {
-  position: absolute; left: 0; right: 0;
-  display: flex; flex-direction: column; align-items: center;
-  z-index: 2; pointer-events: auto;
-}
-
-.slideText {
-  display: flex; flex-direction: column; align-items: center;
-  cursor: text;
-}
-
-.headline { margin: 0; word-break: break-word; }
-.subline { margin: 0; word-break: break-word; }
-
-/* Inline edit */
-.inlineEdit { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 90%; }
-.inlineInput {
-  width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 4px; padding: 6px 10px; text-align: center; outline: none;
-}
-.editBtns { display: flex; gap: 6px; }
-.editOk, .editCancel {
-  padding: 4px 8px; border-radius: 4px; border: none; cursor: pointer;
-  display: flex; align-items: center;
-}
-.editOk { background: #22c55e; color: white; }
-.editCancel { background: rgba(255,255,255,0.2); color: white; }
-
-.slideCounter {
-  position: absolute; bottom: 8px; right: 8px;
-  font-size: 0.7rem; font-weight: 600; padding: 2px 8px;
-  background: rgba(0,0,0,0.6); color: white; border-radius: 20px;
-  z-index: 3;
-}
-
-.roleTag {
-  position: absolute; top: 8px; left: 8px;
-  font-size: 0.65rem; font-weight: 600; padding: 2px 8px;
-  background: rgba(0,0,0,0.6); color: white; border-radius: 20px;
-  z-index: 3;
+.dragHint {
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.65rem; color: rgba(255,255,255,0.6);
+  background: rgba(0,0,0,0.4); padding: 3px 10px;
+  border-radius: 20px; pointer-events: none;
 }
 
 /* Nav */
@@ -100,38 +56,71 @@
   background: var(--color-border); border: none; cursor: pointer;
   transition: all 0.15s; padding: 0;
 }
-.dotActive { background: var(--color-text); transform: scale(1.2); }
+.dotActive { background: var(--color-text); transform: scale(1.3); }
+
+/* Text editing */
+.textEdit { display: flex; flex-direction: column; }
+
+.editTextBtn {
+  display: inline-flex; align-items: center; gap: 6px; align-self: center;
+  padding: 6px 14px; font-size: 0.78rem; font-weight: 500;
+  border: 1px dashed var(--color-border); border-radius: var(--radius-full);
+  background: none; color: var(--color-text-muted); cursor: pointer;
+}
+.editTextBtn:hover { border-color: var(--color-text); color: var(--color-text); }
+
+.editForm { display: flex; flex-direction: column; gap: 6px; }
+.editInput {
+  width: 100%; padding: 8px 10px; font-size: 0.85rem;
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  background: var(--color-surface); font-family: inherit;
+}
+.editInput:focus { outline: none; border-color: var(--color-text); }
+
+.editBtns { display: flex; gap: 6px; }
+.saveBtn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 12px; font-size: 0.75rem; font-weight: 600;
+  border: none; border-radius: var(--radius-sm);
+  background: var(--color-text); color: var(--color-surface); cursor: pointer;
+}
+.cancelBtn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; font-size: 0.75rem;
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  background: none; color: var(--color-text-muted); cursor: pointer;
+}
 
 /* Controls sidebar */
 .controls {
-  display: flex; flex-direction: column; gap: 16px;
+  display: flex; flex-direction: column; gap: 14px;
   padding: 16px; border: 1px solid var(--color-border);
   border-radius: var(--radius-md); background: var(--color-surface);
 }
 
-.controlGroup { display: flex; flex-direction: column; gap: 6px; }
-.controlLabel { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); }
+.controlGroup { display: flex; flex-direction: column; gap: 5px; }
+.controlLabel { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); }
 
 .bgRow { display: flex; align-items: center; gap: 8px; }
 .bgThumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--color-border); }
 .changeBtn {
-  font-size: 0.75rem; color: var(--color-text-muted); cursor: pointer;
+  font-size: 0.72rem; color: var(--color-text-muted); cursor: pointer;
   border: 1px solid var(--color-border); border-radius: 4px; padding: 2px 8px;
   background: none;
 }
 
 .pills { display: flex; gap: 4px; flex-wrap: wrap; }
 .pill {
-  padding: 4px 10px; font-size: 0.72rem; font-weight: 500;
+  padding: 4px 10px; font-size: 0.7rem; font-weight: 500;
   border: 1px solid var(--color-border); border-radius: 20px;
   background: var(--color-surface); cursor: pointer; transition: all 0.15s;
 }
 .pill:hover { border-color: var(--color-text); }
 .pillActive { border-color: var(--color-text); background: color-mix(in srgb, var(--color-text) 8%, transparent); font-weight: 600; }
 
-.colorRow { display: flex; gap: 6px; }
+.colorRow { display: flex; gap: 5px; }
 .colorDot {
-  width: 24px; height: 24px; border-radius: 50%;
+  width: 22px; height: 22px; border-radius: 50%;
   border: 2px solid var(--color-border); cursor: pointer; transition: all 0.15s; padding: 0;
 }
 .colorDot:hover { transform: scale(1.1); }
@@ -139,15 +128,26 @@
 
 .slider { width: 100%; accent-color: var(--color-text); }
 
+/* Download */
+.downloadSection { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; border-top: 1px solid var(--color-border); }
+
 .downloadBtn {
   display: flex; align-items: center; gap: 8px; justify-content: center;
   padding: 10px; font-size: 0.82rem; font-weight: 600;
   border: none; border-radius: var(--radius-md);
   background: var(--color-text); color: var(--color-surface);
-  cursor: pointer; transition: opacity 0.15s; margin-top: 8px;
+  cursor: pointer; transition: opacity 0.15s;
 }
 .downloadBtn:hover { opacity: 0.85; }
 .downloadBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.downloadCurrentBtn {
+  display: flex; align-items: center; gap: 6px; justify-content: center;
+  padding: 8px; font-size: 0.75rem; font-weight: 500;
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  background: none; color: var(--color-text); cursor: pointer;
+}
+.downloadCurrentBtn:hover { border-color: var(--color-text); }
 
 .spin { animation: spin 1.5s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
