@@ -8,11 +8,8 @@ import styles from './Sidebar.module.css'
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/create', label: 'Create' },
-  { href: '/studio', label: 'Studio' },
-  { href: '/structures', label: 'Structures' },
+  { href: '/library', label: 'My Content' },
   { href: '/insights', label: 'Insights' },
-  { href: '/calendar', label: 'Calendar' },
-  { href: '/library', label: 'Library' },
 ]
 
 export default function Sidebar() {

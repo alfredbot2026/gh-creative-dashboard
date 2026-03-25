@@ -25,7 +25,7 @@
 | YouTube deep analysis (v2) | 481 | 522 | ~6 hrs |
 | YouTube retention curves | 503 | 500 | ~3 days |
 | Instagram deep analysis | 5 | 807 | ~14 hrs |
-| Facebook deep analysis | 10 | 2,137 | ~36 hrs |
+| Facebook deep analysis | 10 | 1,457 | ~24 hrs |
 
 ### Next Up
 - **Phase 4d:** Ad Performance Feedback Loop (Ingest Meta Ads data and correlate with organic classification).
