@@ -26,9 +26,11 @@ export default async function LibraryItemPage({
 
   const scriptData = item.script_data as Record<string, unknown> | null
   const hook = item.hook || scriptData?.hook as string || scriptData?.headline as string || item.title || ''
-  const scenes = (scriptData?.scenes as any[]) || []
-  const slides = (scriptData?.slides as any[]) || []
-  const qualityScore = scriptData?.qualityScore as number | null
+  // Scenes can be at scriptData.scenes OR scriptData.content.scenes (varies by save format)
+  const contentObj = scriptData?.content as Record<string, unknown> | undefined
+  const scenes = (scriptData?.scenes as any[]) || (contentObj?.scenes as any[]) || []
+  const slides = (scriptData?.slides as any[]) || (contentObj?.slides as any[]) || []
+  const qualityScore = (scriptData?.qualityScore as number) || null
 
   return (
     <div className={styles.page}>
