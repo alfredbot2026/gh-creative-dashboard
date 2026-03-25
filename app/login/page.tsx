@@ -30,8 +30,8 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/')
-    router.refresh()
+    // Hard navigation to ensure middleware picks up the new session cookie
+    window.location.href = '/'
   }
 
   return (
