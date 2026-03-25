@@ -10,7 +10,7 @@ import type { RegenerateContext } from '@/components/create/BlockEditor'
 import type { ScriptScene } from '@/lib/create/types'
 import styles from './create.module.css'
 
-type WizardStep = 'mode' | 'platform' | 'goal' | 'structure' | 'topic' | 'loading' | 'results' | 'carousel' | 'improve-input' | 'improve-loading' | 'improve-results'
+type WizardStep = 'mode' | 'platform' | 'goal' | 'structure' | 'topic' | 'loading' | 'results' | 'carousel-text' | 'carousel-design' | 'improve-input' | 'improve-loading' | 'improve-results'
 type Platform = 'reels' | 'youtube' | 'facebook-post' | 'facebook-ad' | 'carousel' | 'static-image'
 type ContentGoal = 'educate' | 'story' | 'sell' | 'inspire' | 'prove' | 'trend' | 'debunk' | 'process' | 'journey' | 'announce'
 
@@ -210,7 +210,7 @@ function CreateWizard() {
           qualityScore: 0,
           content: { carouselSlides: data.slides || [] },
         }])
-        goTo('results')
+        goTo('carousel-text')
       } else {
         // Normal script generation
         const res = await fetch('/api/create/generate', {
@@ -648,12 +648,60 @@ function CreateWizard() {
       )}
 
       {/* === RESULTS === */}
-      {step === 'results' && platform === 'carousel' && results[0]?.content?.carouselSlides && (
+      {/* === CAROUSEL TEXT REVIEW === */}
+      {step === 'carousel-text' && results[0]?.content?.carouselSlides && (
         <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
           <button className={styles.backBtn} onClick={() => goTo('topic', 'back')}>
-            <ArrowLeft size={16} /> Start over
+            <ArrowLeft size={16} /> Back to topic
           </button>
-          <h1 className={styles.stepTitle}>Your Carousel</h1>
+          <h1 className={styles.stepTitle}>Review Your Slides</h1>
+          <p className={styles.stepHint}>Edit the text for each slide, then continue to design.</p>
+
+          <div className={styles.carouselSlideList}>
+            {(results[0].content.carouselSlides as any[]).map((slide: any, idx: number) => (
+              <div key={idx} className={styles.carouselSlideCard} style={{ animationDelay: `${idx * 60}ms` }}>
+                <div className={styles.slideCardHeader}>
+                  <span className={styles.slideNum}>{idx + 1}</span>
+                  {slide.role === 'hook' && <span className={styles.slideRole}>🎯 Hook</span>}
+                  {slide.role === 'cta' && <span className={styles.slideRole}>👆 CTA</span>}
+                </div>
+                <input
+                  className={styles.slideHeadlineInput}
+                  value={slide.headline}
+                  onChange={(e) => {
+                    const updated = [...results[0].content.carouselSlides]
+                    updated[idx] = { ...updated[idx], headline: e.target.value }
+                    setResults([{ ...results[0], content: { carouselSlides: updated } }])
+                  }}
+                  placeholder="Headline"
+                />
+                <input
+                  className={styles.slideSublineInput}
+                  value={slide.subline}
+                  onChange={(e) => {
+                    const updated = [...results[0].content.carouselSlides]
+                    updated[idx] = { ...updated[idx], subline: e.target.value }
+                    setResults([{ ...results[0], content: { carouselSlides: updated } }])
+                  }}
+                  placeholder="Subline"
+                />
+              </div>
+            ))}
+          </div>
+
+          <button className={styles.continueBtn} onClick={() => goTo('carousel-design')}>
+            Design Slides →
+          </button>
+        </div>
+      )}
+
+      {/* === CAROUSEL DESIGN (Canvas Editor) === */}
+      {step === 'carousel-design' && results[0]?.content?.carouselSlides && (
+        <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
+          <button className={styles.backBtn} onClick={() => goTo('carousel-text', 'back')}>
+            <ArrowLeft size={16} /> Back to text
+          </button>
+          <h1 className={styles.stepTitle}>Design Your Slides</h1>
           <CarouselPreview
             slides={results[0].content.carouselSlides}
             onSlidesChange={(newSlides) => {
@@ -663,7 +711,7 @@ function CreateWizard() {
         </div>
       )}
 
-      {step === 'results' && !(platform === 'carousel' && results[0]?.content?.carouselSlides) && (
+      {step === 'results' && (
         <div className={`${styles.stepContainer} ${styles.fadeIn}`}>
           <button className={styles.backBtn} onClick={() => goTo('topic', 'back')}>
             <ArrowLeft size={16} /> Start over

@@ -634,6 +634,52 @@
 .slideCountBtn:hover { border-color: var(--color-text); }
 .slideCountActive { border-color: var(--color-text); background: color-mix(in srgb, var(--color-text) 8%, transparent); }
 
+/* Carousel text review */
+.carouselSlideList { display: flex; flex-direction: column; gap: 10px; margin: var(--space-md) 0; }
+
+.carouselSlideCard {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 16px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); background: var(--color-surface);
+  animation: fadeSlideUp 0.3s ease both;
+}
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.slideCardHeader { display: flex; align-items: center; gap: 8px; }
+.slideNum {
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: var(--color-text); flex-shrink: 0;
+}
+.slideRole { font-size: 0.7rem; font-weight: 600; color: var(--color-text-muted); }
+
+.slideHeadlineInput {
+  width: 100%; padding: 8px 10px; font-size: 0.9rem; font-weight: 600;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: transparent; font-family: inherit; transition: all 0.15s;
+}
+.slideHeadlineInput:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.slideHeadlineInput:focus { outline: none; border-color: var(--color-border); background: var(--color-bg); }
+
+.slideSublineInput {
+  width: 100%; padding: 6px 10px; font-size: 0.8rem;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: transparent; font-family: inherit; color: var(--color-text-muted);
+  transition: all 0.15s;
+}
+.slideSublineInput:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.slideSublineInput:focus { outline: none; border-color: var(--color-border); background: var(--color-bg); color: var(--color-text); }
+
+.continueBtn {
+  display: flex; align-items: center; gap: 8px; justify-content: center;
+  width: 100%; padding: 14px; font-size: 0.9rem; font-weight: 600;
+  border: none; border-radius: var(--radius-md);
+  background: var(--color-text); color: var(--color-surface);
+  cursor: pointer; transition: opacity 0.15s; margin-top: var(--space-sm);
+}
+.continueBtn:hover { opacity: 0.85; }
+
 .sceneList {
   display: flex;
   flex-direction: column;

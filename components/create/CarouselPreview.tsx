@@ -87,8 +87,18 @@ export default function CarouselPreview({ slides, onSlidesChange }: CarouselPrev
       const w = img.width * scale, h = img.height * scale
       ctx.drawImage(img, (width - w) / 2, (height - h) / 2, w, h)
     } else {
-      ctx.fillStyle = '#1a1a1a'
+      // Placeholder gradient when no image uploaded
+      const grad = ctx.createLinearGradient(0, 0, 0, height)
+      grad.addColorStop(0, '#2a2a2a')
+      grad.addColorStop(1, '#1a1a1a')
+      ctx.fillStyle = grad
       ctx.fillRect(0, 0, width, height)
+      // Subtle grid pattern
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)'
+      ctx.lineWidth = 1
+      const step = Math.round(width / 12)
+      for (let x = step; x < width; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke() }
+      for (let y = step; y < height; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke() }
     }
 
     // Overlay
