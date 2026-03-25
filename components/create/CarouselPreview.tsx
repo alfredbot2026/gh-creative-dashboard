@@ -182,21 +182,7 @@ export default function CarouselPreview({ slides, onSlidesChange }: CarouselPrev
       renderLines(slide.subline, afterH + 8 * scale, sSize, false)
     }
 
-    // Role tag
-    if (slide.role === 'hook' || slide.role === 'cta') {
-      const tag = slide.role === 'hook' ? '🎯 Hook' : '👆 CTA'
-      ctx.font = `bold ${12 * scale}px system-ui, sans-serif`
-      const tw = ctx.measureText(tag).width
-      ctx.fillStyle = 'rgba(0,0,0,0.6)'
-      ctx.beginPath()
-      if (ctx.roundRect) ctx.roundRect(8 * scale, 8 * scale, tw + 16 * scale, 22 * scale, 10 * scale)
-      else ctx.rect(8 * scale, 8 * scale, tw + 16 * scale, 22 * scale)
-      ctx.fill()
-      ctx.fillStyle = '#FFFFFF'
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(tag, 16 * scale, 19 * scale)
-    }
+    // Role tag was here, removed from canvas render to avoid artifacts in output
   }, [bgImage, textStyle, textColor, highlightColor, fontFamily, headlineSize, sublineSize, overlayOpacity, textY])
 
   // --- Live preview rendering ---
@@ -301,17 +287,6 @@ export default function CarouselPreview({ slides, onSlidesChange }: CarouselPrev
 
   const slide = slides[currentSlide]
 
-  if (!bgImage) {
-    return (
-      <label className={styles.uploadZone}>
-        <input type="file" accept="image/*" onChange={handleUpload} hidden />
-        <Upload size={24} />
-        <span className={styles.uploadTitle}>Upload a background photo</span>
-        <span className={styles.uploadHint}>Same image for all slides — text changes per slide</span>
-      </label>
-    )
-  }
-
   return (
     <div className={styles.editorLayout}>
       {/* Live canvas preview */}
@@ -320,16 +295,24 @@ export default function CarouselPreview({ slides, onSlidesChange }: CarouselPrev
           <canvas
             ref={canvasRef}
             className={styles.canvas}
-            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleMouseUp}
+            style={{ cursor: bgImage ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+            onMouseDown={bgImage ? handleMouseDown : undefined}
+            onMouseMove={bgImage ? handleMouseMove : undefined}
+            onMouseUp={bgImage ? handleMouseUp : undefined}
+            onMouseLeave={bgImage ? handleMouseUp : undefined}
+            onTouchStart={bgImage ? handleTouchStart : undefined}
+            onTouchMove={bgImage ? handleTouchMove : undefined}
+            onTouchEnd={bgImage ? handleMouseUp : undefined}
           />
-          <span className={styles.dragHint}><Move size={12} /> Drag to reposition text</span>
+          {!bgImage && (
+            <label className={styles.canvasUploadOverlay}>
+              <input type="file" accept="image/*" onChange={handleUpload} hidden />
+              <Upload size={28} />
+              <span>Upload background photo</span>
+              <span className={styles.uploadSubtext}>Tap to choose — same image for all slides</span>
+            </label>
+          )}
+          {bgImage && <span className={styles.dragHint}><Move size={12} /> Drag to reposition text</span>}
         </div>
 
         {/* Slide navigation */}
@@ -370,13 +353,20 @@ export default function CarouselPreview({ slides, onSlidesChange }: CarouselPrev
       <div className={styles.controls}>
         <div className={styles.controlGroup}>
           <span className={styles.controlLabel}>Background</span>
-          <div className={styles.bgRow}>
-            <img src={bgImage} alt="" className={styles.bgThumb} />
-            <label className={styles.changeBtn}>
+          {bgImage ? (
+            <div className={styles.bgRow}>
+              <img src={bgImage} alt="" className={styles.bgThumb} />
+              <label className={styles.changeBtn}>
+                <input type="file" accept="image/*" onChange={handleUpload} hidden />
+                Change
+              </label>
+            </div>
+          ) : (
+            <label className={styles.uploadSmall}>
               <input type="file" accept="image/*" onChange={handleUpload} hidden />
-              Change
+              <Upload size={14} /> Upload photo
             </label>
-          </div>
+          )}
         </div>
 
         <div className={styles.controlGroup}>
