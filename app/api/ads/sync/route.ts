@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Start date cannot be after end date' }, { status: 400 });
     }
 
-    // Max 90-day lookback window
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(now.getDate() - 90);
+    // Max 90-day lookback window (use 91 to avoid edge-case rounding)
+    const maxLookback = new Date();
+    maxLookback.setDate(now.getDate() - 91);
     
-    if (sinceDate < ninetyDaysAgo) {
+    if (sinceDate < maxLookback) {
       return NextResponse.json({ error: 'Maximum 90-day lookback window allowed' }, { status: 400 });
     }
 
@@ -105,31 +105,42 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // 1. Get Meta token and Ad Account
-      const { data: tokenData, error: tokenError } = await supabase
+      // 1. Get Meta token — try DB first, fallback to env vars
+      let accessToken: string | null = null;
+      let adAccountId: string | null = null;
+
+      const { data: tokenData } = await supabase
         .from('meta_tokens')
         .select('access_token, page_id')
         .eq('user_id', user.id)
         .single();
 
-      if (tokenError || !tokenData?.access_token) {
+      if (tokenData?.access_token) {
+        accessToken = tokenData.access_token;
+        const accountsRes = await fetch(`https://graph.facebook.com/v25.0/me/adaccounts?fields=account_id`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const accountsData = await accountsRes.json();
+        if (accountsData.data?.length) {
+          adAccountId = accountsData.data[0].id;
+        }
+      }
+
+      // Fallback to env vars
+      if (!accessToken || !adAccountId) {
+        accessToken = process.env.FB_ADS_TOKEN || null;
+        const envId = process.env.FB_AD_ACCOUNT_ID || null;
+        if (accessToken && envId) {
+          adAccountId = envId.startsWith('act_') ? envId : `act_${envId}`;
+        }
+      }
+
+      if (!accessToken || !adAccountId) {
         throw new Error('Connect your Meta account first');
       }
-
-      // 2. Fetch Ad Account ID
-      const accountsRes = await fetch(`https://graph.facebook.com/v21.0/me/adaccounts?fields=account_id`, {
-        headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
-      });
-      const accountsData = await accountsRes.json();
-      
-      if (!accountsData.data || accountsData.data.length === 0) {
-        throw new Error('No Meta Ad Accounts found');
-      }
-
-      const adAccountId = accountsData.data[0].id;
       
       // 2. Fetch insights
-      const insights = await fetchAdInsights(tokenData.access_token, adAccountId, dateRange);
+      const insights = await fetchAdInsights(accessToken, adAccountId, dateRange);
 
       // 3. Upsert into ad_performance
       let syncedCount = 0;

@@ -60,13 +60,14 @@ export async function fetchAdInsights(
     'actions', 'action_values',
     'video_p25_watched_actions', 'video_p50_watched_actions',
     'video_p75_watched_actions', 'video_p100_watched_actions',
-    'effective_object_story_id'
+    // Note: effective_object_story_id is NOT valid for /insights endpoint
+    // We get it from the creatives sync instead
   ].join(',');
 
   const timeRangeStr = JSON.stringify({ since: dateRange.since, until: dateRange.until });
   
   // Notice: We do NOT append ?access_token= here, we use the Authorization header instead
-  const url = `https://graph.facebook.com/v21.0/${formattedAccountId}/insights?level=ad&fields=${fields}&time_range=${encodeURIComponent(timeRangeStr)}&time_increment=1`;
+  const url = `https://graph.facebook.com/v25.0/${formattedAccountId}/insights?level=ad&fields=${fields}&time_range=${encodeURIComponent(timeRangeStr)}&time_increment=1`;
 
   try {
     const response = await fetch(url, {
@@ -134,7 +135,7 @@ export async function fetchAdInsights(
         video_views_p100: getActionValue(item.video_p100_watched_actions, 'video_view'),
         date_start: item.date_start,
         date_stop: item.date_stop,
-        source_post_id: item.effective_object_story_id
+        source_post_id: item.effective_object_story_id || null
       });
     }
 

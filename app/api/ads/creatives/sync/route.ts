@@ -57,7 +57,7 @@ async function fetchAdsWithCreatives(accessToken: string, adAccountId: string): 
     'id', 'name', 'status',
     'campaign_id', 'campaign{name}',
     'adset_id', 'adset{name}',
-    'creative{id,body,title,link_description,call_to_action_type,image_url,video_id,thumbnail_url,object_story_spec,asset_feed_spec}',
+    'creative{id,body,title,call_to_action_type,image_url,video_id,thumbnail_url,object_story_spec,asset_feed_spec}',
   ].join(',')
 
   const allAds: MetaAdWithCreative[] = []
@@ -115,33 +115,46 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}))
     const reclassify = body.reclassify === true // force re-classification
 
-    // 1. Get Meta token
+    // 1. Get Meta token — try meta_tokens table first, fallback to env vars
+    let accessToken: string | null = null
+    let adAccountId: string | null = null
+    let metaAccountId: string | null = null
+
     const { data: tokenData } = await supabase
       .from('meta_tokens')
       .select('access_token, page_id')
       .eq('user_id', user.id)
       .single()
 
-    if (!tokenData?.access_token) {
-      return NextResponse.json({ error: 'Connect your Meta account first' }, { status: 400 })
+    if (tokenData?.access_token) {
+      accessToken = tokenData.access_token
+      // Discover ad account from token
+      const accountsRes = await fetch('https://graph.facebook.com/v25.0/me/adaccounts?fields=account_id,name', {
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+      })
+      const accountsData = await accountsRes.json()
+      if (accountsData.data?.length) {
+        adAccountId = accountsData.data[0].id
+        metaAccountId = accountsData.data[0].account_id || adAccountId
+      }
     }
 
-    // 2. Discover ad account
-    const accountsRes = await fetch('https://graph.facebook.com/v25.0/me/adaccounts?fields=account_id,name', {
-      headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
-    })
-    const accountsData = await accountsRes.json()
-
-    if (!accountsData.data?.length) {
-      return NextResponse.json({ error: 'No ad accounts found' }, { status: 400 })
+    // Fallback to env vars (existing FB_ADS_TOKEN from growth team setup)
+    if (!accessToken || !adAccountId) {
+      accessToken = process.env.FB_ADS_TOKEN || null
+      const envAccountId = process.env.FB_AD_ACCOUNT_ID || null
+      if (accessToken && envAccountId) {
+        adAccountId = envAccountId.startsWith('act_') ? envAccountId : `act_${envAccountId}`
+        metaAccountId = envAccountId
+      }
     }
 
-    const adAccount = accountsData.data[0]
-    const adAccountId = adAccount.id
-    const metaAccountId = adAccount.account_id || adAccountId
+    if (!accessToken || !adAccountId) {
+      return NextResponse.json({ error: 'Connect your Meta account first (no token in DB or env)' }, { status: 400 })
+    }
 
     // 3. Fetch all ads with creative details
-    const metaAds = await fetchAdsWithCreatives(tokenData.access_token, adAccountId)
+    const metaAds = await fetchAdsWithCreatives(accessToken, adAccountId)
 
     // 4. Upsert into ad_creatives
     let upserted = 0

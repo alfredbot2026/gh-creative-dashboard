@@ -73,13 +73,17 @@ export default function AdDashboard() {
     setSyncing(true)
     setSyncMsg(null)
     try {
-      // Sync ads performance first, then creatives
-      await fetch('/api/ads/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
-      const res = await fetch('/api/ads/creatives/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+      // Sync ads performance (non-fatal if fails)
+      const perfRes = await fetch('/api/ads/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => null)
+      const perfData = perfRes?.ok ? await perfRes.json().catch(() => null) : null
+
+      // Sync creatives + classify
+      const res = await fetch('/api/ads/creatives/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
       const result = await res.json()
       if (res.ok) {
-        setSyncMsg(`Done! ${result.ads_fetched} ads synced, ${result.creatives_classified} classified`)
-        // Refresh
+        const perfNote = perfData ? `, ${perfData.synced || 0} perf rows` : ''
+        setSyncMsg(`Done! ${result.ads_fetched} ads fetched, ${result.creatives_classified} classified${perfNote}`)
+        // Refresh map
         const refresh = await fetch('/api/ads/intelligence/map')
         setData(await refresh.json())
       } else {
