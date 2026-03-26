@@ -18,7 +18,13 @@
 | TASK-052 | Ad ↔ content correlation dashboard | DEFAULT | ✅ done |
 | TASK-053 | Feed ad ROAS into generation engine | DEFAULT | ✅ done |
 
-### After Phase 4d → Phase 4e (Ad Intelligence + Creative Factory)
+### Phase 4e Wave 1 ✅ — Ad Creative Ingest + AI Classification
+- Migration 021: ad_creatives table (6-dimension classification, versioning, performance denorm)
+- lib/ads/classifier.ts: Gemini-powered 10-value vocabularies per dimension
+- POST /api/ads/creatives/sync: fetch → upsert → classify → aggregate performance
+- GET /api/ads/creatives: read with filters
+
+### Phase 4e Remaining (Waves 2-5)
 - Spec ready: `specs/phase-4e-ad-intelligence-creative-factory.md`
 - Security addendum: `specs/phase-4e-security-addendum.md`
 - Tony red-team: `reviews/PHASE-4E-RED-TEAM.md`

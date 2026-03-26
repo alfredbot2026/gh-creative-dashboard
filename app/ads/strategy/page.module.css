@@ -1,0 +1,52 @@
+/* Strategy Map */
+.page { max-width: 1100px; margin: 0 auto; padding: var(--space-xl) var(--space-md); font-family: var(--font-body); color: var(--color-text, var(--text)); }
+.loading, .emptyState { text-align: center; padding: var(--space-3xl); color: var(--color-text-dim); }
+
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); margin-bottom: var(--space-lg); }
+.title { font-size: 1.5rem; font-weight: 700; margin: 0; }
+.subtitle { font-size: 0.85rem; color: var(--color-text-dim, var(--text-muted)); margin-top: var(--space-xs); }
+.backLink { font-size: 0.85rem; color: var(--color-primary); text-decoration: none; }
+
+/* Legend */
+.legend { display: flex; gap: var(--space-md); margin-bottom: var(--space-lg); font-size: 0.75rem; color: var(--color-text-dim); flex-wrap: wrap; }
+.legendItem { display: flex; align-items: center; gap: 4px; }
+
+/* Matrix */
+.matrixWrap { overflow-x: auto; margin-bottom: var(--space-xl); }
+.matrix { border-collapse: separate; border-spacing: 4px; width: 100%; }
+.cornerCell { width: 120px; }
+.colHeader { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--color-text-dim); text-align: center; padding: var(--space-xs) var(--space-sm); min-width: 90px; }
+.rowHeader { font-size: 0.75rem; font-weight: 600; color: var(--color-text); text-align: right; padding-right: var(--space-sm); white-space: nowrap; }
+
+.cell { text-align: center; padding: var(--space-sm); border: 2px solid var(--color-border, var(--border)); border-radius: var(--radius-md, 8px); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; min-height: 60px; vertical-align: middle; }
+.cell:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1; }
+.cellSelected { transform: scale(1.05); box-shadow: 0 0 0 2px var(--color-primary); }
+.cellEmoji { font-size: 1.1rem; display: block; }
+.cellCount { font-size: 0.65rem; color: var(--color-text-dim); display: block; margin-top: 2px; }
+.cellRoas { font-size: 0.65rem; font-weight: 700; color: var(--accent-emerald, #10b981); display: block; }
+
+/* Detail panel */
+.detail { padding: var(--space-lg); background: var(--color-surface, var(--surface)); border: 1px solid var(--color-border, var(--border)); border-radius: var(--radius-lg, 12px); margin-bottom: var(--space-xl); }
+.detailHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
+.detailHeader h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.closeBtn { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--color-text-dim); padding: 0 var(--space-xs); }
+.detailEmpty { text-align: center; padding: var(--space-md); }
+.detailStats { display: flex; gap: var(--space-lg); font-size: 0.85rem; margin-bottom: var(--space-md); color: var(--color-text-dim); flex-wrap: wrap; }
+.detailAds { display: flex; flex-direction: column; gap: var(--space-xs); margin-bottom: var(--space-md); }
+.detailAdRow { display: flex; gap: var(--space-md); font-size: 0.8rem; padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-border, var(--border)); align-items: center; }
+.detailAdName { font-weight: 600; flex: 1; }
+.detailAdStatus { font-size: 0.75rem; }
+.createLink { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); text-decoration: none; }
+.createLink:hover { text-decoration: underline; }
+
+/* Coverage message */
+.coverageMsg { text-align: center; padding: var(--space-md); font-size: 0.9rem; color: var(--color-text-dim); background: var(--color-surface, var(--surface)); border-radius: var(--radius-md, 8px); }
+
+@media (max-width: 768px) {
+  .page { padding: var(--space-md) var(--space-sm); }
+  .header { flex-direction: column; }
+  .colHeader { font-size: 0.6rem; min-width: 70px; }
+  .rowHeader { font-size: 0.65rem; }
+  .cell { padding: var(--space-xs); min-height: 48px; }
+  .cellEmoji { font-size: 0.9rem; }
+}

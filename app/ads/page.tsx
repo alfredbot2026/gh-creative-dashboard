@@ -1,239 +1,216 @@
 /**
- * Ad Performance Page — With Sync Button
- * Campaign cards with metrics, status badges, and one-click Meta sync.
- * Client component for interactive sync + auto-refresh.
+ * Ad Dashboard — Grace-friendly ad overview.
+ * Shows: Working/Tired/Kill counts, recommendations, quick actions.
+ * No media buyer jargon. Translates data into decisions.
  */
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
-import PageHeader from '@/components/ui/PageHeader'
-import StatCard from '@/components/ui/StatCard'
-import StatusBadge from '@/components/ui/StatusBadge'
-import { DollarSign, MousePointerClick, Target, TrendingUp, RefreshCw, Loader2, Brain, Trophy, AlertTriangle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import styles from './page.module.css'
 
-/* Ad row from Supabase */
-interface AdRow {
-    id: string
-    campaign_name: string
-    ad_name: string | null
-    spend: number | null
-    roas: number | null
-    ctr: number | null
-    conversions: number | null
-    status: string | null
-    ad_copy: string | null
-    headline: string | null
-    cta_type: string | null
-    creative_type: string | null
-    ai_analysis: string | null
-    date_range_start: string | null
-    date_range_end: string | null
+interface MapData {
+  has_data: boolean
+  summary: {
+    total_ads: number
+    total_spend: number
+    winning_count: number
+    tired_count: number
+    dead_count: number
+    exploration_mode: boolean
+  }
+  recommendations: Array<{
+    priority: number
+    angle: string
+    persona: string
+    confidence: string
+    action: string
+    reason: string
+    type: string
+    estimated_variants: number
+    suggested_frameworks: string[]
+  }>
+  saturating: Array<{
+    ad_name: string
+    angle: string
+    recommendation: string
+  }>
+  coverage: { tested: number; total: number; percent: number }
 }
 
-export default function AdsPage() {
-    const [ads, setAds] = useState<AdRow[]>([])
-    const [syncing, setSyncing] = useState(false)
-    const [syncResult, setSyncResult] = useState<string | null>(null)
-    const [insights, setInsights] = useState<any>(null)
-    const [analyzingInsights, setAnalyzingInsights] = useState(false)
+const CONFIDENCE_LABELS: Record<string, { label: string; emoji: string }> = {
+  high: { label: 'Strong signal', emoji: '💪' },
+  medium: { label: 'Worth testing', emoji: '🧪' },
+  low: { label: 'Hypothesis', emoji: '🔮' },
+  gap: { label: 'Untested opportunity', emoji: '✨' },
+}
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+const TYPE_LABELS: Record<string, { label: string; color: string }> = {
+  refresh: { label: 'Refresh', color: 'var(--accent-purple, #8b5cf6)' },
+  scale: { label: 'Scale', color: 'var(--accent-emerald, #10b981)' },
+  create_new: { label: 'Explore', color: 'var(--color-primary)' },
+  kill: { label: 'Kill', color: 'var(--color-error, #ef4444)' },
+}
 
-    /* Fetch ads from Supabase */
-    const fetchAds = useCallback(async () => {
-        const { data } = await supabase
-            .from('ad_performance')
-            .select('*')
-            .order('created_at', { ascending: false })
-        if (data) setAds(data)
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+function formatPersona(p: string) { return p.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }
+function formatAngle(a: string) { return a.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }
 
-    useEffect(() => { fetchAds() }, [fetchAds])
+export default function AdDashboard() {
+  const [data, setData] = useState<MapData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<string | null>(null)
 
-    /* Sync Meta Ads — calls /api/meta/sync */
-    const handleSync = async () => {
-        setSyncing(true)
-        setSyncResult(null)
-        try {
-            const res = await fetch('/api/meta/sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ datePreset: 'last_7d' }),
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || 'Sync failed')
-            setSyncResult(`✅ Synced ${data.campaigns_synced} campaigns, ${data.creatives_fetched} creatives`)
-            await fetchAds() // refresh
-        } catch (err) {
-            setSyncResult(`❌ ${err instanceof Error ? err.message : 'Sync failed'}`)
-        } finally {
-            setSyncing(false)
-        }
-    }
+  useEffect(() => {
+    fetch('/api/ads/intelligence/map')
+      .then(r => r.json())
+      .then(d => setData(d))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
-    /* Run learning analysis */
-    const handleAnalyze = async () => {
-        setAnalyzingInsights(true)
-        try {
-            const res = await fetch('/api/analytics/learn', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ period_days: 30 }),
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || 'Analysis failed')
-            setInsights(data)
-        } catch (err) {
-            console.error('Learning analysis error:', err)
-        } finally {
-            setAnalyzingInsights(false)
-        }
-    }
+  const handleSync = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      // Sync ads performance first, then creatives
+      await fetch('/api/ads/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+      const res = await fetch('/api/ads/creatives/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+      const result = await res.json()
+      if (res.ok) {
+        setSyncMsg(`Done! ${result.ads_fetched} ads synced, ${result.creatives_classified} classified`)
+        // Refresh
+        const refresh = await fetch('/api/ads/intelligence/map')
+        setData(await refresh.json())
+      } else {
+        setSyncMsg(result.error || 'Sync failed')
+      }
+    } catch { setSyncMsg('Sync failed') }
+    setSyncing(false)
+  }
 
-    /* Calculate aggregate stats */
-    const totalSpend = ads.reduce((sum, ad) => sum + Number(ad.spend || 0), 0)
-    const avgRoas = ads.length > 0
-        ? (ads.reduce((sum, ad) => sum + Number(ad.roas || 0), 0) / ads.length).toFixed(1)
-        : '0'
-    const totalConversions = ads.reduce((sum, ad) => sum + (ad.conversions || 0), 0)
-    const avgCtr = ads.length > 0
-        ? ((ads.reduce((sum, ad) => sum + Number(ad.ctr || 0), 0) / ads.length) * 100).toFixed(2)
-        : '0'
+  if (loading) return <div className={styles.page}><div className={styles.loading}>Loading your ads...</div></div>
 
-    return (
+  const s = data?.summary
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <div>
+          <h1 className={styles.title}>Your Ads</h1>
+          <p className={styles.subtitle}>See what&apos;s working, what&apos;s tired, and what to create next</p>
+        </div>
+        <div className={styles.headerActions}>
+          <Link href="/ads/strategy" className={styles.stratLink}>📊 Strategy Map</Link>
+          <Link href="/insights/ads" className={styles.stratLink}>📈 Performance</Link>
+          <button className={styles.syncBtn} onClick={handleSync} disabled={syncing}>
+            {syncing ? 'Syncing...' : '🔄 Sync Ads'}
+          </button>
+        </div>
+      </header>
+      {syncMsg && <div className={styles.syncMsg}>{syncMsg}</div>}
+
+      {!data?.has_data ? (
+        <div className={styles.emptyState}>
+          <h2>No ads synced yet</h2>
+          <p>Connect your Meta account and sync to see your ad intelligence.</p>
+          <button className={styles.syncBtn} onClick={handleSync} disabled={syncing}>
+            {syncing ? 'Syncing...' : 'Sync Now'}
+          </button>
+        </div>
+      ) : (
         <>
-            <PageHeader
-                title="Ad Performance"
-                subtitle="Campaign metrics and AI-powered recommendations"
-                action={
-                    <div className={styles.headerActions}>
-                        {syncResult && <span className={styles.syncResult}>{syncResult}</span>}
-                        <button className={styles.syncButton} onClick={handleSync} disabled={syncing}>
-                            {syncing ? <Loader2 size={16} className={styles.spinner} /> : <RefreshCw size={16} />}
-                            {syncing ? 'Syncing...' : 'Sync Ads'}
-                        </button>
-                    </div>
-                }
-            />
-
-            {/* Overview stats */}
-            <div className={styles.statsGrid}>
-                <StatCard label="Total Spend" value={`$${totalSpend.toLocaleString()}`} icon={<DollarSign size={18} />} />
-                <StatCard label="Avg ROAS" value={`${avgRoas}x`} icon={<TrendingUp size={18} />} />
-                <StatCard label="Total Conversions" value={totalConversions} icon={<Target size={18} />} />
-                <StatCard label="Avg CTR" value={`${avgCtr}%`} icon={<MousePointerClick size={18} />} />
+          {/* Exploration mode banner */}
+          {s?.exploration_mode && (
+            <div className={styles.exploreBanner}>
+              🧭 <strong>Exploration Mode</strong> — You&apos;re just getting started. These are experiments, not guarantees. More data = better recommendations.
             </div>
+          )}
 
-            {/* Insights Section */}
-            <div className={styles.insightsSection}>
-                <div className={styles.insightsHeader}>
-                    <h2 className={styles.insightsTitle}>
-                        <Brain size={20} /> Performance Insights
-                    </h2>
-                    <button
-                        className={styles.syncButton}
-                        onClick={handleAnalyze}
-                        disabled={analyzingInsights}
-                    >
-                        {analyzingInsights ? <Loader2 size={16} className={styles.spinner} /> : <Brain size={16} />}
-                        {analyzingInsights ? 'Analyzing...' : 'Analyze Patterns'}
-                    </button>
-                </div>
-
-                {insights ? (
-                    <div className={styles.insightsGrid}>
-                        {insights.insights
-                            ?.filter((i: any) => i.metric_name === 'avg_roas')
-                            ?.sort((a: any, b: any) => b.metric_value - a.metric_value)
-                            ?.map((insight: any, idx: number) => (
-                                <div key={idx} className={styles.insightCard}>
-                                    <div className={styles.insightIcon}>
-                                        {idx === 0 ? <Trophy size={18} style={{ color: 'var(--accent-emerald)' }} /> : <TrendingUp size={18} style={{ color: 'var(--color-text-muted)' }} />}
-                                    </div>
-                                    <div>
-                                        <span className={styles.insightFramework}>{insight.framework}</span>
-                                        <span className={styles.insightMetric}>
-                                            {insight.metric_value}x ROAS ({insight.sample_size} ads)
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-
-                        {insights.kb_updates?.length > 0 && (
-                            <div className={styles.kbUpdatesSummary}>
-                                <span>{insights.kb_updates.length} KB entries adjusted based on performance</span>
-                            </div>
-                        )}
-
-                        {insights.insights?.length === 0 && (
-                            <p className={styles.noInsights}>
-                                Not enough data yet. Need 3+ ads per framework to generate insights.
-                            </p>
-                        )}
-                    </div>
-                ) : (
-                    <p className={styles.noInsights}>
-                        Click &quot;Analyze Patterns&quot; to see which frameworks perform best.
-                    </p>
-                )}
+          {/* Status cards */}
+          {s && (
+            <div className={styles.statusRow}>
+              <div className={styles.statusCard} data-type="winning">
+                <span className={styles.statusEmoji}>✅</span>
+                <span className={styles.statusCount}>{s.winning_count}</span>
+                <span className={styles.statusLabel}>Working</span>
+              </div>
+              <div className={styles.statusCard} data-type="tired">
+                <span className={styles.statusEmoji}>😴</span>
+                <span className={styles.statusCount}>{s.tired_count}</span>
+                <span className={styles.statusLabel}>Getting Tired</span>
+              </div>
+              <div className={styles.statusCard} data-type="dead">
+                <span className={styles.statusEmoji}>❌</span>
+                <span className={styles.statusCount}>{s.dead_count}</span>
+                <span className={styles.statusLabel}>Turn Off</span>
+              </div>
+              <div className={styles.statusCard} data-type="coverage">
+                <span className={styles.statusEmoji}>🗺️</span>
+                <span className={styles.statusCount}>{data.coverage.percent}%</span>
+                <span className={styles.statusLabel}>Explored</span>
+              </div>
             </div>
+          )}
 
-            {/* Campaign cards */}
-            {ads.length > 0 ? (
-                <div className={styles.campaignGrid}>
-                    {ads.map((ad) => (
-                        <div key={ad.id} className={styles.campaignCard}>
-                            <div className={styles.cardHeader}>
-                                <h3 className={styles.campaignName}>{ad.campaign_name}</h3>
-                                {ad.status && <StatusBadge status={ad.status} />}
-                            </div>
-                            {ad.ad_name && <span className={styles.adName}>{ad.ad_name}</span>}
-
-                            <div className={styles.metricsGrid}>
-                                <div className={styles.metric}>
-                                    <span className={styles.metricLabel}>Spend</span>
-                                    <span className={styles.metricValue}>${Number(ad.spend).toLocaleString()}</span>
-                                </div>
-                                <div className={styles.metric}>
-                                    <span className={styles.metricLabel}>ROAS</span>
-                                    <span className={styles.metricValue}>{ad.roas}x</span>
-                                </div>
-                                <div className={styles.metric}>
-                                    <span className={styles.metricLabel}>CTR</span>
-                                    <span className={styles.metricValue}>{(Number(ad.ctr) * 100).toFixed(2)}%</span>
-                                </div>
-                                <div className={styles.metric}>
-                                    <span className={styles.metricLabel}>Conversions</span>
-                                    <span className={styles.metricValue}>{ad.conversions || 0}</span>
-                                </div>
-                            </div>
-
-                            {ad.ai_analysis && (
-                                <div className={styles.analysis}>
-                                    <span className={styles.analysisLabel}>AI Analysis</span>
-                                    <p className={styles.analysisText}>{ad.ai_analysis}</p>
-                                </div>
-                            )}
-
-                            {ad.date_range_start && ad.date_range_end && (
-                                <span className={styles.dateRange}>
-                                    {ad.date_range_start} → {ad.date_range_end}
-                                </span>
-                            )}
+          {/* Recommendations */}
+          {data.recommendations.length > 0 && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>
+                💡 {data.recommendations.length} idea{data.recommendations.length > 1 ? 's' : ''} for you
+              </h2>
+              <div className={styles.recGrid}>
+                {data.recommendations.slice(0, 8).map((rec, i) => {
+                  const conf = CONFIDENCE_LABELS[rec.confidence] || CONFIDENCE_LABELS.gap
+                  const typeLabel = TYPE_LABELS[rec.type] || TYPE_LABELS.create_new
+                  return (
+                    <div key={i} className={styles.recCard}>
+                      <div className={styles.recTop}>
+                        <span className={styles.recType} style={{ color: typeLabel.color }}>
+                          {typeLabel.label}
+                        </span>
+                        <span className={styles.recConf}>
+                          {conf.emoji} {conf.label}
+                        </span>
+                      </div>
+                      <p className={styles.recAction}>{rec.action}</p>
+                      <p className={styles.recReason}>{rec.reason}</p>
+                      {rec.estimated_variants > 0 && (
+                        <div className={styles.recMeta}>
+                          {rec.estimated_variants} variants · {rec.suggested_frameworks.join(', ')}
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <div className={styles.emptyState}>
-                    <p>No ad performance data yet.</p>
-                    <p>Click <strong>Sync Ads</strong> to pull data from Meta.</p>
-                </div>
-            )}
+                      )}
+                      {rec.type === 'create_new' && (
+                        <Link href={`/ads/create?angle=${rec.angle}&persona=${rec.persona}`} className={styles.recCta}>
+                          Create These Ads →
+                        </Link>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Tired ads needing attention */}
+          {data.saturating.length > 0 && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>😴 Needs Fresh Creative</h2>
+              <div className={styles.tiredGrid}>
+                {data.saturating.map((sat, i) => (
+                  <div key={i} className={styles.tiredCard}>
+                    <p className={styles.tiredName}>{sat.ad_name}</p>
+                    <p className={styles.tiredRec}>{sat.recommendation}</p>
+                    <Link href={`/ads/create?angle=${sat.angle}&refresh=true`} className={styles.recCta}>
+                      Make New Version →
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </>
-    )
+      )}
+    </div>
+  )
 }
