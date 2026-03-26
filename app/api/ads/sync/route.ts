@@ -62,6 +62,14 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    if (lockError) {
+      console.error('[Sync API] Failed to read lock:', lockError.message);
+      return NextResponse.json(
+        { error: 'Failed to check sync status. Please try again.' },
+        { status: 500 }
+      );
+    }
+
     if (lockData) {
       // Check single-flight lock
       if (lockData.is_running) {
@@ -79,14 +87,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Acquire lock
-    await supabase
+    // Acquire lock — fail closed on error
+    const { error: lockAcquireError } = await supabase
       .from('sync_locks')
       .upsert({
         user_id: user.id,
         is_running: true,
         last_sync_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
+
+    if (lockAcquireError) {
+      console.error('[Sync API] Failed to acquire lock:', lockAcquireError.message);
+      return NextResponse.json(
+        { error: 'Failed to acquire sync lock. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     try {
       // 1. Get Meta token and Ad Account
@@ -171,11 +187,15 @@ export async function POST(request: NextRequest) {
           date_range: dateRange
       });
     } finally {
-      // Release lock
-      await supabase
+      // Release lock — log but don't fail on release error
+      const { error: lockReleaseError } = await supabase
         .from('sync_locks')
         .update({ is_running: false })
         .eq('user_id', user.id);
+
+      if (lockReleaseError) {
+        console.error('[Sync API] Failed to release lock:', lockReleaseError.message);
+      }
     }
   } catch (err: any) {
     console.error('[Sync API] Error:', err.message);

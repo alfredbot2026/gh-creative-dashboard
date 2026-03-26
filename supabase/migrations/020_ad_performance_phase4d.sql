@@ -76,6 +76,10 @@ CREATE TABLE IF NOT EXISTS sync_locks (
 ALTER TABLE sync_locks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can read own locks" ON sync_locks;
 CREATE POLICY "Users can read own locks" ON sync_locks FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can insert own locks" ON sync_locks;
+CREATE POLICY "Users can insert own locks" ON sync_locks FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can update own locks" ON sync_locks;
+CREATE POLICY "Users can update own locks" ON sync_locks FOR UPDATE USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
 -- Ensure RLS
 ALTER TABLE ad_performance ENABLE ROW LEVEL SECURITY;
