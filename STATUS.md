@@ -10,13 +10,13 @@
 - **TASK-052** — Ad Correlation Dashboard (blocked on 050)
 - **TASK-053** — Ad Feedback into Generation Engine (blocked on 050+052)
 
-### Phase 4d Tasks Written
-| Task | Description | Track | Status | Depends |
-|------|-------------|-------|--------|---------|
-| TASK-050 | Ad perf DB + Meta sync API + content matching | SECURITY | assigned:blackwidow | — |
-| TASK-051 | Saves-weighted scoring + ad potential badge | DEFAULT | ready | TASK-050 |
-| TASK-052 | Ad ↔ content correlation dashboard | DEFAULT | ready | TASK-050 |
-| TASK-053 | Feed ad ROAS into generation engine | DEFAULT | ready | TASK-050,052 |
+### Phase 4d Tasks — ALL COMPLETE ✅
+| Task | Description | Track | Status |
+|------|-------------|-------|--------|
+| TASK-050 | Ad perf DB + Meta sync API + content matching | SECURITY | ✅ done (Tony fix pending re-review) |
+| TASK-051 | Saves-weighted scoring + ad potential badge | DEFAULT | ✅ done |
+| TASK-052 | Ad ↔ content correlation dashboard | DEFAULT | ✅ done |
+| TASK-053 | Feed ad ROAS into generation engine | DEFAULT | ✅ done |
 
 ### After Phase 4d → Phase 4e (Ad Intelligence + Creative Factory)
 - Spec ready: `specs/phase-4e-ad-intelligence-creative-factory.md`
