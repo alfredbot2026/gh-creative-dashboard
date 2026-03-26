@@ -41,19 +41,15 @@ ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS structure_slug TEXT;
 ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS content_goal TEXT;
 ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS topic TEXT;
 
--- We don't use SET NOT NULL if there's old data, but task says NOT NULL
--- Let's execute it but wrap in a way that ignores errors if data violates, or just set it
--- To be safe, we'll set NOT NULL only if we are creating new records or we'll omit the NOT NULL and let it be. The schema says:
--- meta_ad_id TEXT NOT NULL,
--- date_start DATE NOT NULL,
--- date_stop DATE NOT NULL,
--- Since the table is likely empty or might not exist, we can try to SET NOT NULL.
-DO $$ 
-BEGIN
-  BEGIN ALTER TABLE ad_performance ALTER COLUMN meta_ad_id SET NOT NULL; EXCEPTION WHEN others THEN END;
-  BEGIN ALTER TABLE ad_performance ALTER COLUMN date_start SET NOT NULL; EXCEPTION WHEN others THEN END;
-  BEGIN ALTER TABLE ad_performance ALTER COLUMN date_stop SET NOT NULL; EXCEPTION WHEN others THEN END;
-END $$;
+-- Pre-cleanup nulls to safely apply NOT NULL
+UPDATE ad_performance SET meta_ad_id = 'unknown_' || id::text WHERE meta_ad_id IS NULL;
+UPDATE ad_performance SET date_start = CURRENT_DATE WHERE date_start IS NULL;
+UPDATE ad_performance SET date_stop = CURRENT_DATE WHERE date_stop IS NULL;
+
+-- Enforce constraints
+ALTER TABLE ad_performance ALTER COLUMN meta_ad_id SET NOT NULL;
+ALTER TABLE ad_performance ALTER COLUMN date_start SET NOT NULL;
+ALTER TABLE ad_performance ALTER COLUMN date_stop SET NOT NULL;
 
 -- Unique constraint
 DO $$ 
@@ -69,6 +65,17 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_ad_perf_user_structure ON ad_performance(user_id, structure_slug, roas);
 CREATE INDEX IF NOT EXISTS idx_ad_perf_user_hook ON ad_performance(user_id, hook_type, roas);
 CREATE INDEX IF NOT EXISTS idx_ad_perf_user_ad ON ad_performance(user_id, meta_ad_id);
+
+-- Sync Locks Table (for single-flight rate limiting)
+CREATE TABLE IF NOT EXISTS sync_locks (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id),
+  is_running BOOLEAN DEFAULT false,
+  last_sync_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ
+);
+ALTER TABLE sync_locks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can read own locks" ON sync_locks;
+CREATE POLICY "Users can read own locks" ON sync_locks FOR SELECT USING (user_id = auth.uid());
 
 -- Ensure RLS
 ALTER TABLE ad_performance ENABLE ROW LEVEL SECURITY;

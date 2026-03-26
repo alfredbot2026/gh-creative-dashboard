@@ -65,12 +65,19 @@ export async function fetchAdInsights(
 
   const timeRangeStr = JSON.stringify({ since: dateRange.since, until: dateRange.until });
   
-  const url = `https://graph.facebook.com/v21.0/${formattedAccountId}/insights?level=ad&fields=${fields}&time_range=${encodeURIComponent(timeRangeStr)}&time_increment=1&access_token=${token}`;
+  // Notice: We do NOT append ?access_token= here, we use the Authorization header instead
+  const url = `https://graph.facebook.com/v21.0/${formattedAccountId}/insights?level=ad&fields=${fields}&time_range=${encodeURIComponent(timeRangeStr)}&time_increment=1`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
     if (!response.ok) {
       const errorText = await response.text();
+      // Ensure we don't log the token here!
       console.error(`[Ads Fetcher] Meta API error for account ${formattedAccountId}:`, errorText);
       throw new Error('Meta API returned an error');
     }
