@@ -1,0 +1,49 @@
+/* Weekly Planner */
+.page { max-width: 800px; margin: 0 auto; padding: var(--space-xl) var(--space-md); font-family: var(--font-body); color: var(--color-text, var(--text)); }
+
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); margin-bottom: var(--space-xl); }
+.title { font-size: 1.5rem; font-weight: 700; margin: 0; }
+.subtitle { font-size: 0.85rem; color: var(--color-text-dim, var(--text-muted)); margin-top: var(--space-xs); }
+.backLink { font-size: 0.85rem; color: var(--color-primary); text-decoration: none; }
+
+/* Framework box */
+.frameworkBox { padding: var(--space-md); background: var(--color-surface, var(--surface)); border: 1px solid var(--color-border, var(--border)); border-radius: var(--radius-lg, 12px); margin-bottom: var(--space-xl); }
+.frameworkBox h3 { font-size: 0.95rem; margin: 0 0 var(--space-sm); }
+.phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); margin-bottom: var(--space-sm); }
+.phase { padding: var(--space-sm); background: var(--color-background, var(--background)); border-radius: var(--radius-md, 8px); font-size: 0.8rem; text-align: center; }
+.phase strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+.frameworkNote { font-size: 0.75rem; color: var(--color-text-dim); margin: 0; }
+
+/* Generate */
+.generatePanel { text-align: center; padding: var(--space-xl); }
+.generateBtn { padding: var(--space-md) var(--space-xl); background: var(--color-primary); color: var(--color-on-primary, #fff); border: none; border-radius: var(--radius-lg, 12px); font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+.generateBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.genNote { font-size: 0.8rem; color: var(--color-text-dim); margin-top: var(--space-sm); }
+
+/* Plan */
+.planHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); }
+.planHeader h2 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.planTotal { font-size: 0.85rem; color: var(--color-text-dim); }
+
+/* Batch cards */
+.batchList { display: flex; flex-direction: column; gap: var(--space-md); }
+.batchCard { padding: var(--space-lg); background: var(--color-surface, var(--surface)); border: 1px solid var(--color-border, var(--border)); border-radius: var(--radius-lg, 12px); }
+.batchTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
+.batchDay { font-size: 0.85rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; }
+.batchType { font-size: 0.75rem; color: var(--color-text-dim); }
+.batchAction { font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-sm); }
+.batchMeta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: var(--space-sm); }
+.batchActions { display: flex; gap: var(--space-sm); }
+.previewLink { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); text-decoration: none; }
+.previewLink:hover { text-decoration: underline; }
+
+.btnOutline { padding: var(--space-sm) var(--space-lg); background: transparent; color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: var(--radius-md, 8px); cursor: pointer; font-size: 0.9rem; }
+
+.emptyMsg, .error { text-align: center; padding: var(--space-xl); color: var(--color-text-dim); }
+.error { color: var(--color-error, #ef4444); }
+
+@media (max-width: 768px) {
+  .header { flex-direction: column; }
+  .phases { grid-template-columns: 1fr; }
+  .planHeader { flex-direction: column; gap: var(--space-xs); align-items: flex-start; }
+}
