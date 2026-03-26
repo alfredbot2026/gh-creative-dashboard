@@ -5,9 +5,14 @@
 ## Current Phase: Phase 4d — Ad Performance Feedback Loop
 
 ### Active Work
-- **TASK-050** — Ad Performance Data Foundation (DELTA — extending existing code) → Lead (direct impl)
-- **TASK-051** — Saves-Weighted Scoring + Ad Potential Badge (blocked on 050)
-- **TASK-052** — Ad Correlation Dashboard (blocked on 050)
+- **TASK-054** — Video Intelligence Pipeline + Ad Audit Page → Blackwidow (dispatched 2026-03-27 00:15)
+  - Wave 1: DB migration + video analyzer lib + enhanced classifier
+  - Wave 2: Sync with video analysis
+  - Wave 3: Audit page UI (/ads/audit) with inline corrections
+  - Wave 4: Reclassify + test
+- **TASK-050** — Ad Performance Data Foundation (DELTA — extending existing code) → ✅ done
+- **TASK-051** — Saves-Weighted Scoring + Ad Potential Badge → ✅ done
+- **TASK-052** — Ad Correlation Dashboard → ✅ done
 - **TASK-053** — Ad Feedback into Generation Engine (blocked on 050+052)
 
 ### Phase 4d Tasks — ALL COMPLETE ✅

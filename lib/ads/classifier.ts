@@ -50,6 +50,8 @@ export interface AdCreativeInput {
   adset_name: string | null
   campaign_name: string | null
   creative_format: string | null
+  video_transcription?: string | null
+  frame_descriptions?: Array<{ timestamp_s: number; description: string }> | null
 }
 
 const SYSTEM_PROMPT = `You are an expert media buyer and ad strategist analyzing Meta ad creatives.
@@ -135,6 +137,8 @@ async function classifyBatch(
       `</ad_content>`,
       `Format: ${ad.creative_format || 'unknown'}`,
       imageUrl ? `Image/Thumbnail URL: ${imageUrl}` : null,
+      ad.video_transcription ? `Video Transcription: ${sanitize(ad.video_transcription, 1500)}` : null,
+      ad.frame_descriptions?.length ? `Video Visuals: ${ad.frame_descriptions.map(f => `[${f.timestamp_s}s] ${sanitize(f.description, 200)}`).join(' | ')}` : null,
       ad.adset_name ? `Ad Set: ${sanitize(ad.adset_name, 200)}` : null,
       ad.campaign_name ? `Campaign: ${sanitize(ad.campaign_name, 200)}` : null,
     ].filter(Boolean).join('\n')

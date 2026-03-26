@@ -23,6 +23,7 @@ import {
   getClassificationVersion,
   type AdCreativeInput,
 } from '@/lib/ads/classifier'
+import { getMetaVideoUrl, analyzeAdVideo } from '@/lib/ads/video-analyzer'
 
 export const maxDuration = 120
 
@@ -225,6 +226,7 @@ export async function POST(request: Request) {
         link_description: creative.link_description || null,
         image_url: creative.image_url || null,
         video_thumbnail_url: creative.thumbnail_url || null,
+        video_id: creative.video_id || null,
         creative_format: format,
         carousel_cards: carouselCards,
         campaign_name: ad.campaign_name,
@@ -247,11 +249,48 @@ export async function POST(request: Request) {
       }
     }
 
+    // 4.5. Analyze video ads that haven't been analyzed yet
+    let videosAnalyzed = 0
+    const { data: videoAds } = await supabase
+      .from('ad_creatives')
+      .select('id, video_id, creative_format')
+      .eq('user_id', userId)
+      .eq('creative_format', 'video')
+      .is('video_analyzed_at', null)
+      .not('video_id', 'is', null)
+
+    if (videoAds?.length && accessToken) {
+      for (const ad of videoAds) {
+        try {
+          const videoUrl = await getMetaVideoUrl(ad.video_id, accessToken)
+          if (!videoUrl) continue
+
+          const analysis = await analyzeAdVideo(videoUrl)
+
+          await supabase.from('ad_creatives').update({
+            video_url: videoUrl,
+            video_transcription: analysis.transcription,
+            frame_descriptions: analysis.frame_descriptions,
+            video_analyzed_at: new Date().toISOString(),
+            video_analysis_model: 'gemini-3-flash-preview',
+          }).eq('id', ad.id)
+
+          videosAnalyzed++
+          // Rate limit between video analyses
+          if (videoAds.indexOf(ad) < videoAds.length - 1) {
+            await new Promise(r => setTimeout(r, 2000))
+          }
+        } catch (err) {
+          console.error(`[Video Analysis] Failed for ad ${ad.id}:`, err)
+        }
+      }
+    }
+
     // 5. Classify unclassified (or all if reclassify=true)
     let classified = 0
     const classifyQuery = supabase
       .from('ad_creatives')
-      .select('id, headline, body_text, cta_text, link_description, image_url, video_thumbnail_url, adset_name, campaign_name, creative_format')
+      .select('id, headline, body_text, cta_text, link_description, image_url, video_thumbnail_url, adset_name, campaign_name, creative_format, video_transcription, frame_descriptions')
       .eq('user_id', userId)
 
     if (!reclassify) {
@@ -272,6 +311,8 @@ export async function POST(request: Request) {
         adset_name: c.adset_name,
         campaign_name: c.campaign_name,
         creative_format: c.creative_format,
+        video_transcription: c.video_transcription,
+        frame_descriptions: c.frame_descriptions,
       }))
 
       const classifications = await classifyAdCreatives(inputs)
@@ -406,6 +447,7 @@ export async function POST(request: Request) {
       success: true,
       ads_fetched: metaAds.length,
       creatives_upserted: upserted,
+      videos_analyzed: videosAnalyzed,
       creatives_classified: classified,
       performance_updated: perfUpdated,
       errors: errors > 0 ? errors : undefined,
