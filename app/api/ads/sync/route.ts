@@ -55,56 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Date range cannot exceed 90 days' }, { status: 400 });
     }
 
-    // 1. P0 — Rate limiting (Single-flight lock & 1-hour cooldown)
-    const { data: lockData, error: lockError } = await supabase
-      .from('sync_locks')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (lockError) {
-      console.error('[Sync API] Failed to read lock:', lockError.message);
-      return NextResponse.json(
-        { error: 'Failed to check sync status. Please try again.' },
-        { status: 500 }
-      );
-    }
-
-    if (lockData) {
-      // Check single-flight lock
-      if (lockData.is_running) {
-        // Simple expiry for stuck locks (e.g. 10 mins)
-        const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
-        if (new Date(lockData.last_sync_at) > tenMinsAgo) {
-          return NextResponse.json({ error: 'Sync already in progress' }, { status: 429 });
-        }
-      }
-
-      // Check 1-hour cooldown
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      if (lockData.last_sync_at && new Date(lockData.last_sync_at) > oneHourAgo && !body.force) {
-        return NextResponse.json({ error: 'Rate limit: Only 1 sync per hour allowed' }, { status: 429 });
-      }
-    }
-
-    // Acquire lock — fail closed on error
-    const { error: lockAcquireError } = await supabase
-      .from('sync_locks')
-      .upsert({
-        user_id: user.id,
-        is_running: true,
-        last_sync_at: new Date().toISOString()
-      }, { onConflict: 'user_id' });
-
-    if (lockAcquireError) {
-      console.error('[Sync API] Failed to acquire lock:', lockAcquireError.message);
-      return NextResponse.json(
-        { error: 'Failed to acquire sync lock. Please try again.' },
-        { status: 500 }
-      );
-    }
-
-    try {
+    {
       // 1. Get Meta token — try DB first, fallback to env vars
       let accessToken: string | null = null;
       let adAccountId: string | null = null;
@@ -197,16 +148,6 @@ export async function POST(request: NextRequest) {
           ad_account: adAccountId,
           date_range: dateRange
       });
-    } finally {
-      // Release lock — log but don't fail on release error
-      const { error: lockReleaseError } = await supabase
-        .from('sync_locks')
-        .update({ is_running: false })
-        .eq('user_id', user.id);
-
-      if (lockReleaseError) {
-        console.error('[Sync API] Failed to release lock:', lockReleaseError.message);
-      }
     }
   } catch (err: any) {
     console.error('[Sync API] Error:', err.message);
