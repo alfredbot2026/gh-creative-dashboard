@@ -581,7 +581,7 @@ function CreateWizard() {
                     const res = await fetch('/api/create/topics', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ mainTopic: topic || undefined, platform, contentType: goal }),
+                      body: JSON.stringify({ platform, contentType: goal }),
                     })
                     const data = await res.json()
                     setTopicSuggestions(data.subtopics || [])

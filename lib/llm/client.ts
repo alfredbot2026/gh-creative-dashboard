@@ -73,7 +73,8 @@ async function callGemini(
     systemPrompt: string,
     userPrompt: string,
     apiKey: string,
-    model: string
+    model: string,
+    temperature: number = 0.7
 ): Promise<string> {
     const ai = new GoogleGenAI({ apiKey })
 
@@ -82,7 +83,7 @@ async function callGemini(
         contents: userPrompt,
         config: {
             systemInstruction: systemPrompt,
-            temperature: 0.7,
+            temperature,
         },
     })
 
@@ -172,9 +173,11 @@ async function callClaude(
  */
 export async function generateContent(
     systemPrompt: string,
-    userPrompt: string
+    userPrompt: string,
+    options?: { temperature?: number }
 ): Promise<LLMResponse> {
     const errors: string[] = []
+    const temp = options?.temperature ?? 0.7
 
     for (const provider of PROVIDERS) {
         const apiKey = process.env[provider.envKey]
@@ -190,7 +193,7 @@ export async function generateContent(
 
             if (provider.name === 'Gemini') {
                 // Use Gemini SDK
-                content = await callGemini(systemPrompt, userPrompt, apiKey, provider.model)
+                content = await callGemini(systemPrompt, userPrompt, apiKey, provider.model, temp)
             } else {
                 // Use OpenAI-compatible REST
                 content = await callOpenAICompatible(
@@ -299,9 +302,10 @@ export async function generateCreativeJSON<T>(
  */
 export async function generateJSON<T>(
     systemPrompt: string,
-    userPrompt: string
+    userPrompt: string,
+    options?: { temperature?: number }
 ): Promise<{ data: T; provider: string; model: string }> {
-    const response = await generateContent(systemPrompt, userPrompt)
+    const response = await generateContent(systemPrompt, userPrompt, options)
 
     // Strip markdown code fences (```json ... ```)
     let cleaned = response.content.trim()
