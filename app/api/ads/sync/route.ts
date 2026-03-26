@@ -125,7 +125,6 @@ export async function POST(request: NextRequest) {
             video_views_p50: insight.video_views_p50,
             video_views_p75: insight.video_views_p75,
             video_views_p100: insight.video_views_p100,
-            updated_at: new Date().toISOString()
           }, {
             onConflict: 'user_id, meta_ad_id, date_start'
           });

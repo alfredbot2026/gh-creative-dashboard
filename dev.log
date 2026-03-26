@@ -2,7 +2,6 @@
 > gh-creative-dashboard@0.1.0 dev
 > next dev
 
-⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
 ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
  We detected multiple lockfiles and selected the directory of /home/rob/.openclaw/workspace-coding/package-lock.json as the root directory.
  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
@@ -11,11 +10,23 @@
    * /home/rob/.openclaw/workspace-coding/active/gh-creative-dashboard/package-lock.json
 
 ▲ Next.js 16.1.6 (Turbopack)
-- Local:         http://localhost:3001
-- Network:       http://192.168.0.222:3001
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.222:3000
 - Environments: .env.local
 
 ✓ Starting...
-⨯ Unable to acquire lock at /home/rob/.openclaw/workspace-coding/active/gh-creative-dashboard/.next/dev/lock, is another instance of next dev running?
-  Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 1095ms
+ GET /ads 200 in 2.9s (compile: 2.1s, proxy.ts: 515ms, render: 342ms)
+ GET /api/ads/intelligence/map 200 in 1109ms (compile: 230ms, proxy.ts: 219ms, render: 660ms)
+[SocialAnalyzer] Analyzing facebook 110211184011832_357320472634234 (IMAGE: It's the 2nd day of our homeschool set u...)
+[SocialAnalyzer] ✅ 110211184011832_357320472634234 — score: 5.75/10 (caption only)
+[SocialAnalyzer] Analyzing facebook 110211184011832_355273776172237 (IMAGE: Starting a new series as we start our ho...)
+[SocialAnalyzer] ✅ 110211184011832_355273776172237 — score: 3.5/10 (caption only)
+[SocialAnalyzer] Analyzing facebook 110211184011832_353429069690041 (IMAGE: It's Happy Mail time!!! 
+
+Here's what yo...)
+[SocialAnalyzer] ✅ 110211184011832_353429069690041 — score: 3.15/10 (caption only)
+[SocialAnalyzer] Analyzing facebook 110211184011832_352147149818233 (IMAGE: It's a rainy morning!  I hope everyone i...)
+ POST /api/analyze/social 200 in 50s (compile: 158ms, proxy.ts: 18ms, render: 50s)
 [?25h
