@@ -1,10 +1,30 @@
 # GH Creative Dashboard — STATUS
 
-**Last Updated:** 2026-03-25 17:15 PHT
+**Last Updated:** 2026-03-26 16:10 PHT
 
-## Current Phase: UI/UX Polish + Content Engine Foundation
+## Current Phase: Phase 4d — Ad Performance Feedback Loop
 
-### Today's Work (7 commits)
+### Active Work
+- **TASK-050** — Ad Performance Data Foundation (DELTA — extending existing code) → Lead (direct impl)
+- **TASK-051** — Saves-Weighted Scoring + Ad Potential Badge (blocked on 050)
+- **TASK-052** — Ad Correlation Dashboard (blocked on 050)
+- **TASK-053** — Ad Feedback into Generation Engine (blocked on 050+052)
+
+### Phase 4d Tasks Written
+| Task | Description | Track | Status | Depends |
+|------|-------------|-------|--------|---------|
+| TASK-050 | Ad perf DB + Meta sync API + content matching | SECURITY | assigned:blackwidow | — |
+| TASK-051 | Saves-weighted scoring + ad potential badge | DEFAULT | ready | TASK-050 |
+| TASK-052 | Ad ↔ content correlation dashboard | DEFAULT | ready | TASK-050 |
+| TASK-053 | Feed ad ROAS into generation engine | DEFAULT | ready | TASK-050,052 |
+
+### After Phase 4d → Phase 4e (Ad Intelligence + Creative Factory)
+- Spec ready: `specs/phase-4e-ad-intelligence-creative-factory.md`
+- Security addendum: `specs/phase-4e-security-addendum.md`
+- Tony red-team: `reviews/PHASE-4E-RED-TEAM.md`
+- 5 waves, ~16 hrs
+
+### Previous Work (7 commits)
 - ✅ **Carousel Flow Rebuilt** — Full canvas-based editor
   - `ed8ba7d` — Dedicated carousel creation flow
   - `6bfb739` — Integrated into main wizard (same Goal → Structure → Topic flow)
