@@ -182,6 +182,9 @@ export default function InsightsPage() {
           <div className={styles.insightsHeader}>
             <h2 className={styles.insightsTitle}>💡 Key Insights</h2>
             <div style={{display:'flex', gap:'12px'}}>
+              <Link href="/insights/ads" className={styles.topicsLink}>
+                Ad Performance →
+              </Link>
               <Link href="/insights/topics" className={styles.topicsLink}>
                 Topic Analysis →
               </Link>
