@@ -105,6 +105,29 @@
 .frameTime { font-weight: 700; color: var(--color-primary); min-width: 28px; font-variant-numeric: tabular-nums; }
 .frameDesc { color: var(--color-text-dim); line-height: 1.4; }
 
+/* Period selector */
+.periodBar { display: flex; gap: 0.25rem; margin-bottom: 1rem; background: var(--color-surface-low); padding: 3px; border-radius: 10px; }
+.periodBtn { flex: 1; padding: 0.4rem 0.5rem; background: transparent; border: none; border-radius: 8px; font-size: 0.75rem; color: var(--color-text-dim); cursor: pointer; font-weight: 500; transition: all 0.15s; }
+.periodBtn:hover { background: var(--color-surface); color: var(--color-text-muted); }
+.periodBtnActive { background: var(--color-surface); color: var(--color-primary); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+/* Account metrics bar */
+.accountMetrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 0.5rem; margin-bottom: 1.25rem; padding: 0.75rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; }
+.accountMetric { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
+.accountLabel { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-dim); }
+.accountValue { font-size: 1rem; font-weight: 700; color: var(--color-text); }
+
+/* Per-ad metrics grid */
+.metricsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 0.3rem 0.5rem; margin-top: 0.25rem; padding: 0.4rem 0; }
+.metric { display: flex; flex-direction: column; gap: 0; }
+.metricLabel { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-dim); }
+.metricValue { font-size: 0.78rem; font-weight: 600; color: var(--color-text); }
+.metricGood { color: #16a34a; }
+.metricBad { color: #dc2626; }
+
+/* Campaign ROAS */
+.campaignRoas { font-size: 0.72rem; font-weight: 600; color: var(--color-primary); flex-shrink: 0; }
+
 /* Load more */
 .loadMore { text-align: center; margin-top: 1rem; }
 .loadMoreBtn { composes: btnOutline; font-size: 0.8rem; }

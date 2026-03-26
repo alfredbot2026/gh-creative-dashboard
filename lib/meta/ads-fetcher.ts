@@ -33,6 +33,8 @@ export interface AdInsight {
   ctr: number;
   cpc: number;
   cpm: number;
+  reach: number;
+  frequency: number;
   conversions: number;
   conversion_value: number;
   roas: number;
@@ -57,6 +59,7 @@ export async function fetchAdInsights(
   const fields = [
     'ad_id', 'campaign_id', 'adset_id', 'campaign_name', 'adset_name', 'ad_name',
     'spend', 'impressions', 'clicks', 'ctr', 'cpc', 'cpm',
+    'reach', 'frequency',
     'actions', 'action_values',
     'video_p25_watched_actions', 'video_p50_watched_actions',
     'video_p75_watched_actions', 'video_p100_watched_actions',
@@ -125,6 +128,8 @@ export async function fetchAdInsights(
         ctr: parseFloat(item.ctr || '0'),
         cpc: parseFloat(item.cpc || '0'),
         cpm: parseFloat(item.cpm || '0'),
+        reach: parseInt(item.reach || '0', 10),
+        frequency: parseFloat(item.frequency || '0'),
         conversions,
         conversion_value,
         roas,

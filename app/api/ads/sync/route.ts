@@ -117,6 +117,8 @@ export async function POST(request: NextRequest) {
             ctr: insight.ctr,
             cpc: insight.cpc,
             cpm: insight.cpm,
+            reach: insight.reach,
+            frequency: insight.frequency,
             conversions: insight.conversions,
             conversion_value: insight.conversion_value,
             roas: insight.roas,

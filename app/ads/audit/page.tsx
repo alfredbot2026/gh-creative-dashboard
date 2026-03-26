@@ -1,15 +1,17 @@
 /**
- * Ad Classification Audit — Campaign Tree View
+ * Ad Classification Audit — Campaign Tree + Media Buyer Metrics
  * 
- * Groups: Campaign → Ad Set → Ads
- * Active-only by default. Lazy-loaded tree.
- * Inline classification corrections.
+ * Date-range-aware metrics computed from daily data.
+ * ROAS = total_revenue / total_spend (not averaged).
+ * Campaign → Ad Set → Ads tree.
  */
 'use client'
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+
+// ─── Types ───
 
 interface AdCreative {
   id: string
@@ -22,8 +24,6 @@ interface AdCreative {
   video_thumbnail_url: string | null
   headline: string | null
   body_text: string | null
-  cta_text: string | null
-  link_description: string | null
   video_transcription: string | null
   frame_descriptions: Array<{ timestamp_s: number; description: string }> | null
   angle: string | null
@@ -36,19 +36,48 @@ interface AdCreative {
   classification_confidence: number | null
   classification_raw: { reasoning?: string } | null
   ad_status: string | null
-  total_spend: number
-  total_purchases: number
-  avg_roas: number | null
-  avg_cpa: number | null
-  avg_ctr: number | null
-  classified_at: string | null
-  video_analyzed_at: string | null
   is_active: boolean
+  video_analyzed_at: string | null
+}
+
+interface AdMetrics {
+  meta_ad_id: string
+  spend: number
+  impressions: number
+  clicks: number
+  purchases: number
+  revenue: number
+  reach: number
+  roas: number | null
+  cpa: number | null
+  ctr: number
+  cpc: number | null
+  cpm: number | null
+  frequency: number | null
+  hook_rate: number | null
+  hold_rate: number | null
+  video_views: number
+  roas_prev: number | null
+  roas_trend: 'rising' | 'stable' | 'declining' | null
+}
+
+interface AccountMetrics {
+  spend: number
+  impressions: number
+  clicks: number
+  purchases: number
+  revenue: number
+  roas: number | null
+  cpa: number | null
+  ctr: number
+  cpm: number | null
+  frequency: number | null
 }
 
 interface CampaignGroup {
   name: string
-  totalSpend: number
+  spend: number
+  roas: number | null
   adSets: AdSetGroup[]
   activeCount: number
   totalCount: number
@@ -56,8 +85,10 @@ interface CampaignGroup {
 
 interface AdSetGroup {
   name: string
-  ads: AdCreative[]
+  ads: (AdCreative & { metrics?: AdMetrics })[]
 }
+
+// ─── Constants ───
 
 const DIMENSIONS: Record<string, string[]> = {
   angle: ['pain_point', 'aspiration', 'fear', 'social_proof', 'comparison', 'education', 'urgency', 'curiosity', 'transformation', 'authority'],
@@ -77,6 +108,29 @@ const STATUS_CFG: Record<string, { css: string; label: string }> = {
   unknown: { css: 'badgeNew', label: '❓' },
 }
 
+const PERIODS = [
+  { value: '7', label: 'Last 7 days' },
+  { value: '14', label: 'Last 14 days' },
+  { value: '30', label: 'Last 30 days' },
+  { value: '90', label: 'Last 90 days' },
+  { value: 'lifetime', label: 'Lifetime' },
+]
+
+// ─── Helpers ───
+
+function formatPeso(n: number) {
+  return '₱' + n.toLocaleString(undefined, { maximumFractionDigits: 0 })
+}
+
+function TrendBadge({ trend, roas, prev }: { trend: AdMetrics['roas_trend']; roas: number | null; prev: number | null }) {
+  if (!trend || roas === null) return null
+  const arrow = trend === 'rising' ? '↑' : trend === 'declining' ? '↓' : '→'
+  const color = trend === 'rising' ? '#16a34a' : trend === 'declining' ? '#dc2626' : 'var(--color-text-dim)'
+  return <span style={{ color, fontSize: '0.65rem', fontWeight: 700 }} title={prev !== null ? `prev: ${prev.toFixed(1)}x` : ''}>
+    {arrow} {roas.toFixed(1)}x
+  </span>
+}
+
 // ─── Chip ───
 function Chip({ dimension, value, isManual, onCorrect }: {
   dimension: string; value: string | null; isManual: boolean
@@ -84,7 +138,6 @@ function Chip({ dimension, value, isManual, onCorrect }: {
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     if (!open) return
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -112,21 +165,19 @@ function Chip({ dimension, value, isManual, onCorrect }: {
   )
 }
 
-// ─── Ad Card ───
-function AdCard({ ad, onCorrect }: { ad: AdCreative; onCorrect: (id: string, dim: string, val: string) => void }) {
+// ─── Ad Card with Metrics ───
+function AdCard({ ad, onCorrect }: { ad: AdCreative & { metrics?: AdMetrics }; onCorrect: (id: string, d: string, v: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const thumb = ad.image_url || ad.video_thumbnail_url
   const st = STATUS_CFG[ad.ad_status || 'unknown'] || STATUS_CFG.unknown
   const isManual = ad.classification_version === 'manual'
-  const hasTranscript = !!ad.video_transcription
-  const hasFrames = ad.frame_descriptions && ad.frame_descriptions.length > 0
-  const conf = ad.classification_confidence
-  const confCls = conf === null ? '' : conf >= 0.8 ? styles.confHigh : conf >= 0.6 ? styles.confMed : styles.confLow
+  const m = ad.metrics
+  const isVideo = ad.creative_format === 'video'
 
   return (
     <div className={styles.adCard}>
       {thumb ? <img src={thumb} alt="" className={styles.adThumb} />
-        : <div className={styles.adThumbPlaceholder}>{ad.creative_format === 'video' ? '🎬' : ad.creative_format === 'carousel' ? '🎠' : '🖼️'}</div>}
+        : <div className={styles.adThumbPlaceholder}>{isVideo ? '🎬' : ad.creative_format === 'carousel' ? '🎠' : '🖼️'}</div>}
       <div className={styles.adContent}>
         <h4 className={styles.adName}>{ad.ad_name || ad.meta_ad_id}</h4>
         <div className={styles.badgeRow}>
@@ -134,42 +185,89 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative; onCorrect: (id: string, dim
           <span className={`${styles.badge} ${styles[st.css]}`}>{st.label}</span>
           {!ad.is_active && <span className={`${styles.badge} ${styles.badgeInactive}`}>paused</span>}
           {isManual && <span className={`${styles.badge} ${styles.badgeManual}`}>✏️</span>}
-          {hasTranscript && <span className={`${styles.badge} ${styles.badgeTranscribed}`}>📝</span>}
-          {conf !== null && <span className={`${styles.confDot} ${confCls}`} title={`${(conf * 100).toFixed(0)}%`} />}
+          {m?.roas_trend && <TrendBadge trend={m.roas_trend} roas={m.roas} prev={m.roas_prev} />}
         </div>
-        {ad.total_spend > 0 && (
-          <div className={styles.perfRow}>
-            <span className={styles.perfItem}>₱<span className={styles.perfValue}>{ad.total_spend.toLocaleString()}</span></span>
-            {ad.avg_roas !== null && <span className={styles.perfItem}><span className={styles.perfValue}>{ad.avg_roas.toFixed(1)}x</span> ROAS</span>}
-            {ad.avg_cpa !== null && <span className={styles.perfItem}>₱<span className={styles.perfValue}>{ad.avg_cpa.toFixed(0)}</span> CPA</span>}
+
+        {/* Media buyer metrics */}
+        {m && m.spend > 0 && (
+          <div className={styles.metricsGrid}>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Spend</span>
+              <span className={styles.metricValue}>{formatPeso(m.spend)}</span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>ROAS</span>
+              <span className={`${styles.metricValue} ${m.roas !== null && m.roas >= 2 ? styles.metricGood : m.roas !== null && m.roas < 1 ? styles.metricBad : ''}`}>
+                {m.roas !== null ? m.roas.toFixed(2) + 'x' : '—'}
+              </span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>CPA</span>
+              <span className={styles.metricValue}>{m.cpa !== null ? formatPeso(m.cpa) : '—'}</span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>CTR</span>
+              <span className={`${styles.metricValue} ${m.ctr >= 2 ? styles.metricGood : m.ctr < 1 ? styles.metricBad : ''}`}>
+                {m.ctr.toFixed(1)}%
+              </span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>CPM</span>
+              <span className={styles.metricValue}>{m.cpm !== null ? formatPeso(m.cpm) : '—'}</span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Freq</span>
+              <span className={`${styles.metricValue} ${m.frequency !== null && m.frequency > 2.5 ? styles.metricBad : ''}`}>
+                {m.frequency !== null ? m.frequency.toFixed(1) : '—'}
+              </span>
+            </div>
+            {isVideo && m.hook_rate !== null && (
+              <div className={styles.metric}>
+                <span className={styles.metricLabel}>Hook</span>
+                <span className={`${styles.metricValue} ${m.hook_rate >= 30 ? styles.metricGood : m.hook_rate < 15 ? styles.metricBad : ''}`}>
+                  {m.hook_rate.toFixed(0)}%
+                </span>
+              </div>
+            )}
+            {isVideo && m.hold_rate !== null && (
+              <div className={styles.metric}>
+                <span className={styles.metricLabel}>Hold</span>
+                <span className={styles.metricValue}>{m.hold_rate.toFixed(0)}%</span>
+              </div>
+            )}
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Purchases</span>
+              <span className={styles.metricValue}>{m.purchases}</span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Revenue</span>
+              <span className={styles.metricValue}>{formatPeso(m.revenue)}</span>
+            </div>
           </div>
         )}
+
         <div className={styles.chips}>
           {(['angle', 'persona', 'framework', 'hook_type', 'offer_type', 'emotional_tone'] as const).map(d => (
             <Chip key={d} dimension={d} value={ad[d as keyof AdCreative] as string | null} isManual={isManual}
               onCorrect={(dim, val) => onCorrect(ad.id, dim, val)} />
           ))}
         </div>
+
         <button className={styles.expandBtn} onClick={() => setExpanded(!expanded)}>
           {expanded ? '▲ Hide' : '▼ What AI saw'}
         </button>
         {expanded && (
           <div className={styles.expandSection}>
             {ad.body_text && <div className={styles.expandBlock}><div className={styles.expandLabel}>Ad Copy</div><div className={styles.expandText}>{ad.body_text}</div></div>}
-            {hasTranscript && <div className={styles.expandBlock}><div className={styles.expandLabel}>🎙️ Transcription</div><div className={styles.expandText}>{ad.video_transcription}</div></div>}
-            {hasFrames && (
+            {ad.video_transcription && <div className={styles.expandBlock}><div className={styles.expandLabel}>🎙️ Transcription</div><div className={styles.expandText}>{ad.video_transcription}</div></div>}
+            {ad.frame_descriptions?.length ? (
               <div className={styles.expandBlock}>
                 <div className={styles.expandLabel}>🎬 Visual Timeline</div>
-                <div className={styles.frameTimeline}>
-                  {ad.frame_descriptions!.map((f, i) => (
-                    <div key={i} className={styles.frameItem}>
-                      <span className={styles.frameTime}>{f.timestamp_s}s</span>
-                      <span className={styles.frameDesc}>{f.description}</span>
-                    </div>
-                  ))}
-                </div>
+                <div className={styles.frameTimeline}>{ad.frame_descriptions.map((f, i) => (
+                  <div key={i} className={styles.frameItem}><span className={styles.frameTime}>{f.timestamp_s}s</span><span className={styles.frameDesc}>{f.description}</span></div>
+                ))}</div>
               </div>
-            )}
+            ) : null}
             {ad.classification_raw?.reasoning && <div className={styles.expandBlock}><div className={styles.expandLabel}>🧠 Reasoning</div><div className={styles.expandText}>{ad.classification_raw.reasoning}</div></div>}
           </div>
         )}
@@ -179,7 +277,7 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative; onCorrect: (id: string, dim
 }
 
 // ─── Ad Set Row ───
-function AdSetRow({ group, onCorrect }: { group: AdSetGroup; onCorrect: (id: string, dim: string, val: string) => void }) {
+function AdSetRow({ group, onCorrect }: { group: AdSetGroup; onCorrect: (id: string, d: string, v: string) => void }) {
   const [open, setOpen] = useState(false)
   return (
     <div className={styles.adsetGroup}>
@@ -188,29 +286,24 @@ function AdSetRow({ group, onCorrect }: { group: AdSetGroup; onCorrect: (id: str
         <span className={styles.adsetName}>{group.name}</span>
         <span className={styles.adsetCount}>{group.ads.length}</span>
       </div>
-      {open && (
-        <div className={styles.adList}>
-          {group.ads.map(ad => <AdCard key={ad.id} ad={ad} onCorrect={onCorrect} />)}
-        </div>
-      )}
+      {open && <div className={styles.adList}>{group.ads.map(ad => <AdCard key={ad.id} ad={ad} onCorrect={onCorrect} />)}</div>}
     </div>
   )
 }
 
 // ─── Campaign Row ───
-function CampaignRow({ group, onCorrect }: { group: CampaignGroup; onCorrect: (id: string, dim: string, val: string) => void }) {
+function CampaignRow({ group, onCorrect }: { group: CampaignGroup; onCorrect: (id: string, d: string, v: string) => void }) {
   const [open, setOpen] = useState(false)
   return (
     <div className={styles.campaignGroup}>
       <div className={styles.campaignHeader} onClick={() => setOpen(!open)}>
         <span className={`${styles.campaignArrow} ${open ? styles.campaignArrowOpen : ''}`}>▸</span>
         <span className={styles.campaignName}>{group.name}</span>
-        <span className={styles.campaignCount}>{group.activeCount}/{group.totalCount} active</span>
-        {group.totalSpend > 0 && <span className={styles.campaignSpend}>₱{group.totalSpend.toLocaleString()}</span>}
+        {group.roas !== null && <span className={styles.campaignRoas}>{group.roas.toFixed(1)}x ROAS</span>}
+        <span className={styles.campaignCount}>{group.activeCount}/{group.totalCount}</span>
+        {group.spend > 0 && <span className={styles.campaignSpend}>{formatPeso(group.spend)}</span>}
       </div>
-      {open && group.adSets.map(as => (
-        <AdSetRow key={as.name} group={as} onCorrect={onCorrect} />
-      ))}
+      {open && group.adSets.map(as => <AdSetRow key={as.name} group={as} onCorrect={onCorrect} />)}
     </div>
   )
 }
@@ -220,102 +313,96 @@ const INITIAL_CAMPAIGNS = 10
 
 export default function AuditPage() {
   const [allAds, setAllAds] = useState<AdCreative[]>([])
+  const [metricsMap, setMetricsMap] = useState<Map<string, AdMetrics>>(new Map())
+  const [accountMetrics, setAccountMetrics] = useState<AccountMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
+  const [period, setPeriod] = useState('7')
   const [showInactive, setShowInactive] = useState(false)
   const [filterFormat, setFilterFormat] = useState('')
-  const [filterConfidence, setFilterConfidence] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [visibleCount, setVisibleCount] = useState(INITIAL_CAMPAIGNS)
 
-  const fetchAds = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true)
-    try {
-      const res = await fetch('/api/ads/creatives')
-      const data = await res.json()
-      setAllAds(data.creatives || [])
-    } catch (err) { console.error(err) }
+    const [adsRes, metricsRes] = await Promise.all([
+      fetch('/api/ads/creatives'),
+      fetch(`/api/ads/metrics?period=${period}&compare=true`),
+    ])
+    const adsData = await adsRes.json()
+    const metricsData = await metricsRes.json()
+
+    setAllAds(adsData.creatives || [])
+    setAccountMetrics(metricsData.account || null)
+
+    const map = new Map<string, AdMetrics>()
+    for (const m of metricsData.ads || []) {
+      map.set(m.meta_ad_id, m)
+    }
+    setMetricsMap(map)
     setLoading(false)
-  }, [])
+  }, [period])
 
-  useEffect(() => { fetchAds() }, [fetchAds])
+  useEffect(() => { fetchAll() }, [fetchAll])
 
-  // Filter
-  const filtered = useMemo(() => {
-    let ads = allAds
+  // Merge ads with metrics + filter
+  const enrichedAds = useMemo(() => {
+    let ads = allAds.map(ad => ({ ...ad, metrics: metricsMap.get(ad.meta_ad_id) }))
     if (!showInactive) ads = ads.filter(a => a.is_active)
     if (filterFormat) ads = ads.filter(a => a.creative_format === filterFormat)
     if (filterStatus) ads = ads.filter(a => a.ad_status === filterStatus)
-    if (filterConfidence === 'low') ads = ads.filter(a => (a.classification_confidence ?? 0) < 0.6)
-    else if (filterConfidence === 'medium') ads = ads.filter(a => { const c = a.classification_confidence ?? 0; return c >= 0.6 && c < 0.8 })
-    else if (filterConfidence === 'high') ads = ads.filter(a => (a.classification_confidence ?? 0) >= 0.8)
     return ads
-  }, [allAds, showInactive, filterFormat, filterStatus, filterConfidence])
+  }, [allAds, metricsMap, showInactive, filterFormat, filterStatus])
 
-  // Group into campaign tree, sorted by total spend desc
+  // Group into campaign tree
   const campaigns = useMemo(() => {
-    const map = new Map<string, AdCreative[]>()
-    for (const ad of filtered) {
+    const map = new Map<string, (AdCreative & { metrics?: AdMetrics })[]>()
+    for (const ad of enrichedAds) {
       const key = ad.campaign_name || 'Uncategorized'
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(ad)
     }
     const groups: CampaignGroup[] = []
     for (const [name, ads] of map) {
-      const adSetMap = new Map<string, AdCreative[]>()
+      const adSetMap = new Map<string, (AdCreative & { metrics?: AdMetrics })[]>()
       for (const ad of ads) {
         const key = ad.adset_name || 'Default'
         if (!adSetMap.has(key)) adSetMap.set(key, [])
         adSetMap.get(key)!.push(ad)
       }
       const adSets: AdSetGroup[] = Array.from(adSetMap.entries()).map(([n, a]) => ({ name: n, ads: a }))
-      const totalSpend = ads.reduce((s, a) => s + (a.total_spend || 0), 0)
-      const activeCount = ads.filter(a => a.is_active).length
-      groups.push({ name, totalSpend, adSets, activeCount, totalCount: ads.length })
+      const spend = ads.reduce((s, a) => s + (a.metrics?.spend || 0), 0)
+      const revenue = ads.reduce((s, a) => s + (a.metrics?.revenue || 0), 0)
+      const roas = spend > 0 ? Math.round((revenue / spend) * 100) / 100 : null
+      groups.push({ name, spend, roas, adSets, activeCount: ads.filter(a => a.is_active).length, totalCount: ads.length })
     }
-    groups.sort((a, b) => b.totalSpend - a.totalSpend)
+    groups.sort((a, b) => b.spend - a.spend)
     return groups
-  }, [filtered])
-
-  const visibleCampaigns = campaigns.slice(0, visibleCount)
-  const hasMore = visibleCount < campaigns.length
+  }, [enrichedAds])
 
   const handleSync = async (reclassify = false) => {
     setSyncing(true)
-    setSyncMsg(reclassify ? 'Reclassifying + analyzing videos...' : 'Syncing from Meta...')
+    setSyncMsg(reclassify ? 'Reclassifying...' : 'Syncing...')
     try {
-      const res = await fetch('/api/ads/creatives/sync', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reclassify }),
-      })
+      const res = await fetch('/api/ads/creatives/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reclassify }) })
       const data = await res.json()
-      if (data.success) {
-        setSyncMsg(`Done — ${data.ads_fetched} ads, ${data.videos_analyzed || 0} videos, ${data.creatives_classified} classified`)
-        await fetchAds()
-      } else setSyncMsg(`Error: ${data.error}`)
+      setSyncMsg(data.success ? `Done — ${data.ads_fetched} ads, ${data.videos_analyzed || 0} videos, ${data.creatives_classified} classified` : `Error: ${data.error}`)
+      await fetchAll()
     } catch (err) { setSyncMsg(`Failed: ${err}`) }
     setSyncing(false)
   }
 
-  const handleCorrect = async (id: string, dimension: string, value: string) => {
-    setAllAds(prev => prev.map(ad => ad.id === id ? { ...ad, [dimension]: value, classification_version: 'manual' } : ad))
-    try {
-      await fetch('/api/ads/creatives', {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, corrections: { [dimension]: value } }),
-      })
-    } catch { await fetchAds() }
+  const handleCorrect = async (id: string, dim: string, val: string) => {
+    setAllAds(prev => prev.map(ad => ad.id === id ? { ...ad, [dim]: val, classification_version: 'manual' } : ad))
+    try { await fetch('/api/ads/creatives', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, corrections: { [dim]: val } }) }) }
+    catch { await fetchAll() }
   }
 
-  // Stats
-  const total = allAds.length
+  const a = accountMetrics
   const active = allAds.filter(a => a.is_active).length
   const videoAnalyzed = allAds.filter(a => a.video_analyzed_at).length
   const videoTotal = allAds.filter(a => a.creative_format === 'video').length
-  const confAds = allAds.filter(a => a.classification_confidence != null)
-  const avgConf = confAds.length > 0 ? confAds.reduce((s, a) => s + (a.classification_confidence || 0), 0) / confAds.length : 0
-  const manualCount = allAds.filter(a => a.classification_version === 'manual').length
 
   if (loading) return <div className={styles.page}><div className={styles.loading}>Loading...</div></div>
 
@@ -323,8 +410,8 @@ export default function AuditPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Classification Audit</h1>
-          <p className={styles.subtitle}>Campaign → Ad Set → Ads. Click any classification to correct it.</p>
+          <h1 className={styles.title}>Ad Audit</h1>
+          <p className={styles.subtitle}>Metrics computed from daily data. Click classifications to correct.</p>
         </div>
         <div className={styles.headerActions}>
           <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
@@ -335,14 +422,57 @@ export default function AuditPage() {
 
       {syncMsg && <div className={styles.syncMsg}>{syncMsg}</div>}
 
-      <div className={styles.statsRow}>
-        <div className={styles.statCard}><span className={styles.statEmoji}>📊</span><span className={styles.statValue}>{active}/{total}</span><span className={styles.statLabel}>Active Ads</span></div>
-        <div className={styles.statCard}><span className={styles.statEmoji}>🎬</span><span className={styles.statValue}>{videoAnalyzed}/{videoTotal}</span><span className={styles.statLabel}>Videos Analyzed</span></div>
-        <div className={styles.statCard}><span className={styles.statEmoji}>🎯</span><span className={styles.statValue}>{(avgConf * 100).toFixed(0)}%</span><span className={styles.statLabel}>Avg Confidence</span></div>
-        <div className={styles.statCard}><span className={styles.statEmoji}>✏️</span><span className={styles.statValue}>{manualCount}</span><span className={styles.statLabel}>Manual Fixes</span></div>
-        <div className={styles.statCard}><span className={styles.statEmoji}>📁</span><span className={styles.statValue}>{campaigns.length}</span><span className={styles.statLabel}>Campaigns</span></div>
+      {/* Period selector */}
+      <div className={styles.periodBar}>
+        {PERIODS.map(p => (
+          <button key={p.value} className={`${styles.periodBtn} ${period === p.value ? styles.periodBtnActive : ''}`}
+            onClick={() => { setPeriod(p.value); setVisibleCount(INITIAL_CAMPAIGNS) }}>
+            {p.label}
+          </button>
+        ))}
       </div>
 
+      {/* Account-level metrics */}
+      {a && (
+        <div className={styles.accountMetrics}>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>Spend</span>
+            <span className={styles.accountValue}>{formatPeso(a.spend)}</span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>Revenue</span>
+            <span className={styles.accountValue}>{formatPeso(a.revenue)}</span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>ROAS</span>
+            <span className={`${styles.accountValue} ${a.roas !== null && a.roas >= 2 ? styles.metricGood : a.roas !== null && a.roas < 1 ? styles.metricBad : ''}`}>
+              {a.roas !== null ? a.roas.toFixed(2) + 'x' : '—'}
+            </span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>Purchases</span>
+            <span className={styles.accountValue}>{a.purchases}</span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>CPA</span>
+            <span className={styles.accountValue}>{a.cpa !== null ? formatPeso(a.cpa) : '—'}</span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>CTR</span>
+            <span className={styles.accountValue}>{a.ctr.toFixed(1)}%</span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>CPM</span>
+            <span className={styles.accountValue}>{a.cpm !== null ? formatPeso(a.cpm) : '—'}</span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>Videos</span>
+            <span className={styles.accountValue}>{videoAnalyzed}/{videoTotal}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
       <div className={styles.toolbar}>
         <select className={styles.filterSelect} value={filterFormat} onChange={e => setFilterFormat(e.target.value)}>
           <option value="">All Formats</option>
@@ -357,27 +487,22 @@ export default function AuditPage() {
           <option value="dead">Kill</option>
           <option value="new">New</option>
         </select>
-        <select className={styles.filterSelect} value={filterConfidence} onChange={e => setFilterConfidence(e.target.value)}>
-          <option value="">All Confidence</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
         <label className={styles.toggle}>
           <input type="checkbox" className={styles.toggleCheck} checked={showInactive} onChange={e => setShowInactive(e.target.checked)} />
-          Show inactive ({total - active})
+          Inactive ({allAds.length - active})
         </label>
       </div>
 
+      {/* Campaign tree */}
       {campaigns.length === 0 ? (
         <div className={styles.empty}>No ads match your filters.</div>
       ) : (
         <>
-          {visibleCampaigns.map(c => <CampaignRow key={c.name} group={c} onCorrect={handleCorrect} />)}
-          {hasMore && (
+          {campaigns.slice(0, visibleCount).map(c => <CampaignRow key={c.name} group={c} onCorrect={handleCorrect} />)}
+          {visibleCount < campaigns.length && (
             <div className={styles.loadMore}>
               <button className={styles.loadMoreBtn} onClick={() => setVisibleCount(v => v + 10)}>
-                Show more campaigns ({campaigns.length - visibleCount} remaining)
+                Show more ({campaigns.length - visibleCount} remaining)
               </button>
             </div>
           )}
