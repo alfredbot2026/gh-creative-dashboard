@@ -15,6 +15,7 @@
  */
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { fetchAdCreatives, getMetaCredentials } from '@/lib/meta/client'
 import {
   classifyAdCreatives,
@@ -104,11 +105,33 @@ function detectFormat(creative: MetaAdWithCreative['creative']): string {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { user }, error: authErr } = await supabase.auth.getUser()
+  // Auth: Supabase session OR cron secret header
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = request.headers.get('authorization')
+  const isCronAuth = cronSecret && authHeader === `Bearer ${cronSecret}`
 
-  if (authErr || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let supabase: any
+  let userId: string
+
+  if (isCronAuth) {
+    // Cron/internal call — use service role client
+    supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    )
+    const { data: tokenRow } = await supabase.from('meta_tokens').select('user_id').limit(1).single()
+    userId = tokenRow?.user_id || ''
+    if (!userId) {
+      return NextResponse.json({ error: 'No user with Meta token found' }, { status: 400 })
+    }
+  } else {
+    supabase = await createClient()
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    if (authErr || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    userId = user.id
   }
 
   try {
@@ -123,7 +146,7 @@ export async function POST(request: Request) {
     const { data: tokenData } = await supabase
       .from('meta_tokens')
       .select('access_token, page_id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (tokenData?.access_token) {
@@ -190,7 +213,7 @@ export async function POST(request: Request) {
       }
 
       const row = {
-        user_id: user.id,
+        user_id: userId,
         meta_ad_id: ad.id,
         meta_creative_id: creative.id || null,
         meta_campaign_id: ad.campaign_id,
@@ -229,7 +252,7 @@ export async function POST(request: Request) {
     const classifyQuery = supabase
       .from('ad_creatives')
       .select('id, headline, body_text, cta_text, link_description, image_url, video_thumbnail_url, adset_name, campaign_name, creative_format')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     if (!reclassify) {
       classifyQuery.is('classified_at', null)
@@ -238,7 +261,7 @@ export async function POST(request: Request) {
     const { data: toClassify } = await classifyQuery
 
     if (toClassify && toClassify.length > 0) {
-      const inputs: AdCreativeInput[] = toClassify.map(c => ({
+      const inputs: AdCreativeInput[] = toClassify.map((c: any) => ({
         id: c.id,
         headline: c.headline,
         body_text: c.body_text,
@@ -281,13 +304,13 @@ export async function POST(request: Request) {
     const { data: creatives } = await supabase
       .from('ad_creatives')
       .select('id, meta_ad_id, ad_name')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     // Pre-fetch ALL ad_performance rows for this user (avoid N+1 queries)
     const { data: allPerfRows } = await supabase
       .from('ad_performance')
       .select('meta_ad_id, ad_name, spend, conversions, impressions, roas, ctr, cpa, date_start')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .gt('spend', 0)
 
     if (creatives && allPerfRows && allPerfRows.length > 0) {
@@ -317,16 +340,16 @@ export async function POST(request: Request) {
         if (!perfRows || perfRows.length === 0) continue
 
         {
-          const totalSpend = perfRows.reduce((s, r) => s + (r.spend || 0), 0)
-          const totalPurchases = perfRows.reduce((s, r) => s + (r.conversions || 0), 0)
-          const totalImpressions = perfRows.reduce((s, r) => s + (r.impressions || 0), 0)
-          const roasValues = perfRows.filter(r => r.roas && r.roas > 0).map(r => r.roas!)
-          const ctrValues = perfRows.filter(r => r.ctr && r.ctr > 0).map(r => r.ctr!)
-          const avgRoas = roasValues.length > 0 ? roasValues.reduce((a, b) => a + b, 0) / roasValues.length : null
-          const avgCtr = ctrValues.length > 0 ? ctrValues.reduce((a, b) => a + b, 0) / ctrValues.length : null
+          const totalSpend = perfRows.reduce((s: number, r: any) => s + (r.spend || 0), 0)
+          const totalPurchases = perfRows.reduce((s: number, r: any) => s + (r.conversions || 0), 0)
+          const totalImpressions = perfRows.reduce((s: number, r: any) => s + (r.impressions || 0), 0)
+          const roasValues = perfRows.filter((r: any) => r.roas && r.roas > 0).map((r: any) => r.roas!)
+          const ctrValues = perfRows.filter((r: any) => r.ctr && r.ctr > 0).map((r: any) => r.ctr!)
+          const avgRoas = roasValues.length > 0 ? roasValues.reduce((a: number, b: number) => a + b, 0) / roasValues.length : null
+          const avgCtr = ctrValues.length > 0 ? ctrValues.reduce((a: number, b: number) => a + b, 0) / ctrValues.length : null
           const avgCpa = totalPurchases > 0 ? totalSpend / totalPurchases : null
 
-          const dates = perfRows.map(r => r.date_start).filter(Boolean).sort()
+          const dates = perfRows.map((r: any) => r.date_start).filter(Boolean).sort()
           const firstDate = dates[0] || null
           const lastDate = dates[dates.length - 1] || null
 
@@ -336,16 +359,16 @@ export async function POST(request: Request) {
           const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
           
           const recentRoas = perfRows
-            .filter(r => r.date_start && new Date(r.date_start) >= sevenDaysAgo && r.roas)
-            .map(r => r.roas!)
+            .filter((r: any) => r.date_start && new Date(r.date_start) >= sevenDaysAgo && r.roas)
+            .map((r: any) => r.roas!)
           const olderRoas = perfRows
-            .filter(r => r.date_start && new Date(r.date_start) >= fourteenDaysAgo && new Date(r.date_start) < sevenDaysAgo && r.roas)
-            .map(r => r.roas!)
+            .filter((r: any) => r.date_start && new Date(r.date_start) >= fourteenDaysAgo && new Date(r.date_start) < sevenDaysAgo && r.roas)
+            .map((r: any) => r.roas!)
 
           let roasTrend: 'rising' | 'stable' | 'declining' | null = null
           if (recentRoas.length >= 2 && olderRoas.length >= 2) {
-            const recentAvg = recentRoas.reduce((a, b) => a + b, 0) / recentRoas.length
-            const olderAvg = olderRoas.reduce((a, b) => a + b, 0) / olderRoas.length
+            const recentAvg = recentRoas.reduce((a: number, b: number) => a + b, 0) / recentRoas.length
+            const olderAvg = olderRoas.reduce((a: number, b: number) => a + b, 0) / olderRoas.length
             const ratio = olderAvg > 0 ? recentAvg / olderAvg : 1
             if (ratio > 1.2) roasTrend = 'rising'
             else if (ratio < 0.8) roasTrend = 'declining'
