@@ -253,7 +253,7 @@
 
 ### Deferred to later phases:
 - Block swap UI (after structures are proven)
-- Topic intelligence engine (needs more performance data)
+- Topic intelligence engine (data prerequisites now met — build after 4e, see red-team notes in memory/2026-03-26.md)
 - Working documents + PDF export
 - Image+text compositing (Phase 4b)
 - Competitive intelligence (Phase 4c)
@@ -347,15 +347,58 @@
 
 ---
 
-## Phase 4e — Chatbot Intelligence Integration (FUTURE)
+## Phase 4e — Ad Intelligence + Creative Factory
+**Goal:** AI media buyer brain that audits the ad account, finds gaps, and a creative factory that produces the missing ads.
+**Status:** `SPEC_READY` 📋
+**Depends on:** Phase 4d (Ad Performance Ingest)
+**Builds on:** Phase 4d, AD-FRAMEWORKS.md, Content Engine V2 Vision, existing carousel builder + image gen
+**Decision:** Rob 2026-03-26 — "We're creating a media buyer company + creative company. SaaS-ready UI."
+
+### System 1: Ad Intelligence (Media Buyer Brain)
+- Ingest ALL ad creatives from Meta (images, copy, metrics)
+- AI classification: angle, persona, framework, hook, offer, tone per ad
+- Ad Account Map: angle × persona matrix showing coverage + performance
+- Gap analysis: untested combos, saturation detection, strategic recommendations
+
+### System 2: Creative Factory (Agency)
+- Takes media buyer recommendations → generates ready-to-use creatives
+- Single ad mode: 3-5 variants per angle (copy + static image + carousel)
+- Batch mode: "Generate this week's test creatives" (3 batches × 3-5 ads)
+- Weekly creative planner aligned with 3-phase testing framework
+- Performance loop: track factory-generated ads, learn, improve recommendations
+
+### Waves
+1. Ad Creative Ingest + Classification (~4 hrs)
+2. Ad Account Map + Gap Analysis (~3 hrs)
+3. Creative Factory — Single Ad (~4 hrs)
+4. Batch Mode + Weekly Planner (~3 hrs)
+5. Performance Loop + Learning (~2 hrs)
+
+**Total: ~16 hrs | Spec:** `specs/phase-4e-ad-intelligence-creative-factory.md`
+
+### UI Pages
+- `/ads` — Dashboard (Working ✅ / Tired 😴 / Kill ❌ + recommendations)
+- `/ads/strategy` — Ad Account Map (interactive angle × persona matrix)
+- `/ads/create` — Creative Factory (single ad generation)
+- `/ads/weekly` — Weekly Creative Planner (batch generation)
+
+### SaaS considerations
+- Self-explanatory UI (no media buyer jargon)
+- Onboarding: connect Meta → classify → show map → first recommendation in < 5 min
+- Ad Account Map is the "aha moment"
+- Multi-tenant, RLS enforced
+
+---
+
+## Phase 4f — Chatbot Intelligence Integration (FUTURE)
 **Goal:** Mine GH Creative chatbot conversations for customer insights that improve content generation.
 **Status:** `QUEUED` — data available, spec needed
-**Depends on:** Chatbot data access, Phase 4d (feedback loop infrastructure)
+**Depends on:** Chatbot data access, Phase 4e (ad intelligence infrastructure)
 
 **Concept:**
 - Extract buying triggers, objections, pain points, and FAQ patterns from chatbot logs
 - Build customer persona profiles from real conversation data
-- Feed into synthetic audience testing (Phase 4d-5)
+- Feed into synthetic audience testing (Phase 4e Wave 5)
 - Surface "what customers actually ask about" as topic suggestions in `/create`
 - Identify product/content gaps: "Customers keep asking about X but Grace has no content on it"
 

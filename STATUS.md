@@ -35,8 +35,13 @@
 - Image generation (new Gemini API)
 
 ### Next Up
-1. Fix analysis crons (bump timeout or switch to direct curl)
-2. Test carousel on Vercel
-3. Content Engine V2 vision (Phase 4d queued)
-4. Calendar rethink
-5. **Opus Action Required:** Regenerate stale `references/ARCHITECTURE.md` (>24h old) before starting Phase 4d tasks.
+1. ~~Fix analysis crons~~ ✅ (bumped 300s, IG+YT done, disabled)
+2. ~~Topic generation fix~~ ✅ (topic bank, temp 1.1, cache-first)
+3. Test carousel + topic bank on Vercel
+4. Phase 4d: Ad Performance Ingest (prerequisite for 4e)
+5. **Phase 4e: Ad Intelligence + Creative Factory** — SPEC READY
+   - Spec: `specs/phase-4e-ad-intelligence-creative-factory.md`
+   - System 1: Media Buyer Brain + System 2: Creative Factory
+   - ~16 hrs across 5 waves
+6. Topic Intelligence Engine (after 4e)
+7. Calendar rethink
