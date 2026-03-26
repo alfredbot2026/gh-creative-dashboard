@@ -3,6 +3,7 @@ import { generateCreativeJSON } from '@/lib/llm/client'
 import { getContentTypeContext } from '@/lib/create/kb-retriever'
 import { generateImage } from '@/lib/create/image-generator-api'
 import { getOrCreateSession } from '@/lib/create/session-manager'
+import { getAdPerformanceContext } from '@/lib/create/ad-performance-context'
 import { createClient } from '@/lib/supabase/server'
 
 interface GenerateRequest {
@@ -397,10 +398,21 @@ CRITICAL: You must generate a scene for EVERY block listed above. If the structu
     const filteredProductContext = sellGoals.includes(contentType) ? productContext : ''
     const ctaRule = goalCTARules[contentType] || goalCTARules.educate
 
+    // 4.5 Load ad performance feedback (if available + relevant goal)
+    let adPerformancePrompt = ''
+    if (userId && ['sell', 'announce', 'prove'].includes(contentType)) {
+      try {
+        const adCtx = await getAdPerformanceContext(userId)
+        if (adCtx.hasEnoughData) {
+          adPerformancePrompt = '\n' + adCtx.promptFragment + '\n'
+        }
+      } catch { /* non-fatal */ }
+    }
+
     const userPrompt = `Objective: Create "${contentType}" content for ${platform}. Follow the ${contentType.toUpperCase()} content type rules STRICTLY — the hook style, structure, MUST and MUST NOT constraints.
 
 ${ctaRule}
-${topicContext}
+${topicContext}${adPerformancePrompt}
 CONTENT FRAMEWORKS TO USE (choose the best structure for each variant):
 ${JSON.stringify(kbContext.entries.slice(0, 8).map(e => ({ title: e.title, content: e.content?.substring(0, 500) })))}
 

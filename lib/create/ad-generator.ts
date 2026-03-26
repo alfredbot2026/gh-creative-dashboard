@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { generateJSON } from '@/lib/llm/client'
 import { getAdGenerationContext, getContextWithPinnedSelections, getBrandContext } from './kb-retriever'
+import { getAdPerformanceContext } from './ad-performance-context'
 import type { AdGenerationRequest, AdGenerationResponse, AdVariant, AdFramework } from './ad-types'
 import type { BrandStyleGuide } from '@/lib/brand/types'
 import { checkQualityGate } from '@/lib/eval/quality-gate'
@@ -84,7 +85,8 @@ Rules:
 }
 
 export async function generateAdCopy(
-  request: AdGenerationRequest
+  request: AdGenerationRequest,
+  userId?: string,
 ): Promise<AdGenerationResponse> {
   // 1. Load brand style guide
   const brandRaw = await getBrandContext()
@@ -115,8 +117,21 @@ export async function generateAdCopy(
       )
     : { ...(await getAdGenerationContext(15)), pinnedHook: undefined, pinnedFramework: undefined }
 
+  // 3.5. Load ad performance context (feedback loop)
+  let adContextFragment = ''
+  if (userId) {
+    try {
+      const adCtx = await getAdPerformanceContext(userId)
+      if (adCtx.hasEnoughData) {
+        adContextFragment = '\n' + adCtx.promptFragment + '\n'
+      }
+    } catch (err) {
+      console.warn('[Ad Generator] Could not load ad performance context:', err)
+    }
+  }
+
   // 4. Build Prompt
-  const prompt = buildAdPrompt(request, kbEntries, brand, frameworksContent, pinnedHook, pinnedFramework)
+  const prompt = buildAdPrompt(request, kbEntries, brand, frameworksContent + adContextFragment, pinnedHook, pinnedFramework)
 
   // 5. Call Gemini
   const { data: rawResponse, model } = await generateJSON<RawAdGenerationResponse>(

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call ad-generator
-    const result = await generateAdCopy(body)
+    const result = await generateAdCopy(body, userId)
 
     // Save to content_items
     const contentType = body.ad_format === 'video_script' ? 'ad-video-script' : 'ad-static'
