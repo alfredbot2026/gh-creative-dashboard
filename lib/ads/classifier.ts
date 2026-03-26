@@ -132,6 +132,8 @@ async function classifyBatch(
       `<ad_content>`,
       ad.headline ? `Headline: ${sanitize(ad.headline)}` : null,
       ad.body_text ? `Body: ${sanitize(ad.body_text, 800)}` : null,
+      ad.video_transcription ? `Video Transcription: ${sanitize(ad.video_transcription, 1500)}` : null,
+      ad.frame_descriptions?.length ? `Video Visuals: ${ad.frame_descriptions.map(f => `[${f.timestamp_s}s] ${sanitize(f.description, 200)}`).join(' | ')}` : null,
       ad.cta_text ? `CTA: ${sanitize(ad.cta_text)}` : null,
       ad.link_description ? `Link Description: ${sanitize(ad.link_description)}` : null,
       `</ad_content>`,

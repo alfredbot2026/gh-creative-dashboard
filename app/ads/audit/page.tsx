@@ -2,12 +2,13 @@
  * Ad Classification Audit Page
  * 
  * View all ad creatives with their AI classifications.
- * Correct mistakes inline. See what the classifier "saw" (caption, transcription, frames).
- * Filter by format, confidence, status, classification version.
+ * Correct mistakes inline. See what the classifier "saw".
+ * Matches Loom & Petal design system.
  */
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import styles from './page.module.css'
 
 interface AdCreative {
@@ -54,13 +55,13 @@ const DIMENSIONS: Record<string, string[]> = {
   emotional_tone: ['warm', 'urgent', 'educational', 'aspirational', 'fear', 'empowering', 'playful', 'authoritative', 'nostalgic', 'relieved'],
 }
 
-const STATUS_BADGE: Record<string, { class: string; label: string }> = {
-  winning: { class: 'badgeWinning', label: '✅ Working' },
-  tired: { class: 'badgeTired', label: '😴 Tired' },
-  dead: { class: 'badgeDead', label: '❌ Kill' },
-  weak: { class: 'badgeWeak', label: '⚠️ Weak' },
-  new: { class: 'badgeNew', label: '🆕 New' },
-  unknown: { class: 'badgeNew', label: '❓ Unknown' },
+const STATUS_CONFIG: Record<string, { css: string; label: string; emoji: string }> = {
+  winning: { css: 'badgeWinning', label: 'Working', emoji: '✅' },
+  tired: { css: 'badgeTired', label: 'Tired', emoji: '😴' },
+  dead: { css: 'badgeDead', label: 'Turn Off', emoji: '❌' },
+  weak: { css: 'badgeWeak', label: 'Weak', emoji: '⚠️' },
+  new: { css: 'badgeNew', label: 'New', emoji: '🆕' },
+  unknown: { css: 'badgeNew', label: 'Unknown', emoji: '❓' },
 }
 
 function ClassificationChip({
@@ -78,15 +79,18 @@ function ClassificationChip({
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    if (open) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    if (open) document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
 
   const options = DIMENSIONS[dimension] || []
-  const label = dimension.replace(/_/g, ' ')
+  const shortLabel = dimension === 'hook_type' ? 'hook'
+    : dimension === 'offer_type' ? 'offer'
+    : dimension === 'emotional_tone' ? 'tone'
+    : dimension
 
   return (
     <div
@@ -94,8 +98,8 @@ function ClassificationChip({
       className={`${styles.chip} ${isManual ? styles.chipManual : ''}`}
       onClick={() => setOpen(!open)}
     >
-      <span className={styles.chipLabel}>{label}:</span>
-      <span className={styles.chipValue}>{value || '—'}</span>
+      <span className={styles.chipLabel}>{shortLabel}:</span>
+      <span className={styles.chipValue}>{value?.replace(/_/g, ' ') || '—'}</span>
       {open && (
         <div className={styles.chipDropdown}>
           {options.map(opt => (
@@ -120,50 +124,46 @@ function ClassificationChip({
 function ConfidenceDot({ confidence }: { confidence: number | null }) {
   if (confidence === null) return null
   const cls = confidence >= 0.8 ? styles.confHigh : confidence >= 0.6 ? styles.confMed : styles.confLow
-  return <span className={`${styles.confDot} ${cls}`} title={`Confidence: ${(confidence * 100).toFixed(0)}%`} />
+  return <span className={`${styles.confDot} ${cls}`} title={`${(confidence * 100).toFixed(0)}% confidence`} />
 }
 
 function AdCard({ ad, onCorrect }: { ad: AdCreative; onCorrect: (id: string, dim: string, val: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const thumb = ad.image_url || ad.video_thumbnail_url
-  const status = STATUS_BADGE[ad.ad_status || 'unknown'] || STATUS_BADGE.unknown
+  const status = STATUS_CONFIG[ad.ad_status || 'unknown'] || STATUS_CONFIG.unknown
   const isManual = ad.classification_version === 'manual'
-  const hasVideo = ad.creative_format === 'video'
   const hasTranscription = !!ad.video_transcription
   const hasFrames = ad.frame_descriptions && ad.frame_descriptions.length > 0
 
   return (
     <div className={styles.adCard}>
       {thumb ? (
-        <img src={thumb} alt="" className={styles.adThumb} />
+        <img src={thumb} alt={ad.ad_name || ''} className={styles.adThumb} />
       ) : (
         <div className={styles.adThumbPlaceholder}>
-          {hasVideo ? '🎬' : '🖼️'}
+          {ad.creative_format === 'video' ? '🎬' : ad.creative_format === 'carousel' ? '🎠' : '🖼️'}
         </div>
       )}
       <div className={styles.adContent}>
         <h3 className={styles.adName}>{ad.ad_name || ad.meta_ad_id}</h3>
-        <div className={styles.adMeta}>
-          {ad.campaign_name} › {ad.adset_name}
-        </div>
-        <div className={styles.adBadges}>
-          <span className={`${styles.badge} ${styles.badgeFormat}`}>
-            {ad.creative_format}
-          </span>
-          <span className={`${styles.badge} ${styles.badgeStatus} ${styles[status.class]}`}>
-            {status.label}
-          </span>
+        <div className={styles.adMeta}>{ad.campaign_name} › {ad.adset_name}</div>
+
+        <div className={styles.badgeRow}>
+          <span className={`${styles.badge} ${styles.badgeFormat}`}>{ad.creative_format}</span>
+          <span className={`${styles.badge} ${styles[status.css]}`}>{status.emoji} {status.label}</span>
           {isManual && <span className={`${styles.badge} ${styles.badgeManual}`}>✏️ Manual</span>}
-          {hasVideo && hasTranscription && <span className={`${styles.badge} ${styles.badgeFormat}`}>📝 Transcribed</span>}
-          {hasVideo && !hasTranscription && <span className={`${styles.badge} ${styles.badgeWeak}`}>⏳ No transcript</span>}
+          {hasTranscription && <span className={`${styles.badge} ${styles.badgeTranscribed}`}>📝 Transcribed</span>}
           <ConfidenceDot confidence={ad.classification_confidence} />
         </div>
-        <div className={styles.perfRow}>
-          <span className={styles.perfItem}>Spend: <span className={styles.perfValue}>₱{ad.total_spend?.toLocaleString() || '0'}</span></span>
-          {ad.avg_roas !== null && <span className={styles.perfItem}>ROAS: <span className={styles.perfValue}>{ad.avg_roas.toFixed(2)}x</span></span>}
-          {ad.avg_cpa !== null && <span className={styles.perfItem}>CPA: <span className={styles.perfValue}>₱{ad.avg_cpa.toFixed(0)}</span></span>}
-          {ad.total_purchases > 0 && <span className={styles.perfItem}>Purchases: <span className={styles.perfValue}>{ad.total_purchases}</span></span>}
-        </div>
+
+        {(ad.total_spend > 0 || ad.avg_roas) && (
+          <div className={styles.perfRow}>
+            <span className={styles.perfItem}>Spend: <span className={styles.perfValue}>₱{ad.total_spend?.toLocaleString()}</span></span>
+            {ad.avg_roas !== null && <span className={styles.perfItem}>ROAS: <span className={styles.perfValue}>{ad.avg_roas.toFixed(1)}x</span></span>}
+            {ad.avg_cpa !== null && <span className={styles.perfItem}>CPA: <span className={styles.perfValue}>₱{ad.avg_cpa.toFixed(0)}</span></span>}
+          </div>
+        )}
+
         <div className={styles.chips}>
           {(['angle', 'persona', 'framework', 'hook_type', 'offer_type', 'emotional_tone'] as const).map(dim => (
             <ClassificationChip
@@ -175,38 +175,28 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative; onCorrect: (id: string, dim
             />
           ))}
         </div>
+
         <button className={styles.expandBtn} onClick={() => setExpanded(!expanded)}>
           {expanded ? '▲ Hide details' : '▼ What AI saw'}
         </button>
+
         {expanded && (
           <div className={styles.expandSection}>
-            {ad.headline && (
-              <>
-                <div className={styles.expandLabel}>Headline</div>
-                <div className={styles.expandText}>{ad.headline}</div>
-              </>
-            )}
             {ad.body_text && (
-              <>
-                <div className={styles.expandLabel}>Body / Caption</div>
+              <div className={styles.expandBlock}>
+                <div className={styles.expandLabel}>Ad Copy</div>
                 <div className={styles.expandText}>{ad.body_text}</div>
-              </>
-            )}
-            {ad.cta_text && (
-              <>
-                <div className={styles.expandLabel}>CTA</div>
-                <div className={styles.expandText}>{ad.cta_text}</div>
-              </>
+              </div>
             )}
             {hasTranscription && (
-              <>
+              <div className={styles.expandBlock}>
                 <div className={styles.expandLabel}>🎙️ Video Transcription</div>
                 <div className={styles.expandText}>{ad.video_transcription}</div>
-              </>
+              </div>
             )}
             {hasFrames && (
-              <>
-                <div className={styles.expandLabel}>🎬 Video Frames</div>
+              <div className={styles.expandBlock}>
+                <div className={styles.expandLabel}>🎬 Visual Timeline</div>
                 <div className={styles.frameTimeline}>
                   {ad.frame_descriptions!.map((f, i) => (
                     <div key={i} className={styles.frameItem}>
@@ -215,13 +205,13 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative; onCorrect: (id: string, dim
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
             )}
             {ad.classification_raw?.reasoning && (
-              <>
+              <div className={styles.expandBlock}>
                 <div className={styles.expandLabel}>🧠 Classifier Reasoning</div>
                 <div className={styles.expandText}>{ad.classification_raw.reasoning}</div>
-              </>
+              </div>
             )}
           </div>
         )}
@@ -247,7 +237,7 @@ export default function AuditPage() {
       const data = await res.json()
       setAds(data.creatives || [])
     } catch (err) {
-      console.error('Failed to fetch ads:', err)
+      console.error('Failed to fetch:', err)
     }
     setLoading(false)
   }, [])
@@ -256,7 +246,7 @@ export default function AuditPage() {
 
   const handleSync = async (reclassify = false) => {
     setSyncing(true)
-    setSyncMsg('Syncing...' + (reclassify ? ' (with reclassification + video analysis)' : ''))
+    setSyncMsg(reclassify ? 'Reclassifying all ads + analyzing videos...' : 'Syncing from Meta...')
     try {
       const res = await fetch('/api/ads/creatives/sync', {
         method: 'POST',
@@ -265,23 +255,20 @@ export default function AuditPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setSyncMsg(`✅ ${data.ads_fetched} ads fetched, ${data.videos_analyzed || 0} videos analyzed, ${data.creatives_classified} classified, ${data.performance_updated} perf updated`)
+        setSyncMsg(`Done — ${data.ads_fetched} ads, ${data.videos_analyzed || 0} videos analyzed, ${data.creatives_classified} classified`)
         await fetchAds()
       } else {
-        setSyncMsg(`❌ ${data.error}`)
+        setSyncMsg(`Error: ${data.error}`)
       }
     } catch (err) {
-      setSyncMsg(`❌ Sync failed: ${err}`)
+      setSyncMsg(`Failed: ${err}`)
     }
     setSyncing(false)
   }
 
   const handleCorrect = async (id: string, dimension: string, value: string) => {
-    // Optimistic update
     setAds(prev => prev.map(ad =>
-      ad.id === id
-        ? { ...ad, [dimension]: value, classification_version: 'manual' }
-        : ad
+      ad.id === id ? { ...ad, [dimension]: value, classification_version: 'manual' } : ad
     ))
     try {
       await fetch('/api/ads/creatives', {
@@ -289,9 +276,8 @@ export default function AuditPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, corrections: { [dimension]: value } }),
       })
-    } catch (err) {
-      console.error('Correction failed:', err)
-      await fetchAds() // revert on failure
+    } catch {
+      await fetchAds()
     }
   }
 
@@ -299,28 +285,19 @@ export default function AuditPage() {
   let filtered = ads
   if (filterFormat) filtered = filtered.filter(a => a.creative_format === filterFormat)
   if (filterStatus) filtered = filtered.filter(a => a.ad_status === filterStatus)
-  if (filterVersion) filtered = filtered.filter(a => {
-    if (filterVersion === 'manual') return a.classification_version === 'manual'
-    return a.classification_version !== 'manual'
-  })
-  if (filterConfidence) {
-    filtered = filtered.filter(a => {
-      const c = a.classification_confidence ?? 0
-      if (filterConfidence === 'low') return c < 0.6
-      if (filterConfidence === 'medium') return c >= 0.6 && c < 0.8
-      if (filterConfidence === 'high') return c >= 0.8
-      return true
-    })
-  }
+  if (filterVersion === 'manual') filtered = filtered.filter(a => a.classification_version === 'manual')
+  else if (filterVersion === 'ai') filtered = filtered.filter(a => a.classification_version !== 'manual')
+  if (filterConfidence === 'low') filtered = filtered.filter(a => (a.classification_confidence ?? 0) < 0.6)
+  else if (filterConfidence === 'medium') filtered = filtered.filter(a => { const c = a.classification_confidence ?? 0; return c >= 0.6 && c < 0.8 })
+  else if (filterConfidence === 'high') filtered = filtered.filter(a => (a.classification_confidence ?? 0) >= 0.8)
 
   // Stats
   const total = ads.length
   const classified = ads.filter(a => a.classified_at).length
   const videoAnalyzed = ads.filter(a => a.video_analyzed_at).length
   const videoTotal = ads.filter(a => a.creative_format === 'video').length
-  const avgConf = ads.filter(a => a.classification_confidence).length > 0
-    ? ads.filter(a => a.classification_confidence).reduce((s, a) => s + (a.classification_confidence || 0), 0) / ads.filter(a => a.classification_confidence).length
-    : 0
+  const confAds = ads.filter(a => a.classification_confidence != null)
+  const avgConf = confAds.length > 0 ? confAds.reduce((s, a) => s + (a.classification_confidence || 0), 0) / confAds.length : 0
   const manualCount = ads.filter(a => a.classification_version === 'manual').length
 
   if (loading) return <div className={styles.page}><div className={styles.loading}>Loading ads...</div></div>
@@ -328,15 +305,16 @@ export default function AuditPage() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Ad Classification Audit</h1>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Classification Audit</h1>
           <p className={styles.subtitle}>Review AI classifications, correct mistakes, see what the classifier understood</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.actionBtnSecondary} onClick={() => handleSync(false)} disabled={syncing}>
-            {syncing ? '⏳ Syncing...' : '🔄 Sync'}
+          <Link href="/ads" className={styles.syncBtnOutline} style={{ textDecoration: 'none' }}>← Back to Ads</Link>
+          <button className={styles.syncBtnOutline} onClick={() => handleSync(false)} disabled={syncing}>
+            🔄 Sync
           </button>
-          <button className={styles.actionBtn} onClick={() => handleSync(true)} disabled={syncing}>
+          <button className={styles.syncBtn} onClick={() => handleSync(true)} disabled={syncing}>
             🔁 Reclassify All
           </button>
         </div>
@@ -344,26 +322,31 @@ export default function AuditPage() {
 
       {syncMsg && <div className={styles.syncMsg}>{syncMsg}</div>}
 
-      <div className={styles.stats}>
-        <div className={styles.stat}>
+      <div className={styles.statsRow}>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>📊</span>
           <span className={styles.statValue}>{total}</span>
           <span className={styles.statLabel}>Total Ads</span>
         </div>
-        <div className={styles.stat}>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>🤖</span>
           <span className={styles.statValue}>{classified}</span>
           <span className={styles.statLabel}>Classified</span>
         </div>
-        <div className={styles.stat}>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>🎬</span>
           <span className={styles.statValue}>{videoAnalyzed}/{videoTotal}</span>
           <span className={styles.statLabel}>Videos Analyzed</span>
         </div>
-        <div className={styles.stat}>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>🎯</span>
           <span className={styles.statValue}>{(avgConf * 100).toFixed(0)}%</span>
           <span className={styles.statLabel}>Avg Confidence</span>
         </div>
-        <div className={styles.stat}>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>✏️</span>
           <span className={styles.statValue}>{manualCount}</span>
-          <span className={styles.statLabel}>Manual Corrections</span>
+          <span className={styles.statLabel}>Manual Fixes</span>
         </div>
       </div>
 
@@ -374,31 +357,30 @@ export default function AuditPage() {
           <option value="video">Video</option>
           <option value="carousel">Carousel</option>
         </select>
-        <select className={styles.filterSelect} value={filterConfidence} onChange={e => setFilterConfidence(e.target.value)}>
-          <option value="">All Confidence</option>
-          <option value="low">Low (&lt;60%)</option>
-          <option value="medium">Medium (60-80%)</option>
-          <option value="high">High (&gt;80%)</option>
-        </select>
         <select className={styles.filterSelect} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
           <option value="">All Status</option>
           <option value="winning">✅ Working</option>
           <option value="tired">😴 Tired</option>
-          <option value="dead">❌ Kill</option>
+          <option value="dead">❌ Turn Off</option>
           <option value="weak">⚠️ Weak</option>
           <option value="new">🆕 New</option>
+        </select>
+        <select className={styles.filterSelect} value={filterConfidence} onChange={e => setFilterConfidence(e.target.value)}>
+          <option value="">All Confidence</option>
+          <option value="high">High (&gt;80%)</option>
+          <option value="medium">Medium (60-80%)</option>
+          <option value="low">Low (&lt;60%)</option>
         </select>
         <select className={styles.filterSelect} value={filterVersion} onChange={e => setFilterVersion(e.target.value)}>
           <option value="">All Sources</option>
           <option value="ai">AI Classified</option>
-          <option value="manual">✏️ Manually Corrected</option>
+          <option value="manual">✏️ Manual</option>
         </select>
       </div>
 
       {filtered.length === 0 ? (
         <div className={styles.empty}>
           <p>No ads match your filters.</p>
-          <p>Try syncing first or adjusting filters.</p>
         </div>
       ) : (
         <div className={styles.adList}>
