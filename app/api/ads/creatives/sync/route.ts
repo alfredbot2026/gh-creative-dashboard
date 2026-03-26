@@ -178,6 +178,17 @@ export async function POST(request: Request) {
         }
       }
 
+      // For video ads, extract text from object_story_spec if body is empty
+      let bodyText = creative.body || null
+      if (!bodyText && creative.object_story_spec) {
+        const oss = creative.object_story_spec as Record<string, any>
+        // Video posts have the text in video_data.message or link_data.message
+        bodyText = oss.video_data?.message
+          || oss.link_data?.message
+          || oss.photo_data?.message
+          || null
+      }
+
       const row = {
         user_id: user.id,
         meta_ad_id: ad.id,
@@ -186,7 +197,7 @@ export async function POST(request: Request) {
         meta_adset_id: ad.adset_id,
         meta_account_id: metaAccountId,
         headline: creative.title || null,
-        body_text: creative.body || null,
+        body_text: bodyText,
         cta_text: creative.call_to_action_type || null,
         link_description: creative.link_description || null,
         image_url: creative.image_url || null,
@@ -217,7 +228,7 @@ export async function POST(request: Request) {
     let classified = 0
     const classifyQuery = supabase
       .from('ad_creatives')
-      .select('id, headline, body_text, cta_text, link_description, image_url, adset_name, campaign_name, creative_format')
+      .select('id, headline, body_text, cta_text, link_description, image_url, video_thumbnail_url, adset_name, campaign_name, creative_format')
       .eq('user_id', user.id)
 
     if (!reclassify) {
@@ -234,6 +245,7 @@ export async function POST(request: Request) {
         cta_text: c.cta_text,
         link_description: c.link_description,
         image_url: c.image_url,
+        video_thumbnail_url: c.video_thumbnail_url,
         adset_name: c.adset_name,
         campaign_name: c.campaign_name,
         creative_format: c.creative_format,
@@ -264,22 +276,47 @@ export async function POST(request: Request) {
     }
 
     // 6. Aggregate performance from ad_performance table
+    // Match by meta_ad_id first, fallback to ad_name (legacy rows have 'legacy_' prefixed IDs)
     let perfUpdated = 0
     const { data: creatives } = await supabase
       .from('ad_creatives')
-      .select('id, meta_ad_id')
+      .select('id, meta_ad_id, ad_name')
       .eq('user_id', user.id)
 
-    if (creatives) {
-      for (const creative of creatives) {
-        // Aggregate performance for this ad across all dates
-        const { data: perfRows } = await supabase
-          .from('ad_performance')
-          .select('spend, conversions, impressions, roas, ctr, cpa, date_start')
-          .eq('user_id', user.id)
-          .eq('meta_ad_id', creative.meta_ad_id)
+    // Pre-fetch ALL ad_performance rows for this user (avoid N+1 queries)
+    const { data: allPerfRows } = await supabase
+      .from('ad_performance')
+      .select('meta_ad_id, ad_name, spend, conversions, impressions, roas, ctr, cpa, date_start')
+      .eq('user_id', user.id)
+      .gt('spend', 0)
 
-        if (perfRows && perfRows.length > 0) {
+    if (creatives && allPerfRows && allPerfRows.length > 0) {
+      // Build lookup maps for performance data
+      const perfByMetaId = new Map<string, typeof allPerfRows>()
+      const perfByAdName = new Map<string, typeof allPerfRows>()
+      for (const row of allPerfRows) {
+        // By meta_ad_id
+        if (row.meta_ad_id && !row.meta_ad_id.startsWith('legacy_')) {
+          if (!perfByMetaId.has(row.meta_ad_id)) perfByMetaId.set(row.meta_ad_id, [])
+          perfByMetaId.get(row.meta_ad_id)!.push(row)
+        }
+        // By ad_name (fallback for legacy rows)
+        if (row.ad_name) {
+          if (!perfByAdName.has(row.ad_name)) perfByAdName.set(row.ad_name, [])
+          perfByAdName.get(row.ad_name)!.push(row)
+        }
+      }
+
+      for (const creative of creatives) {
+        // Try meta_ad_id match first, then ad_name fallback
+        let perfRows = perfByMetaId.get(creative.meta_ad_id) || null
+        if (!perfRows && creative.ad_name) {
+          perfRows = perfByAdName.get(creative.ad_name) || null
+        }
+
+        if (!perfRows || perfRows.length === 0) continue
+
+        {
           const totalSpend = perfRows.reduce((s, r) => s + (r.spend || 0), 0)
           const totalPurchases = perfRows.reduce((s, r) => s + (r.conversions || 0), 0)
           const totalImpressions = perfRows.reduce((s, r) => s + (r.impressions || 0), 0)

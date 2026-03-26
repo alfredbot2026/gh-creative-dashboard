@@ -46,6 +46,7 @@ export interface AdCreativeInput {
   cta_text: string | null
   link_description: string | null
   image_url: string | null
+  video_thumbnail_url: string | null
   adset_name: string | null
   campaign_name: string | null
   creative_format: string | null
@@ -81,9 +82,15 @@ CLASSIFICATION DIMENSIONS:
 6. EMOTIONAL_TONE (what primary emotion does this ad trigger?)
    Values: warm, urgent, educational, aspirational, fear, empowering, playful, authoritative, nostalgic, relieved
 
+VISUAL CONTEXT:
+If an image URL is provided, analyze the visual content to inform your classification:
+- What does the image show? (product, person, lifestyle, text overlay, before/after, etc.)
+- Does the image reinforce the copy's angle? (e.g., pain point copy + frustrated person = strong pain_point)
+- For video thumbnails: what does the frame suggest about the video content?
+
 For each ad, also provide:
 - confidence: 0.0-1.0 overall confidence in your classification
-- reasoning: 1-2 sentence explanation of WHY you chose these classifications
+- reasoning: 1-2 sentence explanation of WHY you chose these classifications (reference both text AND visual if available)
 
 Output ONLY valid JSON. No markdown, no explanation outside the JSON.`
 
@@ -117,6 +124,7 @@ async function classifyBatch(
   const results = new Map<string, AdClassification>()
 
   const adsBlock = ads.map((ad, idx) => {
+    const imageUrl = ad.image_url || ad.video_thumbnail_url
     const parts = [
       `AD_${idx + 1} [id:${ad.id}]`,
       `<ad_content>`,
@@ -126,6 +134,7 @@ async function classifyBatch(
       ad.link_description ? `Link Description: ${sanitize(ad.link_description)}` : null,
       `</ad_content>`,
       `Format: ${ad.creative_format || 'unknown'}`,
+      imageUrl ? `Image/Thumbnail URL: ${imageUrl}` : null,
       ad.adset_name ? `Ad Set: ${sanitize(ad.adset_name, 200)}` : null,
       ad.campaign_name ? `Campaign: ${sanitize(ad.campaign_name, 200)}` : null,
     ].filter(Boolean).join('\n')
