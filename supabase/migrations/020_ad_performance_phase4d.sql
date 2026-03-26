@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS ad_performance (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Add user_id if table existed without it (existing production table has no user_id)
+ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
+
 -- Ensure all columns exist via ALTER TABLE
 ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS content_item_id UUID REFERENCES content_items(id);
 ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS meta_ad_id TEXT;
@@ -42,23 +45,37 @@ ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS content_goal TEXT;
 ALTER TABLE ad_performance ADD COLUMN IF NOT EXISTS topic TEXT;
 
 -- Pre-cleanup nulls to safely apply NOT NULL
-UPDATE ad_performance SET meta_ad_id = 'unknown_' || id::text WHERE meta_ad_id IS NULL;
-UPDATE ad_performance SET date_start = CURRENT_DATE WHERE date_start IS NULL;
-UPDATE ad_performance SET date_stop = CURRENT_DATE WHERE date_stop IS NULL;
+UPDATE ad_performance SET meta_ad_id = COALESCE(meta_ad_id, 'legacy_' || id::text) WHERE meta_ad_id IS NULL;
+UPDATE ad_performance SET date_start = COALESCE(date_start, CURRENT_DATE) WHERE date_start IS NULL;
+UPDATE ad_performance SET date_stop = COALESCE(date_stop, date_start, CURRENT_DATE) WHERE date_stop IS NULL;
 
--- Enforce constraints
-ALTER TABLE ad_performance ALTER COLUMN meta_ad_id SET NOT NULL;
-ALTER TABLE ad_performance ALTER COLUMN date_start SET NOT NULL;
-ALTER TABLE ad_performance ALTER COLUMN date_stop SET NOT NULL;
+-- Enforce NOT NULL (safe — we just backfilled nulls above)
+DO $$ BEGIN
+  ALTER TABLE ad_performance ALTER COLUMN meta_ad_id SET NOT NULL;
+EXCEPTION WHEN others THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER TABLE ad_performance ALTER COLUMN date_start SET NOT NULL;
+EXCEPTION WHEN others THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER TABLE ad_performance ALTER COLUMN date_stop SET NOT NULL;
+EXCEPTION WHEN others THEN NULL;
+END $$;
 
--- Unique constraint
+-- Unique constraint — only if all 3 columns exist and are populated
 DO $$ 
 BEGIN 
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'uq_ad_perf_user_ad_date'
   ) THEN
-    ALTER TABLE ad_performance ADD CONSTRAINT uq_ad_perf_user_ad_date UNIQUE(user_id, meta_ad_id, date_start);
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ad_performance' AND column_name = 'user_id') THEN
+      -- Backfill user_id for legacy rows using first user with meta tokens
+      UPDATE ad_performance SET user_id = (SELECT user_id FROM meta_tokens LIMIT 1) WHERE user_id IS NULL;
+      ALTER TABLE ad_performance ADD CONSTRAINT uq_ad_perf_user_ad_date UNIQUE(user_id, meta_ad_id, date_start);
+    END IF;
   END IF;
+EXCEPTION WHEN others THEN NULL;
 END $$;
 
 -- Indexes

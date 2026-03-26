@@ -13,7 +13,7 @@
 ### Phase 4d Tasks — ALL COMPLETE ✅
 | Task | Description | Track | Status |
 |------|-------------|-------|--------|
-| TASK-050 | Ad perf DB + Meta sync API + content matching | SECURITY | ✅ done (Tony fix pending re-review) |
+| TASK-050 | Ad perf DB + Meta sync API + content matching | SECURITY | ✅ done |
 | TASK-051 | Saves-weighted scoring + ad potential badge | DEFAULT | ✅ done |
 | TASK-052 | Ad ↔ content correlation dashboard | DEFAULT | ✅ done |
 | TASK-053 | Feed ad ROAS into generation engine | DEFAULT | ✅ done |
@@ -24,7 +24,16 @@
 - POST /api/ads/creatives/sync: fetch → upsert → classify → aggregate performance
 - GET /api/ads/creatives: read with filters
 
-### Phase 4e Remaining (Waves 2-5)
+### Phase 4e ALL WAVES COMPLETE ✅
+| Wave | What | Status |
+|------|------|--------|
+| 1 | Ad Creative Ingest + AI Classification | ✅ |
+| 2 | Ad Intelligence Engine + Strategy Map | ✅ |
+| 3 | Creative Factory — Single Ad | ✅ |
+| 4 | Batch Mode + Weekly Planner | ✅ |
+| 5 | Performance Loop + Learning | ✅ |
+
+### Phase 4e — Formerly Remaining (Waves 2-5)
 - Spec ready: `specs/phase-4e-ad-intelligence-creative-factory.md`
 - Security addendum: `specs/phase-4e-security-addendum.md`
 - Tony red-team: `reviews/PHASE-4E-RED-TEAM.md`
