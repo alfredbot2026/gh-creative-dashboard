@@ -327,6 +327,36 @@
   border-radius: var(--radius-md);
 }
 
+/* Ad Potential Badge */
+.adPotentialBadge {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-high, var(--surface));
+  border: 1px solid var(--accent-emerald, #10b981);
+  border-radius: var(--radius-md, 8px);
+  margin-bottom: var(--space-md);
+  font-family: var(--font-body);
+}
+
+.adPotentialBadge > span:first-child {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--accent-emerald, #10b981);
+}
+
+.adPotentialSub {
+  font-size: 0.8rem;
+  color: var(--color-text-dim, var(--text-muted));
+}
+
+/* Saves highlight */
+.metricCard[data-highlight="saves"] {
+  border: 1px solid var(--accent-emerald, #10b981);
+  background: var(--color-surface-high, var(--surface));
+}
+
 /* States */
 .loading, .error {
   text-align: center;

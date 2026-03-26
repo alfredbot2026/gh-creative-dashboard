@@ -10,7 +10,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 
 type Platform = 'all' | 'youtube' | 'instagram' | 'facebook'
-type SortField = 'views' | 'engagement' | 'date' | 'score'
+type SortField = 'views' | 'saves' | 'engagement' | 'date' | 'score'
 type Tier = 'all' | 'top' | 'above' | 'average' | 'below'
 
 interface ContentItem {
@@ -24,8 +24,10 @@ interface ContentItem {
   tags: string[]
   published_at: string
   views: number
+  saves: number
   engagement: number
   engagement_rate: number
+  ad_potential: boolean
   tier: string
   purpose: string | null
   hook_type: string | null
@@ -238,6 +240,7 @@ export default function InsightsPage() {
         />
         <select className={styles.filterSelect} value={sort} onChange={e => setSort(e.target.value as SortField)}>
           <option value="views">Most Viewed</option>
+          <option value="saves">Most Saves</option>
           <option value="engagement">Highest Engagement</option>
           <option value="date">Most Recent</option>
           <option value="score">Best Score</option>
@@ -313,6 +316,11 @@ export default function InsightsPage() {
                       <span className={styles.metric}>
                         <strong>{formatViews(item.views)}</strong> views
                       </span>
+                      {item.saves > 0 && (
+                        <span className={styles.metric}>
+                          <strong>🔖 {formatViews(item.saves)}</strong> saves
+                        </span>
+                      )}
                       <span className={styles.metric}>
                         <strong>{formatEngRate(item.engagement_rate)}</strong> eng
                       </span>
@@ -320,6 +328,10 @@ export default function InsightsPage() {
                         {item.published_at ? formatDate(item.published_at) : ''}
                       </span>
                     </div>
+                    {/* Ad Potential Badge */}
+                    {item.ad_potential && (
+                      <div className={styles.adPotentialChip}>⚡ Strong Ad Candidate</div>
+                    )}
                   </div>
 
                   {/* Deep analysis indicator */}

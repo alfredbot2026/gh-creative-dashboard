@@ -24,6 +24,11 @@ function getEngagement(metrics: any): number {
   return likes + comments + shares + saves
 }
 
+function getSaves(metrics: any): number {
+  if (!metrics) return 0
+  return metrics.saves || metrics.saved || 0
+}
+
 function getEngagementRate(metrics: any): number {
   const views = getViews(metrics)
   if (views === 0) return 0
@@ -111,6 +116,7 @@ export async function GET(req: NextRequest) {
     const cls = classMap.get(item.id)
     const da = item.deep_analysis && !item.deep_analysis?.error ? item.deep_analysis : null
     const views = getViews(item.metrics)
+    const saves = getSaves(item.metrics)
     const engagement = getEngagement(item.metrics)
     const engRate = getEngagementRate(item.metrics)
     const itemTier = engRate > 0 ? calculateTier(engRate, platformAvgs[item.platform] || 0) : 'average'
@@ -131,8 +137,10 @@ export async function GET(req: NextRequest) {
       tags: item.tags,
       published_at: item.published_at,
       views,
+      saves,
       engagement,
       engagement_rate: engRate,
+      ad_potential: saves > 0 && views > 0 && (saves / views) > 0.02,
       tier: itemTier,
       purpose,
       hook_type: hookType,
@@ -159,6 +167,7 @@ export async function GET(req: NextRequest) {
     let cmp = 0
     switch (sort) {
       case 'views': cmp = a.views - b.views; break
+      case 'saves': cmp = a.saves - b.saves; break
       case 'engagement': cmp = a.engagement_rate - b.engagement_rate; break
       case 'date': cmp = new Date(a.published_at || 0).getTime() - new Date(b.published_at || 0).getTime(); break
       case 'score': cmp = (a.score || 0) - (b.score || 0); break

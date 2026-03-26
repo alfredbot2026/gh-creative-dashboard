@@ -171,13 +171,29 @@ export default function InsightDetailPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
+      {/* Ad Potential Badge */}
+      {saves > 0 && views > 0 && (saves / views) > 0.02 && (
+        <div className={styles.adPotentialBadge}>
+          <span>⚡ Strong Ad Candidate</span>
+          <span className={styles.adPotentialSub}>
+            High save rate ({((saves / views) * 100).toFixed(1)}%) — posts like this tend to convert well as ads
+          </span>
+        </div>
+      )}
+
       {/* Metrics Grid */}
       <div className={styles.metricsGrid}>
         {views > 0 && <MetricCard value={formatViews(views)} label="Views" />}
         {likes > 0 && <MetricCard value={formatViews(likes)} label="Likes" />}
         {comments > 0 && <MetricCard value={formatViews(comments)} label="Comments" />}
         {shares > 0 && <MetricCard value={formatViews(shares)} label="Shares" />}
-        {saves > 0 && <MetricCard value={formatViews(saves)} label="Saves" />}
+        {saves > 0 && (
+          <div className={styles.metricCard} data-highlight="saves">
+            <span className={styles.metricValue}>🔖 {formatViews(saves)}</span>
+            <span className={styles.metricLabel}>Saves</span>
+            <span className={styles.metricSub}>Best ad predictor</span>
+          </div>
+        )}
         {impressions > 0 && <MetricCard value={formatViews(impressions)} label="Impressions" />}
         {ctr > 0 && <MetricCard value={`${(ctr * 100).toFixed(1)}%`} label="CTR" />}
         {avgViewPct > 0 && <MetricCard value={`${avgViewPct.toFixed(0)}%`} label="Avg Retention" />}

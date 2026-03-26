@@ -25,25 +25,54 @@ interface IngestWithAnalysis {
 }
 
 /**
- * Calculate engagement rate normalized per platform.
+ * Engagement weights per metric type.
+ * Saves weighted 3x because they're the strongest predictor of ad conversion
+ * (Hormozi data: high-save organic posts convert best when boosted as ads).
+ */
+const ENGAGEMENT_WEIGHTS = {
+  views: 1,
+  likes: 2,
+  comments: 3,
+  shares: 4,
+  saves: 9,  // 3x boost — saves predict ad conversion
+}
+
+/**
+ * Calculate weighted engagement rate normalized per platform.
+ * Uses saves-weighted scoring: saves count 3x more than likes.
  */
 function calcEngagementRate(metrics: Record<string, any>, platform: string): number {
   if (platform === 'instagram') {
-    const engagement = (metrics.likes || 0) + (metrics.comments || 0) + (metrics.saves || 0) + (metrics.shares || 0)
+    const weightedEngagement =
+      (metrics.likes || 0) * ENGAGEMENT_WEIGHTS.likes +
+      (metrics.comments || 0) * ENGAGEMENT_WEIGHTS.comments +
+      (metrics.saves || 0) * ENGAGEMENT_WEIGHTS.saves +
+      (metrics.shares || 0) * ENGAGEMENT_WEIGHTS.shares
     const reach = metrics.reach || metrics.impressions || 1
-    return engagement / reach
+    // Normalize: divide by sum of weights to keep rate comparable
+    const weightSum = ENGAGEMENT_WEIGHTS.likes + ENGAGEMENT_WEIGHTS.comments + ENGAGEMENT_WEIGHTS.saves + ENGAGEMENT_WEIGHTS.shares
+    return weightedEngagement / (reach * weightSum / 4)
   }
   if (platform === 'youtube') {
-    const engagement = (metrics.likes || 0) + (metrics.comments || 0)
+    // YouTube doesn't expose saves in the same way
+    const engagement = (metrics.likes || 0) * ENGAGEMENT_WEIGHTS.likes + (metrics.comments || 0) * ENGAGEMENT_WEIGHTS.comments
     const views = metrics.views || 1
-    return engagement / views
+    const weightSum = ENGAGEMENT_WEIGHTS.likes + ENGAGEMENT_WEIGHTS.comments
+    return engagement / (views * weightSum / 2)
   }
   if (platform === 'facebook') {
-    const engagement = metrics.engaged_users || metrics.reactions || 0
+    const engagement = (metrics.engaged_users || metrics.reactions || 0) * ENGAGEMENT_WEIGHTS.likes
     const impressions = metrics.impressions || 1
     return engagement / impressions
   }
   return 0
+}
+
+/**
+ * Calculate raw saves count from metrics (used for ad potential scoring).
+ */
+export function getSavesCount(metrics: Record<string, any>): number {
+  return metrics.saves || metrics.saved || 0
 }
 
 function getConfidence(n: number): 'low' | 'medium' | 'high' {
