@@ -160,18 +160,13 @@ export default function CompetitorsPage() {
           <div className={styles.sentimentGrid}>
             {sentiment.map(s => (
               <div key={s.query} className={styles.sentimentCard}>
-                <h4 className={styles.sentimentQuery}>{s.query}</h4>
-                <span className={`${styles.sentimentScore} ${scoreClass(s.score)}`}>
-                  {s.score > 0 ? '+' : ''}{s.score}
-                </span>
+                <div className={styles.sentimentHeader}>
+                  <h4 className={styles.sentimentQuery}>{s.query}</h4>
+                  <span className={`${styles.sentimentScore} ${scoreClass(s.score)}`}>
+                    {s.score > 0 ? '+' : ''}{s.score}
+                  </span>
+                </div>
                 <p className={styles.sentimentSummary}>{s.summary}</p>
-                {s.raw_data?.key_signals && (
-                  <div className={styles.sentimentSignals}>
-                    {s.raw_data.key_signals.map((sig, i) => (
-                      <span key={i} className={styles.signal}>• {sig}</span>
-                    ))}
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -221,7 +216,7 @@ export default function CompetitorsPage() {
                 )}
                 {comp.ads && comp.ads.length > 0 && (
                   <div className={styles.compAds}>
-                    {comp.ads.slice(0, 3).map((ad, i) => (
+                    {comp.ads.slice(0, 2).map((ad, i) => (
                       <div key={i} className={styles.compAd}>
                         <div className={styles.compAdBody}>{ad.ad_body}</div>
                         <div className={styles.compAdMeta}>
