@@ -11,6 +11,7 @@
 import { generateJSON } from '@/lib/llm/client'
 import { createClient } from '@/lib/supabase/server'
 import { loadBusinessContext, getThresholds } from './business-context'
+import { generateShortFormScript } from '@/lib/create/shortform-generator'
 
 // ─── Types ───
 
@@ -189,24 +190,106 @@ Return JSON: {"hooks": [{"hook_text": "the opening line in Taglish", "hook_type"
 
 // ─── Format Expansion ───
 
+/**
+ * Generate a video script execution using the full KB-backed script pipeline.
+ * Routes through generateShortFormScript with content_purpose='sell' so it uses:
+ * - KB hook library (tested patterns)
+ * - Scripting frameworks (PAS, AIDA, etc.)
+ * - Virality science entries
+ * - Platform intelligence
+ * - Brand voice rubric (Taglish ratio, banned words, tone)
+ * - Quality gate scoring
+ */
+async function expandVideoFormat(
+  brief: ConceptBrief,
+  hook: HookVariation,
+  format: 'video_ugc' | 'video_hq',
+): Promise<FormatExecution> {
+  const platform = format === 'video_ugc' ? 'instagram-reels' : 'facebook-reels' as 'instagram-reels'
+  const target_duration = format === 'video_ugc' ? 30 : 45
+
+  const response = await generateShortFormScript({
+    topic: `${brief.product_name} — ${brief.core_message}`,
+    angle: `${brief.angle}: ${hook.hook_text}`,
+    platform,
+    target_duration,
+    content_purpose: 'sell',
+    style: format === 'video_ugc' ? 'hook-first' : 'storytelling',
+    product_context: {
+      name: brief.product_name,
+      price: `₱${brief.product_price}`,
+      offer_details: brief.proof_points.join(', '),
+      target_audience: brief.persona_context,
+      usps: brief.proof_points.slice(0, 5),
+    },
+  })
+
+  const script = response.script
+  const scenes = script.scenes || []
+
+  // Map ShortFormScript → execution content
+  // Hook = first scene, body = middle scenes joined, cta = last scene or script.cta
+  const hookScene = scenes[0]
+  const bodyScenes = scenes.slice(1, -1)
+  const ctaScene = scenes[scenes.length - 1]
+
+  const content: Record<string, unknown> = {
+    hook_script: hookScene?.script_text || script.hook,
+    body_script: bodyScenes.map(s => s.script_text).join('\n\n') || scenes.slice(1).map(s => s.script_text).join('\n\n'),
+    cta_script: ctaScene?.script_text || script.cta,
+    duration_seconds: script.total_duration_seconds,
+    // Full scene breakdown for the UI
+    scenes: scenes.map(s => ({
+      scene_number: s.scene_number,
+      timing: s.timing || `${s.duration_seconds}s`,
+      script_text: s.script_text,
+      visual_direction: s.visual_direction,
+      on_screen_text: s.on_screen_text,
+      production_notes: s.production_notes,
+    })),
+    // Script metadata
+    kb_hooks_used: response.knowledge_context?.hooks_used || [],
+    kb_frameworks_used: response.knowledge_context?.frameworks_used || [],
+    quality_score: response.quality_score?.composite,
+    passed_quality_gate: response.quality_score?.passed_gate,
+    quality_feedback: response.quality_score?.feedback,
+    caption_draft: script.caption_draft,
+    hashtags: script.hashtags,
+  }
+
+  if (format === 'video_ugc') {
+    content.style_notes = `Selfie mode, natural lighting, authentic feel. Hook from KB: ${response.knowledge_context?.hooks_used?.[0] || 'hook-first'}. Framework: ${response.knowledge_context?.frameworks_used?.[0] || brief.framework}`
+  } else {
+    content.visual_directions = hookScene?.visual_direction || 'Professional setup: good lighting, clean background, product visible'
+  }
+
+  return { format, content }
+}
+
 export async function expandToFormats(
   brief: ConceptBrief,
   hook: HookVariation,
   formats: string[] = ['static_image', 'carousel', 'video_ugc'],
 ): Promise<FormatExecution[]> {
-  const formatInstructions = formats.map(f => {
-    switch (f) {
-      case 'static_image': return `"static_image": {"headline": "under 40 chars", "body_text": "125-300 chars, Taglish, uses ${brief.framework} framework", "cta_text": "SIGN_UP|LEARN_MORE|SEND_MESSAGE", "link_description": "short preview", "image_prompt": "detailed image description: warm tones, Filipina mom, paper products, home setting"}`
-      case 'carousel': return `"carousel": {"slides": [{"body_text": "slide text, max 100 chars", "image_prompt": "slide image description"}], "cta_text": "SIGN_UP|LEARN_MORE|SEND_MESSAGE"} — use 4-5 slides following ${brief.framework} structure`
-      case 'video_hq': return `"video_hq": {"hook_script": "first 3 seconds, spoken word", "body_script": "main content 20-40 seconds, spoken word in Taglish, follows ${brief.framework}", "cta_script": "closing 5-10 seconds", "duration_seconds": 30-60, "visual_directions": "professional setup: good lighting, clean background, product visible"}`
-      case 'video_ugc': return `"video_ugc": {"hook_script": "first 3 seconds, casual spoken word", "body_script": "main content 10-25 seconds, phone selfie energy, Taglish, follows ${brief.framework}", "cta_script": "closing 3-5 seconds", "duration_seconds": 15-30, "style_notes": "selfie mode, natural lighting, authentic feel, 'Hey momshie!' energy"}`
-      case 'ig_carousel': return `"ig_carousel": {"slides": [{"title": "bold title text", "body_text": "supporting text, 1-2 sentences"}]} — use 5-7 slides, educational swipe-through format`
-      default: return ''
-    }
-  }).filter(Boolean).join('\n\n')
+  // Separate video formats from static/carousel (different generation paths)
+  const videoFormats = formats.filter(f => f === 'video_ugc' || f === 'video_hq')
+  const staticFormats = formats.filter(f => f !== 'video_ugc' && f !== 'video_hq')
 
-  const { data } = await generateJSON<{ executions: Array<{ format: string; content: Record<string, unknown> }> }>(
-    `You expand a hook into format-specific ad executions. Stay EXACTLY on the concept.
+  const results: FormatExecution[] = []
+
+  // Static/carousel formats: batch generation via single LLM call
+  if (staticFormats.length > 0) {
+    const formatInstructions = staticFormats.map(f => {
+      switch (f) {
+        case 'static_image': return `"static_image": {"headline": "under 40 chars", "body_text": "125-300 chars, Taglish, uses ${brief.framework} framework", "cta_text": "SIGN_UP|LEARN_MORE|SEND_MESSAGE", "link_description": "short preview", "image_prompt": "detailed image description: warm tones, Filipina mom, paper products, home setting"}`
+        case 'carousel': return `"carousel": {"headline": "carousel title", "slides": [{"body_text": "slide text, max 100 chars", "image_prompt": "slide image description"}], "cta_text": "SIGN_UP|LEARN_MORE|SEND_MESSAGE"} — use 4-5 slides following ${brief.framework} structure`
+        case 'ig_carousel': return `"ig_carousel": {"headline": "carousel title", "slides": [{"title": "bold title text", "body_text": "supporting text, 1-2 sentences"}]} — use 5-7 slides, educational swipe-through format`
+        default: return ''
+      }
+    }).filter(Boolean).join('\n\n')
+
+    const { data } = await generateJSON<{ executions: Array<{ format: string; content: Record<string, unknown> }> }>(
+      `You expand a hook into format-specific ad executions. Stay EXACTLY on the concept.
 
 CONCEPT: ${brief.core_message}
 ANGLE: ${brief.angle} — do NOT drift to other angles
@@ -214,7 +297,7 @@ PERSONA: ${brief.persona_context}
 TONE: ${brief.tone}
 COMPLIANCE: ${brief.compliance_notes}`,
 
-    `Expand this hook into ${formats.length} format-specific executions.
+      `Expand this hook into ${staticFormats.length} format-specific executions.
 
 HOOK: "${hook.hook_text}" (${hook.hook_type})
 PROOF POINTS TO USE: ${hook.proof_points_used.join(', ')}
@@ -226,10 +309,20 @@ Generate one execution per format. Return JSON:
 
 Format specifications:
 ${formatInstructions}`,
-    { temperature: 0.7 },
-  )
+      { temperature: 0.7 },
+    )
 
-  return data.executions || []
+    results.push(...(data.executions || []))
+  }
+
+  // Video formats: route through full KB-backed script pipeline
+  for (const vf of videoFormats) {
+    const exec = await expandVideoFormat(brief, hook, vf as 'video_ugc' | 'video_hq')
+    results.push(exec)
+    await new Promise(r => setTimeout(r, 300))
+  }
+
+  return results
 }
 
 // ─── Full Creative Tree Generator ───

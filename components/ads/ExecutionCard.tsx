@@ -231,41 +231,90 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
         {/* --- VIDEO SCRIPT --- */}
         {(format === 'video_hq' || format === 'video_ugc') && (
           <div className={styles.scriptLayout}>
+            {/* KB metadata — shown when generated via full pipeline */}
+            {!editing && (editedContent.kb_hooks_used as string[] || []).length > 0 && (
+              <div className={styles.kbMeta}>
+                <span>📚 KB: {(editedContent.kb_hooks_used as string[]).slice(0, 2).join(', ')}</span>
+                {(editedContent.kb_frameworks_used as string[] || []).length > 0 && (
+                  <span> · {(editedContent.kb_frameworks_used as string[]).slice(0, 1).join(', ')}</span>
+                )}
+                {editedContent.quality_score && (
+                  <span className={editedContent.passed_quality_gate ? styles.qPass : styles.qFail}>
+                    {' '}· Quality: {Math.round(editedContent.quality_score as number * 100)}% {editedContent.passed_quality_gate ? '✅' : '⚠️'}
+                  </span>
+                )}
+              </div>
+            )}
+
             {editing ? (
               <>
                 <div className={styles.fieldGroup}>
                   <label>Hook (First 3 seconds)</label>
-                  <textarea className={styles.textarea} value={editedContent.hook_script || ''} onChange={e => updateField('hook_script', e.target.value)} rows={2} />
+                  <textarea className={styles.textarea} value={editedContent.hook_script as string || ''} onChange={e => updateField('hook_script', e.target.value)} rows={2} />
                 </div>
                 <div className={styles.fieldGroup}>
                   <label>Body Script</label>
-                  <textarea className={styles.textarea} value={editedContent.body_script || ''} onChange={e => updateField('body_script', e.target.value)} rows={6} />
+                  <textarea className={styles.textarea} value={editedContent.body_script as string || ''} onChange={e => updateField('body_script', e.target.value)} rows={6} />
                 </div>
                 <div className={styles.fieldGroup}>
                   <label>Call to Action</label>
-                  <input className={styles.input} value={editedContent.cta_script || ''} onChange={e => updateField('cta_script', e.target.value)} />
+                  <input className={styles.input} value={editedContent.cta_script as string || ''} onChange={e => updateField('cta_script', e.target.value)} />
                 </div>
                 <div className={styles.fieldGroup}>
                   <label>Visual / Acting Notes</label>
-                  <textarea className={styles.textarea} value={editedContent.visual_directions || editedContent.style_notes || ''} onChange={e => updateField(format === 'video_ugc' ? 'style_notes' : 'visual_directions', e.target.value)} rows={2} />
+                  <textarea className={styles.textarea} value={(editedContent.visual_directions as string) || (editedContent.style_notes as string) || ''} onChange={e => updateField(format === 'video_ugc' ? 'style_notes' : 'visual_directions', e.target.value)} rows={2} />
                 </div>
+                {editedContent.caption_draft && (
+                  <div className={styles.fieldGroup}>
+                    <label>Caption Draft</label>
+                    <textarea className={styles.textarea} value={editedContent.caption_draft as string} onChange={e => updateField('caption_draft', e.target.value)} rows={3} />
+                  </div>
+                )}
               </>
+            ) : (editedContent.scenes as any[])?.length > 0 ? (
+              // Scene-by-scene view (from full KB pipeline)
+              <div className={styles.scriptPreview}>
+                {(editedContent.scenes as any[]).map((scene: any, i: number) => (
+                  <div key={i} className={styles.scriptRow}>
+                    <div className={styles.scriptTime}>{scene.timing || `${scene.duration_seconds}s`}</div>
+                    <div className={styles.scriptText}>
+                      <div>{scene.script_text}</div>
+                      {scene.visual_direction && <div className={styles.scriptVisual}>📷 {scene.visual_direction}</div>}
+                      {scene.on_screen_text && <div className={styles.scriptOnScreen}>📝 On screen: {scene.on_screen_text}</div>}
+                      {scene.production_notes && <div className={styles.scriptProdNote}>🎬 {scene.production_notes}</div>}
+                    </div>
+                  </div>
+                ))}
+                {editedContent.caption_draft && (
+                  <div className={styles.captionDraft}>
+                    <div className={styles.captionLabel}>📱 Caption Draft</div>
+                    <div className={styles.captionText}>{editedContent.caption_draft as string}</div>
+                    {(editedContent.hashtags as string[] || []).length > 0 && (
+                      <div className={styles.hashtags}>{(editedContent.hashtags as string[]).join(' ')}</div>
+                    )}
+                  </div>
+                )}
+                <div className={styles.scriptNotes}>
+                  <em>🎬 {editedContent.visual_directions || editedContent.style_notes}</em>
+                </div>
+              </div>
             ) : (
+              // Simple 3-part view (from basic generation)
               <div className={styles.scriptPreview}>
                 <div className={styles.scriptRow}>
-                  <div className={styles.scriptTime}>0:00 - 0:03</div>
-                  <div className={styles.scriptText}><strong>{editedContent.hook_script}</strong></div>
+                  <div className={styles.scriptTime}>Hook</div>
+                  <div className={styles.scriptText}><strong>{editedContent.hook_script as string}</strong></div>
                 </div>
                 <div className={styles.scriptRow}>
-                  <div className={styles.scriptTime}>0:03 - {editedContent.duration_seconds ? editedContent.duration_seconds - 5 : 25}</div>
-                  <div className={styles.scriptText}>{editedContent.body_script}</div>
+                  <div className={styles.scriptTime}>Body</div>
+                  <div className={styles.scriptText}>{editedContent.body_script as string}</div>
                 </div>
                 <div className={styles.scriptRow}>
-                  <div className={styles.scriptTime}>Closing</div>
-                  <div className={styles.scriptText}><strong>{editedContent.cta_script}</strong></div>
+                  <div className={styles.scriptTime}>CTA</div>
+                  <div className={styles.scriptText}><strong>{editedContent.cta_script as string}</strong></div>
                 </div>
                 <div className={styles.scriptNotes}>
-                  <em>🎬 Notes: {editedContent.visual_directions || editedContent.style_notes}</em>
+                  <em>🎬 {editedContent.visual_directions || editedContent.style_notes}</em>
                 </div>
               </div>
             )}
