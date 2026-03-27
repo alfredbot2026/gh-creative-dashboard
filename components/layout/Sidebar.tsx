@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/create', label: 'Create' },
   { href: '/library', label: 'My Content' },
   { href: '/insights', label: 'Insights' },
+  { href: '/ads', label: 'Ads' },
 ]
 
 export default function Sidebar() {
