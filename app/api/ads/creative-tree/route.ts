@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
         hook_text: hook.hook_text,
         hook_type: hook.hook_type,
         proof_points_used: hook.proof_points_used,
+        status: 'draft',
         executions: savedExecs || [],
       })
     }
