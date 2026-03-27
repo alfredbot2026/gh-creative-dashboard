@@ -108,17 +108,22 @@ function CreatePageInner() {
       formData.append('aspectRatio', '1:1')
       const res = await fetch('/api/studio/generate', { method: 'POST', body: formData })
       const data = await res.json()
-      if (data.imageUrl) {
+      const imgUrl = data.imageUrl || data.image_url
+      if (imgUrl) {
         setVariants(prev => prev.map(v =>
-          v.id === variantId ? { ...v, image_url: data.imageUrl, image_status: 'ready' } : v
+          v.id === variantId ? { ...v, image_url: imgUrl, image_status: 'ready' } : v
         ))
       }
-    } catch { /* retry manually */ }
+    } catch (err) {
+      console.error('Image gen failed:', err)
+    }
     setGenImage(prev => ({ ...prev, [variantId]: false }))
   }
 
+  const [autoGenDone, setAutoGenDone] = useState(false)
   useEffect(() => {
-    if (angleParam && personaParam && !variants.length && !generating) {
+    if (angleParam && personaParam && !autoGenDone && !generating) {
+      setAutoGenDone(true)
       handleGenerate()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
