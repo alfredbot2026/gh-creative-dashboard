@@ -158,7 +158,7 @@ export default function StrategyMapPage() {
               {selected.ad_count === 0 ? (
                 <div className={styles.detailEmpty}>
                   <p>No ads tested for this combo yet.</p>
-                  <Link href={`/ads/create?angle=${selected.angle}&persona=${selected.persona}`} className={styles.createLink}>
+                  <Link href={`/ads/create?angle=${selected.angle}&persona=${selected.persona}&format=static_image`} className={styles.createLink}>
                     Create Ads for This →
                   </Link>
                 </div>
@@ -182,7 +182,7 @@ export default function StrategyMapPage() {
                       </div>
                     ))}
                   </div>
-                  <Link href={`/ads/create?angle=${selected.angle}&persona=${selected.persona}`} className={styles.createLink}>
+                  <Link href={`/ads/create?angle=${selected.angle}&persona=${selected.persona}&format=static_image`} className={styles.createLink}>
                     Create More Ads →
                   </Link>
                 </>

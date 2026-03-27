@@ -181,12 +181,16 @@ export default function CompetitorsPage() {
             {Object.entries(landscape.angle_breakdown)
               .sort((a, b) => b[1] - a[1])
               .map(([angle, count]) => (
-                <span key={angle} className={styles.distChip}>
+                <Link key={angle} href={`/ads/create?angle=${angle}&persona=new_mom_curious&format=static_image`}
+                  className={styles.distChip} style={{ textDecoration: 'none' }}>
                   <span className={styles.distChipLabel}>{angle.replace(/_/g, ' ')}</span>
                   <span className={styles.distChipCount}>{count}</span>
-                </span>
+                </Link>
               ))}
           </div>
+          <p style={{ fontSize: '0.65rem', color: 'var(--color-text-dim)', marginTop: '0.3rem' }}>
+            Click an angle to create ads that counter or differentiate from competitors
+          </p>
         </div>
       )}
 
