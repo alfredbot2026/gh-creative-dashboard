@@ -350,7 +350,7 @@ export async function POST(request: Request) {
     let perfUpdated = 0
     const { data: creatives } = await supabase
       .from('ad_creatives')
-      .select('id, meta_ad_id, ad_name')
+      .select('id, meta_ad_id, ad_name, campaign_objective')
       .eq('user_id', userId)
 
     // Pre-fetch ALL ad_performance rows for this user (avoid N+1 queries)
@@ -426,7 +426,17 @@ export async function POST(request: Request) {
             ? Math.floor((now.getTime() - new Date(firstDate).getTime()) / (1000 * 60 * 60 * 24))
             : 0
 
-          const adStatus = calculateAdStatus(totalSpend, avgRoas, daysSinceFirst, roasTrend)
+          // Calculate cost per conversation for engagement campaigns
+          const totalConversations = perfRows
+            .filter((r: any) => r.messaging_conversations)
+            .reduce((s: number, r: any) => s + (r.messaging_conversations || 0), 0)
+          const costPerConv = totalConversations > 0 ? totalSpend / totalConversations : null
+          const avgCpm = totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : null
+
+          const adStatus = calculateAdStatus(
+            totalSpend, avgRoas, daysSinceFirst, roasTrend,
+            creative.campaign_objective, costPerConv, avgCpm
+          )
 
           await supabase
             .from('ad_creatives')

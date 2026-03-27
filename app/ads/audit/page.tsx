@@ -82,6 +82,8 @@ interface AccountMetrics {
   ctr: number
   cpm: number | null
   frequency: number | null
+  conversations: number
+  cost_per_conversation: number | null
 }
 
 interface CampaignGroup {
@@ -510,6 +512,7 @@ export default function AuditPage() {
         </div>
         <div className={styles.headerActions}>
           <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
+          <Link href="/ads/competitors" className={styles.btnOutline}>🏢 Intel</Link>
           <button className={styles.btnOutline} onClick={() => handleSync(false)} disabled={syncing}>🔄 Sync</button>
           <button className={styles.btn} onClick={() => handleSync(true)} disabled={syncing}>🔁 Reclassify</button>
         </div>
@@ -527,42 +530,44 @@ export default function AuditPage() {
         ))}
       </div>
 
-      {/* Account-level metrics */}
+      {/* Account-level metrics — split by funnel */}
       {a && (
         <div className={styles.accountMetrics}>
           <div className={styles.accountMetric}>
-            <span className={styles.accountLabel}>Spend</span>
+            <span className={styles.accountLabel}>Total Spend</span>
             <span className={styles.accountValue}>{formatPeso(a.spend)}</span>
           </div>
           <div className={styles.accountMetric}>
-            <span className={styles.accountLabel}>Revenue</span>
+            <span className={styles.accountLabel}>💰 Revenue</span>
             <span className={styles.accountValue}>{formatPeso(a.revenue)}</span>
           </div>
           <div className={styles.accountMetric}>
-            <span className={styles.accountLabel}>ROAS</span>
+            <span className={styles.accountLabel}>💰 ROAS</span>
             <span className={`${styles.accountValue} ${a.roas !== null && a.roas >= 2 ? styles.metricGood : a.roas !== null && a.roas < 1 ? styles.metricBad : ''}`}>
               {a.roas !== null ? a.roas.toFixed(2) + 'x' : '—'}
             </span>
           </div>
           <div className={styles.accountMetric}>
-            <span className={styles.accountLabel}>Purchases</span>
+            <span className={styles.accountLabel}>💰 Purchases</span>
             <span className={styles.accountValue}>{a.purchases}</span>
           </div>
           <div className={styles.accountMetric}>
-            <span className={styles.accountLabel}>CPA</span>
-            <span className={styles.accountValue}>{a.cpa !== null ? formatPeso(a.cpa) : '—'}</span>
+            <span className={styles.accountLabel}>💬 Convos</span>
+            <span className={styles.accountValue}>{a.conversations?.toLocaleString() || '0'}</span>
+          </div>
+          <div className={styles.accountMetric}>
+            <span className={styles.accountLabel}>💬 Cost/Conv</span>
+            <span className={styles.accountValue}>{a.cost_per_conversation !== null ? formatPeso(a.cost_per_conversation) : '—'}</span>
           </div>
           <div className={styles.accountMetric}>
             <span className={styles.accountLabel}>CTR</span>
             <span className={styles.accountValue}>{a.ctr.toFixed(1)}%</span>
           </div>
           <div className={styles.accountMetric}>
-            <span className={styles.accountLabel}>CPM</span>
-            <span className={styles.accountValue}>{a.cpm !== null ? formatPeso(a.cpm) : '—'}</span>
-          </div>
-          <div className={styles.accountMetric}>
-            <span className={styles.accountLabel}>Videos</span>
-            <span className={styles.accountValue}>{videoAnalyzed}/{videoTotal}</span>
+            <span className={styles.accountLabel}>Freq</span>
+            <span className={`${styles.accountValue} ${a.frequency !== null && a.frequency > 2.5 ? styles.metricBad : ''}`}>
+              {a.frequency !== null ? a.frequency.toFixed(1) : '—'}
+            </span>
           </div>
         </div>
       )}

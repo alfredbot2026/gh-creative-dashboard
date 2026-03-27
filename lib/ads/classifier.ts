@@ -221,28 +221,57 @@ export function getClassificationVersion(): string {
 }
 
 /**
- * Determine ad status based on performance data.
+ * Determine ad status based on performance data AND campaign objective.
  * This is the "media buyer brain" — translating metrics into decisions.
+ * 
+ * For sales campaigns: ROAS is the primary KPI.
+ * For engagement campaigns: cost per conversation is the primary KPI.
+ * For awareness: CPM and reach are the primary KPIs.
+ * For traffic: CPC and landing page views are the primary KPIs.
  */
 export function calculateAdStatus(
   totalSpend: number,
   avgRoas: number | null,
   daysSinceFirstActive: number,
   recentRoasTrend: 'rising' | 'stable' | 'declining' | null,
+  campaignObjective?: string | null,
+  costPerConversation?: number | null,
+  cpm?: number | null,
 ): string {
   if (totalSpend < 100 || daysSinceFirstActive < 3) return 'new'
+
+  const objective = campaignObjective || ''
+
+  // Engagement campaigns: judge by cost per conversation, NOT ROAS
+  if (objective === 'OUTCOME_ENGAGEMENT' || objective === 'MESSAGES') {
+    if (!costPerConversation || costPerConversation <= 0) {
+      // No conversations but has spend — check if just low data
+      return totalSpend < 500 ? 'new' : 'weak'
+    }
+    if (costPerConversation <= 8) return 'winning'   // Cheap conversations = great
+    if (costPerConversation <= 15) return 'weak'      // Acceptable but could improve
+    return 'dead'                                      // Too expensive per conversation
+  }
+
+  // Awareness campaigns: judge by CPM
+  if (objective === 'OUTCOME_AWARENESS') {
+    if (!cpm || cpm <= 0) return 'new'
+    if (cpm <= 50) return 'winning'   // Cheap reach
+    if (cpm <= 100) return 'weak'
+    return 'dead'
+  }
+
+  // Traffic campaigns: just check if spend is reasonable
+  if (objective === 'OUTCOME_TRAFFIC' || objective === 'LINK_CLICKS') {
+    // For traffic, we mostly care about CPC which isn't passed here
+    // Fall through to ROAS-based logic as a proxy
+  }
+
+  // Sales campaigns (default): ROAS-based
   if (!avgRoas || avgRoas <= 0) return 'dead'
-  
-  // Winning: ROAS >= 2x and not declining
   if (avgRoas >= 2 && recentRoasTrend !== 'declining') return 'winning'
-  
-  // Tired: was good but declining
   if (avgRoas >= 1.5 && recentRoasTrend === 'declining') return 'tired'
-  
-  // Weak: ROAS positive but below 1.5x
   if (avgRoas >= 0.5 && avgRoas < 1.5) return 'weak'
-  
-  // Dead: ROAS < 0.5x
   if (avgRoas < 0.5) return 'dead'
   
   return 'weak'
