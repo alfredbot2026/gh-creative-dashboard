@@ -5,7 +5,12 @@
 ## Current Phase: Phase 4d — Ad Performance Feedback Loop
 
 ### Active Work
-- **TASK-054** — Video Intelligence Pipeline + Ad Audit Page → Blackwidow (dispatched 2026-03-27 00:15)
+- **TASK-055** — Competition + Sentiment Intelligence → Lead (direct impl, 2026-03-27 09:00)
+  - Competition: Ad Library scraping via OpenClaw cron → Supabase
+  - Sentiment: Brave Search + Google Trends → Supabase (Vercel-safe)
+  - Dashboard: /ads/competitors page reading from Supabase
+  - Context-aware suggestions: pull all 3 layers when generating recommendations
+- **TASK-054** — Video Intelligence Pipeline + Ad Audit Page → ✅ DONE
   - Wave 1: DB migration + video analyzer lib + enhanced classifier
   - Wave 2: Sync with video analysis
   - Wave 3: Audit page UI (/ads/audit) with inline corrections
