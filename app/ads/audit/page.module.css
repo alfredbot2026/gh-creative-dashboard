@@ -66,6 +66,7 @@
 .badgeManual { background: #dbeafe; color: #2563eb; }
 .badgeTranscribed { background: var(--color-secondary-container); color: var(--color-secondary); }
 .badgeInactive { background: var(--color-surface-high); color: var(--color-text-dim); font-style: italic; }
+.badgeObjective { background: var(--color-surface-low); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 
 /* Performance */
 .perfRow { display: flex; gap: 0.75rem; font-size: 0.72rem; color: var(--color-text-dim); }

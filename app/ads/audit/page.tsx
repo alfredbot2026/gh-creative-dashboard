@@ -38,6 +38,8 @@ interface AdCreative {
   ad_status: string | null
   is_active: boolean
   video_analyzed_at: string | null
+  campaign_objective: string | null
+  optimization_goal: string | null
 }
 
 interface AdMetrics {
@@ -57,6 +59,14 @@ interface AdMetrics {
   hook_rate: number | null
   hold_rate: number | null
   video_views: number
+  conversations: number
+  leads: number
+  link_clicks: number
+  landing_page_views: number
+  engagement: number
+  cost_per_conversation: number | null
+  cost_per_lead: number | null
+  cost_per_link_click: number | null
   roas_prev: number | null
   roas_trend: 'rising' | 'stable' | 'declining' | null
 }
@@ -183,68 +193,153 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative & { metrics?: AdMetrics }; o
         <div className={styles.badgeRow}>
           <span className={`${styles.badge} ${styles.badgeFormat}`}>{ad.creative_format}</span>
           <span className={`${styles.badge} ${styles[st.css]}`}>{st.label}</span>
+          {ad.campaign_objective && <span className={`${styles.badge} ${styles.badgeObjective}`}>
+            {ad.campaign_objective === 'OUTCOME_SALES' ? '💰 Sales' :
+             ad.campaign_objective === 'OUTCOME_ENGAGEMENT' || ad.campaign_objective === 'MESSAGES' ? '💬 Engagement' :
+             ad.campaign_objective === 'OUTCOME_AWARENESS' ? '👁️ Awareness' :
+             ad.campaign_objective === 'OUTCOME_TRAFFIC' || ad.campaign_objective === 'LINK_CLICKS' ? '🔗 Traffic' :
+             ad.campaign_objective}
+          </span>}
           {!ad.is_active && <span className={`${styles.badge} ${styles.badgeInactive}`}>paused</span>}
           {isManual && <span className={`${styles.badge} ${styles.badgeManual}`}>✏️</span>}
           {m?.roas_trend && <TrendBadge trend={m.roas_trend} roas={m.roas} prev={m.roas_prev} />}
         </div>
 
-        {/* Media buyer metrics */}
-        {m && m.spend > 0 && (
-          <div className={styles.metricsGrid}>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>Spend</span>
-              <span className={styles.metricValue}>{formatPeso(m.spend)}</span>
-            </div>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>ROAS</span>
-              <span className={`${styles.metricValue} ${m.roas !== null && m.roas >= 2 ? styles.metricGood : m.roas !== null && m.roas < 1 ? styles.metricBad : ''}`}>
-                {m.roas !== null ? m.roas.toFixed(2) + 'x' : '—'}
-              </span>
-            </div>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>CPA</span>
-              <span className={styles.metricValue}>{m.cpa !== null ? formatPeso(m.cpa) : '—'}</span>
-            </div>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>CTR</span>
-              <span className={`${styles.metricValue} ${m.ctr >= 2 ? styles.metricGood : m.ctr < 1 ? styles.metricBad : ''}`}>
-                {m.ctr.toFixed(1)}%
-              </span>
-            </div>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>CPM</span>
-              <span className={styles.metricValue}>{m.cpm !== null ? formatPeso(m.cpm) : '—'}</span>
-            </div>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>Freq</span>
-              <span className={`${styles.metricValue} ${m.frequency !== null && m.frequency > 2.5 ? styles.metricBad : ''}`}>
-                {m.frequency !== null ? m.frequency.toFixed(1) : '—'}
-              </span>
-            </div>
-            {isVideo && m.hook_rate !== null && (
+        {/* Objective-aware metrics */}
+        {m && m.spend > 0 && (() => {
+          const obj = ad.campaign_objective || ''
+          const isSales = obj === 'OUTCOME_SALES'
+          const isEngagement = obj === 'OUTCOME_ENGAGEMENT' || obj === 'MESSAGES'
+          const isAwareness = obj === 'OUTCOME_AWARENESS'
+          const isTraffic = obj === 'OUTCOME_TRAFFIC' || obj === 'LINK_CLICKS'
+
+          return (
+            <div className={styles.metricsGrid}>
               <div className={styles.metric}>
-                <span className={styles.metricLabel}>Hook</span>
-                <span className={`${styles.metricValue} ${m.hook_rate >= 30 ? styles.metricGood : m.hook_rate < 15 ? styles.metricBad : ''}`}>
-                  {m.hook_rate.toFixed(0)}%
+                <span className={styles.metricLabel}>Spend</span>
+                <span className={styles.metricValue}>{formatPeso(m.spend)}</span>
+              </div>
+
+              {/* SALES: ROAS + CPA + Revenue are primary */}
+              {isSales && <>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>ROAS</span>
+                  <span className={`${styles.metricValue} ${m.roas !== null && m.roas >= 2 ? styles.metricGood : m.roas !== null && m.roas < 1 ? styles.metricBad : ''}`}>
+                    {m.roas !== null ? m.roas.toFixed(2) + 'x' : '—'}
+                  </span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>CPA</span>
+                  <span className={styles.metricValue}>{m.cpa !== null ? formatPeso(m.cpa) : '—'}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Purchases</span>
+                  <span className={styles.metricValue}>{m.purchases}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Revenue</span>
+                  <span className={styles.metricValue}>{formatPeso(m.revenue)}</span>
+                </div>
+              </>}
+
+              {/* ENGAGEMENT: Cost per conversation + conversations are primary */}
+              {isEngagement && <>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Conversations</span>
+                  <span className={styles.metricValue}>{m.conversations}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Cost/Conv</span>
+                  <span className={`${styles.metricValue} ${m.cost_per_conversation !== null && m.cost_per_conversation <= 5 ? styles.metricGood : m.cost_per_conversation !== null && m.cost_per_conversation > 15 ? styles.metricBad : ''}`}>
+                    {m.cost_per_conversation !== null ? formatPeso(m.cost_per_conversation) : '—'}
+                  </span>
+                </div>
+                {m.leads > 0 && <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Leads</span>
+                  <span className={styles.metricValue}>{m.leads}</span>
+                </div>}
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Engagement</span>
+                  <span className={styles.metricValue}>{m.engagement.toLocaleString()}</span>
+                </div>
+              </>}
+
+              {/* AWARENESS: CPM + Reach + Frequency are primary */}
+              {isAwareness && <>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>CPM</span>
+                  <span className={styles.metricValue}>{m.cpm !== null ? formatPeso(m.cpm) : '—'}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Reach</span>
+                  <span className={styles.metricValue}>{m.reach.toLocaleString()}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Impressions</span>
+                  <span className={styles.metricValue}>{m.impressions.toLocaleString()}</span>
+                </div>
+              </>}
+
+              {/* TRAFFIC: CPC + Link clicks + Landing page views */}
+              {isTraffic && <>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Link Clicks</span>
+                  <span className={styles.metricValue}>{m.link_clicks}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Cost/Click</span>
+                  <span className={styles.metricValue}>{m.cost_per_link_click !== null ? formatPeso(m.cost_per_link_click) : '—'}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>LP Views</span>
+                  <span className={styles.metricValue}>{m.landing_page_views}</span>
+                </div>
+              </>}
+
+              {/* Common metrics for all objectives */}
+              <div className={styles.metric}>
+                <span className={styles.metricLabel}>CTR</span>
+                <span className={`${styles.metricValue} ${m.ctr >= 2 ? styles.metricGood : m.ctr < 1 ? styles.metricBad : ''}`}>
+                  {m.ctr.toFixed(1)}%
                 </span>
               </div>
-            )}
-            {isVideo && m.hold_rate !== null && (
               <div className={styles.metric}>
-                <span className={styles.metricLabel}>Hold</span>
-                <span className={styles.metricValue}>{m.hold_rate.toFixed(0)}%</span>
+                <span className={styles.metricLabel}>Freq</span>
+                <span className={`${styles.metricValue} ${m.frequency !== null && m.frequency > 2.5 ? styles.metricBad : ''}`}>
+                  {m.frequency !== null ? m.frequency.toFixed(1) : '—'}
+                </span>
               </div>
-            )}
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>Purchases</span>
-              <span className={styles.metricValue}>{m.purchases}</span>
+
+              {/* Video metrics if applicable */}
+              {isVideo && m.hook_rate !== null && (
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Hook</span>
+                  <span className={`${styles.metricValue} ${m.hook_rate >= 30 ? styles.metricGood : m.hook_rate < 15 ? styles.metricBad : ''}`}>
+                    {m.hook_rate.toFixed(0)}%
+                  </span>
+                </div>
+              )}
+              {isVideo && m.hold_rate !== null && (
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Hold</span>
+                  <span className={styles.metricValue}>{m.hold_rate.toFixed(0)}%</span>
+                </div>
+              )}
+
+              {/* Cross-objective: show purchases if they happened (even on non-sales campaigns) */}
+              {!isSales && m.purchases > 0 && <>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Purchases</span>
+                  <span className={styles.metricValue}>{m.purchases}</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Revenue</span>
+                  <span className={styles.metricValue}>{formatPeso(m.revenue)}</span>
+                </div>
+              </>}
             </div>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>Revenue</span>
-              <span className={styles.metricValue}>{formatPeso(m.revenue)}</span>
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
         <div className={styles.chips}>
           {(['angle', 'persona', 'framework', 'hook_type', 'offer_type', 'emotional_tone'] as const).map(d => (

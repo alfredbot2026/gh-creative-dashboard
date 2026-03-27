@@ -27,6 +27,11 @@ interface DailyRow {
   ctr: number | null
   cpc: number | null
   cpm: number | null
+  messaging_conversations: number
+  leads: number
+  link_clicks: number
+  landing_page_views: number
+  post_engagement: number
   video_views_p25: number
   video_views_p50: number
   video_views_p75: number
@@ -49,6 +54,15 @@ interface AdMetrics {
   cpc: number | null         // spend / clicks
   cpm: number | null         // (spend / impressions) * 1000
   frequency: number | null   // impressions / reach
+  // Funnel metrics
+  conversations: number
+  leads: number
+  link_clicks: number
+  landing_page_views: number
+  engagement: number
+  cost_per_conversation: number | null
+  cost_per_lead: number | null
+  cost_per_link_click: number | null
   // Video
   hook_rate: number | null   // p25 / impressions (3s view rate)
   hold_rate: number | null   // p100 / p25 (completion rate)
@@ -66,9 +80,13 @@ function computeMetrics(rows: DailyRow[]): Omit<AdMetrics, 'meta_ad_id' | 'roas_
   const purchases = rows.reduce((s, r) => s + (r.conversions || 0), 0)
   const revenue = rows.reduce((s, r) => s + (r.conversion_value || 0), 0)
   const reach = rows.reduce((s, r) => s + (r.reach || 0), 0)
+  const conversations = rows.reduce((s, r) => s + (r.messaging_conversations || 0), 0)
+  const leads = rows.reduce((s, r) => s + (r.leads || 0), 0)
+  const linkClicks = rows.reduce((s, r) => s + (r.link_clicks || 0), 0)
+  const lpViews = rows.reduce((s, r) => s + (r.landing_page_views || 0), 0)
+  const engagement = rows.reduce((s, r) => s + (r.post_engagement || 0), 0)
   const p25 = rows.reduce((s, r) => s + (r.video_views_p25 || 0), 0)
   const p100 = rows.reduce((s, r) => s + (r.video_views_p100 || 0), 0)
-  const videoViews = rows.reduce((s, r) => s + (r.video_views_p25 || 0), 0)
 
   return {
     spend: Math.round(spend * 100) / 100,
@@ -83,9 +101,17 @@ function computeMetrics(rows: DailyRow[]): Omit<AdMetrics, 'meta_ad_id' | 'roas_
     cpc: clicks > 0 ? Math.round((spend / clicks) * 100) / 100 : null,
     cpm: impressions > 0 ? Math.round((spend / impressions) * 100000) / 100 : null,
     frequency: reach > 0 ? Math.round((impressions / reach) * 100) / 100 : null,
+    conversations,
+    leads,
+    link_clicks: linkClicks,
+    landing_page_views: lpViews,
+    engagement,
+    cost_per_conversation: conversations > 0 ? Math.round((spend / conversations) * 100) / 100 : null,
+    cost_per_lead: leads > 0 ? Math.round((spend / leads) * 100) / 100 : null,
+    cost_per_link_click: linkClicks > 0 ? Math.round((spend / linkClicks) * 100) / 100 : null,
     hook_rate: impressions > 0 && p25 > 0 ? Math.round((p25 / impressions) * 10000) / 100 : null,
     hold_rate: p25 > 0 && p100 > 0 ? Math.round((p100 / p25) * 10000) / 100 : null,
-    video_views: videoViews,
+    video_views: p25,
   }
 }
 
@@ -132,7 +158,7 @@ export async function GET(request: NextRequest) {
   // Fetch current period daily data
   let query = supabase
     .from('ad_performance')
-    .select('meta_ad_id, date_start, spend, impressions, clicks, conversions, conversion_value, reach, frequency, ctr, cpc, cpm, video_views_p25, video_views_p50, video_views_p75, video_views_p100')
+    .select('meta_ad_id, date_start, spend, impressions, clicks, conversions, conversion_value, reach, frequency, ctr, cpc, cpm, messaging_conversations, leads, link_clicks, landing_page_views, post_engagement, video_views_p25, video_views_p50, video_views_p75, video_views_p100')
     .eq('user_id', userId)
     .gte('date_start', sinceDate)
     .lte('date_start', today)
@@ -148,7 +174,7 @@ export async function GET(request: NextRequest) {
     const prevStart = new Date(prevEnd.getTime() - p * 24 * 60 * 60 * 1000)
     const { data: prevRows } = await supabase
       .from('ad_performance')
-      .select('meta_ad_id, date_start, spend, impressions, clicks, conversions, conversion_value, reach, frequency, ctr, cpc, cpm, video_views_p25, video_views_p50, video_views_p75, video_views_p100')
+      .select('meta_ad_id, date_start, spend, impressions, clicks, conversions, conversion_value, reach, frequency, ctr, cpc, cpm, messaging_conversations, leads, link_clicks, landing_page_views, post_engagement, video_views_p25, video_views_p50, video_views_p75, video_views_p100')
       .eq('user_id', userId)
       .gte('date_start', prevStart.toISOString().split('T')[0])
       .lt('date_start', prevEnd.toISOString().split('T')[0])

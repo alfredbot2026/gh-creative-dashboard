@@ -32,8 +32,10 @@ interface MetaAdWithCreative {
   name: string
   campaign_id: string
   campaign_name: string
+  campaign_objective: string
   adset_id: string
   adset_name: string
+  optimization_goal: string
   status: string
   creative: {
     id: string
@@ -57,8 +59,8 @@ async function fetchAdsWithCreatives(accessToken: string, adAccountId: string): 
   const formattedId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
   const fields = [
     'id', 'name', 'status',
-    'campaign_id', 'campaign{name}',
-    'adset_id', 'adset{name}',
+    'campaign_id', 'campaign{name,objective}',
+    'adset_id', 'adset{name,optimization_goal}',
     'creative{id,body,title,call_to_action_type,image_url,video_id,thumbnail_url,object_story_spec,asset_feed_spec}',
   ].join(',')
 
@@ -83,8 +85,10 @@ async function fetchAdsWithCreatives(accessToken: string, adAccountId: string): 
         name: ad.name || '',
         campaign_id: ad.campaign_id || '',
         campaign_name: ad.campaign?.name || '',
+        campaign_objective: ad.campaign?.objective || '',
         adset_id: ad.adset_id || '',
         adset_name: ad.adset?.name || '',
+        optimization_goal: ad.adset?.optimization_goal || '',
         status: ad.status || 'UNKNOWN',
         creative: ad.creative || {},
       })
@@ -232,6 +236,8 @@ export async function POST(request: Request) {
         campaign_name: ad.campaign_name,
         adset_name: ad.adset_name,
         ad_name: ad.name,
+        campaign_objective: ad.campaign_objective || null,
+        optimization_goal: ad.optimization_goal || null,
         is_active: ad.status === 'ACTIVE',
         updated_at: new Date().toISOString(),
       }

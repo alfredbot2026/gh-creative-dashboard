@@ -39,6 +39,11 @@ export interface AdInsight {
   conversion_value: number;
   roas: number;
   cpa: number;
+  messaging_conversations: number;
+  leads: number;
+  link_clicks: number;
+  landing_page_views: number;
+  post_engagement: number;
   video_views_p25: number;
   video_views_p50: number;
   video_views_p75: number;
@@ -60,7 +65,7 @@ export async function fetchAdInsights(
     'ad_id', 'campaign_id', 'adset_id', 'campaign_name', 'adset_name', 'ad_name',
     'spend', 'impressions', 'clicks', 'ctr', 'cpc', 'cpm',
     'reach', 'frequency',
-    'actions', 'action_values',
+    'actions', 'action_values', 'cost_per_action_type',
     'video_p25_watched_actions', 'video_p50_watched_actions',
     'video_p75_watched_actions', 'video_p100_watched_actions',
     // Note: effective_object_story_id is NOT valid for /insights endpoint
@@ -108,12 +113,21 @@ export async function fetchAdInsights(
       const roas = spend > 0 ? conversion_value / spend : 0;
       const cpa = conversions > 0 ? spend / conversions : 0;
 
-      // Video views helpers
+      // Action value helpers
       const getActionValue = (actionsArray: any[], type: string) => {
         if (!actionsArray) return 0;
         const action = actionsArray.find((a: any) => a.action_type === type);
         return action ? parseInt(action.value || '0', 10) : 0;
       };
+
+      // Funnel metrics from actions
+      const messaging_conversations = getActionValue(item.actions, 'onsite_conversion.messaging_conversation_started_7d')
+        || getActionValue(item.actions, 'onsite_conversion.messaging_first_reply');
+      const leads = getActionValue(item.actions, 'lead')
+        || getActionValue(item.actions, 'onsite_conversion.lead');
+      const link_clicks = getActionValue(item.actions, 'link_click');
+      const landing_page_views = getActionValue(item.actions, 'landing_page_view');
+      const post_engagement = getActionValue(item.actions, 'post_engagement');
 
       insights.push({
         meta_ad_id: item.ad_id,
@@ -134,6 +148,11 @@ export async function fetchAdInsights(
         conversion_value,
         roas,
         cpa,
+        messaging_conversations,
+        leads,
+        link_clicks,
+        landing_page_views,
+        post_engagement,
         video_views_p25: getActionValue(item.video_p25_watched_actions, 'video_view'),
         video_views_p50: getActionValue(item.video_p50_watched_actions, 'video_view'),
         video_views_p75: getActionValue(item.video_p75_watched_actions, 'video_view'),
