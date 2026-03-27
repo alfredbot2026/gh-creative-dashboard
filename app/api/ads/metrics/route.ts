@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { loadBusinessContext, getThresholds } from '@/lib/ads/business-context'
 
 export const dynamic = 'force-dynamic'
 
@@ -224,10 +225,15 @@ export async function GET(request: NextRequest) {
   const allRows = currentRows as DailyRow[] || []
   const accountMetrics = computeMetrics(allRows)
 
+  // Business context + thresholds
+  const businessCtx = await loadBusinessContext(supabase, userId)
+  const thresholds = getThresholds(businessCtx)
+
   return NextResponse.json({
     period: isLifetime ? 'lifetime' : period,
     date_range: { since: sinceDate, until: today },
     account: accountMetrics,
     ads: adMetrics,
+    business: thresholds,
   })
 }

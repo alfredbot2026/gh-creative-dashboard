@@ -112,6 +112,11 @@
 .periodBtn:hover { background: var(--color-surface); color: var(--color-text-muted); }
 .periodBtnActive { background: var(--color-surface); color: var(--color-primary); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 
+/* Business context */
+.bizContext { display: flex; gap: 1rem; padding: 0.5rem 0.75rem; background: color-mix(in srgb, var(--color-primary-fixed) 50%, var(--color-surface)); border: 1px solid var(--color-primary-fixed-dim); border-radius: 8px; margin-bottom: 0.75rem; font-size: 0.72rem; color: var(--color-text-muted); flex-wrap: wrap; }
+.bizItem { white-space: nowrap; }
+.bizItem strong { color: var(--color-text); }
+
 /* Account metrics bar */
 .accountMetrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 0.5rem; margin-bottom: 1.25rem; padding: 0.75rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; }
 .accountMetric { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }

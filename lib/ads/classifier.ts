@@ -221,14 +221,22 @@ export function getClassificationVersion(): string {
 }
 
 /**
- * Determine ad status based on performance data AND campaign objective.
- * This is the "media buyer brain" — translating metrics into decisions.
+ * Business-aware ad status calculator.
  * 
- * For sales campaigns: ROAS is the primary KPI.
- * For engagement campaigns: cost per conversation is the primary KPI.
- * For awareness: CPM and reach are the primary KPIs.
- * For traffic: CPC and landing page views are the primary KPIs.
+ * Thresholds are derived from product economics, not arbitrary numbers.
+ * Given a product price and observed conversion rates, calculates
+ * whether an ad is profitable, marginal, or losing money.
  */
+export interface BusinessContext {
+  productPrice: number           // e.g., 1300 (PHP)
+  convToSaleRate: number         // conversation → purchase rate (e.g., 0.08 = 8%)
+}
+
+const DEFAULT_BUSINESS: BusinessContext = {
+  productPrice: 1300,            // Papers to Profits default
+  convToSaleRate: 0.08,          // ~8% estimated from data
+}
+
 export function calculateAdStatus(
   totalSpend: number,
   avgRoas: number | null,
@@ -237,42 +245,52 @@ export function calculateAdStatus(
   campaignObjective?: string | null,
   costPerConversation?: number | null,
   cpm?: number | null,
+  business?: BusinessContext | null,
 ): string {
   if (totalSpend < 100 || daysSinceFirstActive < 3) return 'new'
 
+  const biz = business || DEFAULT_BUSINESS
   const objective = campaignObjective || ''
 
-  // Engagement campaigns: judge by cost per conversation, NOT ROAS
+  // Engagement campaigns: judge by cost per conversation vs business economics
+  // Breakeven cost/conv = productPrice × convToSaleRate
+  // e.g., ₱1,300 × 8% = ₱104 breakeven per conversation
   if (objective === 'OUTCOME_ENGAGEMENT' || objective === 'MESSAGES') {
     if (!costPerConversation || costPerConversation <= 0) {
-      // No conversations but has spend — check if just low data
       return totalSpend < 500 ? 'new' : 'weak'
     }
-    if (costPerConversation <= 8) return 'winning'   // Cheap conversations = great
-    if (costPerConversation <= 15) return 'weak'      // Acceptable but could improve
-    return 'dead'                                      // Too expensive per conversation
+    const breakevenCostPerConv = biz.productPrice * biz.convToSaleRate
+    const winningThreshold = breakevenCostPerConv * 0.5   // 2x return
+    const weakThreshold = breakevenCostPerConv * 0.8      // 1.25x return
+
+    if (costPerConversation <= winningThreshold) return 'winning'
+    if (costPerConversation <= breakevenCostPerConv && recentRoasTrend === 'declining') return 'tired'
+    if (costPerConversation <= weakThreshold) return 'weak'
+    if (costPerConversation <= breakevenCostPerConv) return 'weak'
+    return 'dead'
   }
 
-  // Awareness campaigns: judge by CPM
+  // Awareness campaigns: judge by CPM relative to market
   if (objective === 'OUTCOME_AWARENESS') {
     if (!cpm || cpm <= 0) return 'new'
-    if (cpm <= 50) return 'winning'   // Cheap reach
+    // PH market: CPM < ₱50 is cheap, < ₱100 is normal, > ₱150 is expensive
+    if (cpm <= 50) return 'winning'
     if (cpm <= 100) return 'weak'
     return 'dead'
   }
 
-  // Traffic campaigns: just check if spend is reasonable
+  // Traffic campaigns
   if (objective === 'OUTCOME_TRAFFIC' || objective === 'LINK_CLICKS') {
-    // For traffic, we mostly care about CPC which isn't passed here
-    // Fall through to ROAS-based logic as a proxy
+    // Fall through to ROAS if we have it
   }
 
   // Sales campaigns (default): ROAS-based
+  // Breakeven = 1.0x ROAS. Winning = 2.0x+. 
   if (!avgRoas || avgRoas <= 0) return 'dead'
   if (avgRoas >= 2 && recentRoasTrend !== 'declining') return 'winning'
   if (avgRoas >= 1.5 && recentRoasTrend === 'declining') return 'tired'
-  if (avgRoas >= 0.5 && avgRoas < 1.5) return 'weak'
-  if (avgRoas < 0.5) return 'dead'
+  if (avgRoas >= 1.0 && avgRoas < 2.0) return 'weak'
+  if (avgRoas < 1.0) return 'dead'
   
   return 'weak'
 }

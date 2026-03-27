@@ -23,6 +23,7 @@ import {
   getClassificationVersion,
   type AdCreativeInput,
 } from '@/lib/ads/classifier'
+import { loadBusinessContext } from '@/lib/ads/business-context'
 import { getMetaVideoUrl, analyzeAdVideo } from '@/lib/ads/video-analyzer'
 
 export const maxDuration = 120
@@ -345,6 +346,10 @@ export async function POST(request: Request) {
       }
     }
 
+    // 5.5. Load business context (product price + conversion rates)
+    const businessCtx = await loadBusinessContext(supabase, userId)
+    console.log(`[Creative Sync] Business context: price=₱${businessCtx.productPrice}, conv rate=${(businessCtx.convToSaleRate * 100).toFixed(1)}%`)
+
     // 6. Aggregate performance from ad_performance table
     // Match by meta_ad_id first, fallback to ad_name (legacy rows have 'legacy_' prefixed IDs)
     let perfUpdated = 0
@@ -356,7 +361,7 @@ export async function POST(request: Request) {
     // Pre-fetch ALL ad_performance rows for this user (avoid N+1 queries)
     const { data: allPerfRows } = await supabase
       .from('ad_performance')
-      .select('meta_ad_id, ad_name, spend, conversions, impressions, roas, ctr, cpa, date_start')
+      .select('meta_ad_id, ad_name, spend, conversions, impressions, roas, ctr, cpa, cpm, date_start, messaging_conversations')
       .eq('user_id', userId)
       .gt('spend', 0)
 
@@ -435,7 +440,8 @@ export async function POST(request: Request) {
 
           const adStatus = calculateAdStatus(
             totalSpend, avgRoas, daysSinceFirst, roasTrend,
-            creative.campaign_objective, costPerConv, avgCpm
+            creative.campaign_objective, costPerConv, avgCpm,
+            businessCtx,
           )
 
           await supabase

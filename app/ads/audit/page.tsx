@@ -178,7 +178,7 @@ function Chip({ dimension, value, isManual, onCorrect }: {
 }
 
 // ─── Ad Card with Metrics ───
-function AdCard({ ad, onCorrect }: { ad: AdCreative & { metrics?: AdMetrics }; onCorrect: (id: string, d: string, v: string) => void }) {
+function AdCard({ ad, onCorrect, biz }: { ad: AdCreative & { metrics?: AdMetrics }; onCorrect: (id: string, d: string, v: string) => void; biz: { winningCPA: number; breakevenCPA: number; winningCostPerConv: number; breakevenCostPerConv: number } | null }) {
   const [expanded, setExpanded] = useState(false)
   const thumb = ad.image_url || ad.video_thumbnail_url
   const st = STATUS_CFG[ad.ad_status || 'unknown'] || STATUS_CFG.unknown
@@ -232,7 +232,9 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative & { metrics?: AdMetrics }; o
                 </div>
                 <div className={styles.metric}>
                   <span className={styles.metricLabel}>CPA</span>
-                  <span className={styles.metricValue}>{m.cpa !== null ? formatPeso(m.cpa) : '—'}</span>
+                  <span className={`${styles.metricValue} ${m.cpa !== null && biz && m.cpa <= biz.winningCPA ? styles.metricGood : m.cpa !== null && biz && m.cpa > biz.breakevenCPA ? styles.metricBad : ''}`}>
+                    {m.cpa !== null ? formatPeso(m.cpa) : '—'}
+                  </span>
                 </div>
                 <div className={styles.metric}>
                   <span className={styles.metricLabel}>Purchases</span>
@@ -252,7 +254,7 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative & { metrics?: AdMetrics }; o
                 </div>
                 <div className={styles.metric}>
                   <span className={styles.metricLabel}>Cost/Conv</span>
-                  <span className={`${styles.metricValue} ${m.cost_per_conversation !== null && m.cost_per_conversation <= 5 ? styles.metricGood : m.cost_per_conversation !== null && m.cost_per_conversation > 15 ? styles.metricBad : ''}`}>
+                  <span className={`${styles.metricValue} ${m.cost_per_conversation !== null && biz && m.cost_per_conversation <= biz.winningCostPerConv ? styles.metricGood : m.cost_per_conversation !== null && biz && m.cost_per_conversation > biz.breakevenCostPerConv ? styles.metricBad : ''}`}>
                     {m.cost_per_conversation !== null ? formatPeso(m.cost_per_conversation) : '—'}
                   </span>
                 </div>
@@ -374,7 +376,9 @@ function AdCard({ ad, onCorrect }: { ad: AdCreative & { metrics?: AdMetrics }; o
 }
 
 // ─── Ad Set Row ───
-function AdSetRow({ group, onCorrect }: { group: AdSetGroup; onCorrect: (id: string, d: string, v: string) => void }) {
+type BizThresholds = { winningCPA: number; breakevenCPA: number; winningCostPerConv: number; breakevenCostPerConv: number } | null
+
+function AdSetRow({ group, onCorrect, biz }: { group: AdSetGroup; onCorrect: (id: string, d: string, v: string) => void; biz: BizThresholds }) {
   const [open, setOpen] = useState(false)
   return (
     <div className={styles.adsetGroup}>
@@ -383,13 +387,13 @@ function AdSetRow({ group, onCorrect }: { group: AdSetGroup; onCorrect: (id: str
         <span className={styles.adsetName}>{group.name}</span>
         <span className={styles.adsetCount}>{group.ads.length}</span>
       </div>
-      {open && <div className={styles.adList}>{group.ads.map(ad => <AdCard key={ad.id} ad={ad} onCorrect={onCorrect} />)}</div>}
+      {open && <div className={styles.adList}>{group.ads.map(ad => <AdCard key={ad.id} ad={ad} onCorrect={onCorrect} biz={biz} />)}</div>}
     </div>
   )
 }
 
 // ─── Campaign Row ───
-function CampaignRow({ group, onCorrect }: { group: CampaignGroup; onCorrect: (id: string, d: string, v: string) => void }) {
+function CampaignRow({ group, onCorrect, biz }: { group: CampaignGroup; onCorrect: (id: string, d: string, v: string) => void; biz: BizThresholds }) {
   const [open, setOpen] = useState(false)
   return (
     <div className={styles.campaignGroup}>
@@ -400,7 +404,7 @@ function CampaignRow({ group, onCorrect }: { group: CampaignGroup; onCorrect: (i
         <span className={styles.campaignCount}>{group.activeCount}/{group.totalCount}</span>
         {group.spend > 0 && <span className={styles.campaignSpend}>{formatPeso(group.spend)}</span>}
       </div>
-      {open && group.adSets.map(as => <AdSetRow key={as.name} group={as} onCorrect={onCorrect} />)}
+      {open && group.adSets.map(as => <AdSetRow key={as.name} group={as} onCorrect={onCorrect} biz={biz} />)}
     </div>
   )
 }
@@ -420,6 +424,11 @@ export default function AuditPage() {
   const [filterFormat, setFilterFormat] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [visibleCount, setVisibleCount] = useState(INITIAL_CAMPAIGNS)
+  const [business, setBusiness] = useState<{
+    productPrice: number; convToSaleRate: number
+    breakevenCPA: number; winningCPA: number
+    breakevenCostPerConv: number; winningCostPerConv: number
+  } | null>(null)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -432,6 +441,7 @@ export default function AuditPage() {
 
     setAllAds(adsData.creatives || [])
     setAccountMetrics(metricsData.account || null)
+    setBusiness(metricsData.business || null)
 
     const map = new Map<string, AdMetrics>()
     for (const m of metricsData.ads || []) {
@@ -530,6 +540,16 @@ export default function AuditPage() {
         ))}
       </div>
 
+      {/* Business economics context */}
+      {business && (
+        <div className={styles.bizContext}>
+          <span className={styles.bizItem}>📦 <strong>Papers to Profits</strong> {formatPeso(business.productPrice)}</span>
+          <span className={styles.bizItem}>💰 Winning CPA: &lt;{formatPeso(business.winningCPA)}</span>
+          <span className={styles.bizItem}>💬 Conv rate: {(business.convToSaleRate * 100).toFixed(0)}%</span>
+          <span className={styles.bizItem}>💬 Winning cost/conv: &lt;{formatPeso(business.winningCostPerConv)}</span>
+        </div>
+      )}
+
       {/* Account-level metrics — split by funnel */}
       {a && (
         <div className={styles.accountMetrics}>
@@ -598,7 +618,7 @@ export default function AuditPage() {
         <div className={styles.empty}>No ads match your filters.</div>
       ) : (
         <>
-          {campaigns.slice(0, visibleCount).map(c => <CampaignRow key={c.name} group={c} onCorrect={handleCorrect} />)}
+          {campaigns.slice(0, visibleCount).map(c => <CampaignRow key={c.name} group={c} onCorrect={handleCorrect} biz={business} />)}
           {visibleCount < campaigns.length && (
             <div className={styles.loadMore}>
               <button className={styles.loadMoreBtn} onClick={() => setVisibleCount(v => v + 10)}>
