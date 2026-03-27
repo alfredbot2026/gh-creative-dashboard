@@ -1,0 +1,52 @@
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: var(--color-surface-low); border-bottom: 1px solid var(--color-border); }
+.formatBadge { font-size: 0.7rem; font-weight: 700; color: var(--color-primary); }
+.actions { display: flex; gap: 0.5rem; }
+.iconBtn { padding: 3px 8px; font-size: 0.7rem; background: transparent; border: 1px solid var(--color-border); border-radius: 6px; cursor: pointer; }
+.iconBtn:hover { background: var(--color-surface); }
+.saveBtn { padding: 3px 8px; font-size: 0.7rem; background: var(--color-primary); color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+.saveBtn:disabled { opacity: 0.7; }
+.primaryBtn { padding: 3px 8px; font-size: 0.7rem; background: var(--color-secondary); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+.body { padding: 1rem; }
+
+/* Forms */
+.input, .textarea, .select { width: 100%; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; font-family: inherit; font-size: 0.8rem; background: var(--color-bg); margin-bottom: 0.5rem; }
+.textarea { resize: vertical; line-height: 1.4; }
+
+/* Static Image Layout */
+.layout { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; }
+.imageCol { display: flex; flex-direction: column; gap: 0.5rem; }
+.previewImg { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; border: 1px solid var(--color-border); }
+.placeholder { width: 100%; aspect-ratio: 1; background: var(--color-surface-low); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem; text-align: center; gap: 1rem; }
+.prompt { font-size: 0.65rem; color: var(--color-text-dim); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.genBtn { font-size: 0.75rem; padding: 0.5rem 1rem; background: var(--color-surface); border: 1px dashed var(--color-primary); color: var(--color-primary); border-radius: 6px; cursor: pointer; }
+
+.textCol { display: flex; flex-direction: column; }
+.previewLine { font-size: 0.95rem; margin-bottom: 0.5rem; line-height: 1.3; }
+.previewBody { font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5; white-space: pre-wrap; margin-bottom: 1rem; }
+.previewDesc { font-size: 0.75rem; color: var(--color-text-dim); margin-bottom: 0.5rem; font-style: italic; }
+.previewCta { display: inline-block; padding: 0.4rem 1rem; background: var(--color-surface-low); border: 1px solid var(--color-border); border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: var(--color-text); align-self: flex-start; }
+
+/* Carousel Layout */
+.carouselLayout { display: flex; flex-direction: column; }
+.slidesGrid { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; }
+.slideCard { flex: 0 0 220px; padding: 0.75rem; background: var(--color-surface-low); border: 1px solid var(--color-border); border-radius: 8px; display: flex; flex-direction: column; gap: 0.5rem; }
+.slideNum { font-size: 0.6rem; text-transform: uppercase; font-weight: 700; color: var(--color-text-dim); }
+.slideCard p { font-size: 0.8rem; margin: 0; line-height: 1.4; color: var(--color-text-muted); }
+.slideCard strong { font-size: 0.85rem; }
+
+/* Script Layout */
+.scriptLayout { display: flex; flex-direction: column; gap: 1rem; }
+.fieldGroup { display: flex; flex-direction: column; gap: 0.25rem; }
+.fieldGroup label { font-size: 0.7rem; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; }
+.scriptPreview { display: flex; flex-direction: column; gap: 0.75rem; }
+.scriptRow { display: flex; gap: 1rem; }
+.scriptTime { width: 60px; font-size: 0.7rem; color: var(--color-primary); font-weight: 600; padding-top: 2px; }
+.scriptText { flex: 1; font-size: 0.85rem; line-height: 1.5; color: var(--color-text-muted); white-space: pre-wrap; }
+.scriptNotes { padding: 0.75rem; background: #fffbeb; border-radius: 8px; font-size: 0.75rem; color: #b45309; margin-top: 0.5rem; }
+
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .imageCol { max-width: 250px; margin: 0 auto; }
+}

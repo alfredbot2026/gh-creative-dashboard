@@ -142,18 +142,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH: Update status (mark winner, loser, approved, etc.)
+// PATCH: Update status or content
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { type, id, status, notes } = body as {
+  const { type, id, status, notes, content } = body as {
     type: 'concept' | 'hook' | 'execution'
     id: string
     status: string
     notes?: string
+    content?: Record<string, unknown>
   }
 
   if (!type || !id || !status) {
@@ -166,6 +167,7 @@ export async function PATCH(request: NextRequest) {
 
   const update: Record<string, unknown> = { status, updated_at: new Date().toISOString() }
   if (notes && type === 'hook') update.meta_notes = notes
+  if (content && type === 'execution') update.content = content
 
   const { error } = await supabase.from(table).update(update).eq('id', id).eq('user_id', user.id)
 

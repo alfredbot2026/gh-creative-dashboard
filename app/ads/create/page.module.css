@@ -72,7 +72,7 @@
 .statusLoser { background: #fee2e2; border-color: #fecaca; color: #dc2626; }
 
 /* Executions grid */
-.execGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.5rem; padding: 0.5rem 0.75rem 0.75rem; background: var(--color-surface-low); }
+.execGrid { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem; background: var(--color-surface-low); }
 .execCard { padding: 0.6rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; }
 .execFormat { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-primary); margin-bottom: 0.3rem; }
 .execContent { font-size: 0.75rem; color: var(--color-text-muted); line-height: 1.4; }

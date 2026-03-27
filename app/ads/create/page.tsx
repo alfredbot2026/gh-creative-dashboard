@@ -1,16 +1,9 @@
-/**
- * Creative Testing V2 — Concept → Hooks → Formats
- * 
- * Entry points:
- * 1. Weekly planner recommendations (top)
- * 2. Manual concept creation (config panel)
- * 3. Strategy map link (?angle=X&persona=Y)
- */
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import ExecutionCard from '@/components/ads/ExecutionCard'
 import styles from './page.module.css'
 
 // ─── Types ───
@@ -49,59 +42,20 @@ const ALL_FORMATS = [
   { value: 'ig_carousel', label: '📱 IG Carousel' },
 ]
 
-// ─── Format Renderer ───
-function ExecContent({ format, content }: { format: string; content: Record<string, unknown> }) {
-  if (format === 'static_image') {
-    return (
-      <div className={styles.execContent}>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>Headline: </span>{content.headline as string}</div>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>Body: </span>{content.body_text as string}</div>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>CTA: </span>{content.cta_text as string}</div>
-      </div>
-    )
-  }
-  if (format === 'carousel') {
-    const slides = (content.slides || []) as Array<{ body_text: string }>
-    return (
-      <div className={styles.execContent}>
-        <div className={styles.execSlides}>
-          {slides.map((s, i) => <div key={i} className={styles.execSlide}>Slide {i + 1}: {s.body_text}</div>)}
-        </div>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>CTA: </span>{content.cta_text as string}</div>
-      </div>
-    )
-  }
-  if (format === 'video_hq' || format === 'video_ugc') {
-    return (
-      <div className={styles.execContent}>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>Hook (3s): </span>{content.hook_script as string}</div>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>Body: </span>{(content.body_script as string)?.slice(0, 200)}...</div>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>CTA: </span>{content.cta_script as string}</div>
-        <div className={styles.execField}><span className={styles.execFieldLabel}>Duration: </span>{content.duration_seconds as number}s</div>
-      </div>
-    )
-  }
-  if (format === 'ig_carousel') {
-    const slides = (content.slides || []) as Array<{ title: string; body_text: string }>
-    return (
-      <div className={styles.execContent}>
-        <div className={styles.execSlides}>
-          {slides.map((s, i) => <div key={i} className={styles.execSlide}><strong>{s.title}</strong> — {s.body_text}</div>)}
-        </div>
-      </div>
-    )
-  }
-  return <div className={styles.execContent}><pre>{JSON.stringify(content, null, 2)}</pre></div>
-}
-
 // ─── Hook Section ───
-function HookSection({ hook, onStatusChange }: { hook: Hook; onStatusChange: (id: string, status: string) => void }) {
+function HookSection({
+  hook, angle, persona, onStatusChange, onExecutionUpdate
+}: {
+  hook: Hook; angle: string; persona: string
+  onStatusChange: (id: string, status: string) => void
+  onExecutionUpdate: (id: string, content: Record<string, unknown>) => void
+}) {
   const [open, setOpen] = useState(true)
   return (
     <div className={styles.hookSection}>
       <div className={styles.hookHeader} onClick={() => setOpen(!open)}>
         <div className={styles.hookInfo}>
-          <p className={styles.hookText}>{open ? '▾' : '▸'} "{hook.hook_text}"</p>
+          <p className={styles.hookText}>{open ? '▾' : '▸'} &quot;{hook.hook_text}&quot;</p>
         </div>
         <div className={styles.hookStatus}>
           <span className={styles.hookType}>{hook.hook_type.replace(/_/g, ' ')}</span>
@@ -118,10 +72,17 @@ function HookSection({ hook, onStatusChange }: { hook: Hook; onStatusChange: (id
       {open && (
         <div className={styles.execGrid}>
           {hook.executions.map(exec => (
-            <div key={exec.id} className={styles.execCard}>
-              <div className={styles.execFormat}>{fmt(exec.format)}</div>
-              <ExecContent format={exec.format} content={exec.content} />
-            </div>
+            <ExecutionCard
+              key={exec.id}
+              id={exec.id}
+              format={exec.format}
+              content={exec.content}
+              angle={angle}
+              persona={persona}
+              hookText={hook.hook_text}
+              hookType={hook.hook_type}
+              onUpdate={onExecutionUpdate}
+            />
           ))}
         </div>
       )}
@@ -146,17 +107,13 @@ function CreatePageInner() {
   const [error, setError] = useState('')
   const [brief, setBrief] = useState<ConceptBrief | null>(null)
   const [hooks, setHooks] = useState<Hook[]>([])
-  const [conceptId, setConceptId] = useState<string | null>(null)
 
   const [weeklyPlan, setWeeklyPlan] = useState<{ week_label: string; recommendations: Recommendation[] } | null>(null)
-  const [loadingPlan, setLoadingPlan] = useState(true)
 
-  // Load weekly plan
   useEffect(() => {
     fetch('/api/ads/weekly-plan').then(r => r.json()).then(data => {
       setWeeklyPlan(data)
-      setLoadingPlan(false)
-    }).catch(() => setLoadingPlan(false))
+    }).catch(() => {})
   }, [])
 
   const handleGenerate = async () => {
@@ -165,7 +122,6 @@ function CreatePageInner() {
     setError('')
     setBrief(null)
     setHooks([])
-
     try {
       const res = await fetch('/api/ads/creative-tree', {
         method: 'POST',
@@ -176,11 +132,24 @@ function CreatePageInner() {
       if (!res.ok) throw new Error(data.error || 'Generation failed')
       setBrief(data.brief)
       setHooks(data.hooks || [])
-      setConceptId(data.concept_id)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed')
     }
     setGenerating(false)
+  }
+
+  const handleExecutionUpdate = async (id: string, newContent: Record<string, unknown>) => {
+    setHooks(prev => prev.map(h => ({
+      ...h,
+      executions: h.executions.map(e => e.id === id ? { ...e, content: newContent } : e)
+    })))
+    try {
+      await fetch('/api/ads/creative-tree', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'execution', id, status: 'draft', content: newContent }),
+      })
+    } catch { /* silent */ }
   }
 
   const handleStatusChange = async (hookId: string, status: string) => {
@@ -195,9 +164,7 @@ function CreatePageInner() {
   }
 
   const toggleFormat = (f: string) => {
-    setSelectedFormats(prev =>
-      prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]
-    )
+    setSelectedFormats(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])
   }
 
   const useRecommendation = (rec: Recommendation) => {
@@ -223,7 +190,7 @@ function CreatePageInner() {
         </div>
       </header>
 
-      {/* Weekly Plan Recommendations */}
+      {/* Weekly Plan */}
       {!brief && !generating && weeklyPlan && weeklyPlan.recommendations.length > 0 && (
         <div className={styles.weeklySection}>
           <h2 className={styles.weeklyTitle}>📅 {weeklyPlan.week_label} — Recommended Tests</h2>
@@ -240,9 +207,7 @@ function CreatePageInner() {
                   <div className={styles.recFormats}>
                     {rec.suggested_formats.map(f => <span key={f} className={styles.recFormatTag}>{fmt(f)}</span>)}
                   </div>
-                  <button className={styles.recAction} onClick={() => useRecommendation(rec)}>
-                    Use This →
-                  </button>
+                  <button className={styles.recAction} onClick={() => useRecommendation(rec)}>Use This →</button>
                 </div>
               </div>
             ))}
@@ -256,7 +221,7 @@ function CreatePageInner() {
           <div className={styles.modeRow}>
             <div className={`${styles.modeCard} ${mode === 'explore' ? styles.modeActive : ''}`} onClick={() => setMode('explore')}>
               <div className={styles.modeLabel}>🔍 Explore</div>
-              <div className={styles.modeDesc}>Test a new angle you haven't tried</div>
+              <div className={styles.modeDesc}>Test a new angle you haven&apos;t tried</div>
             </div>
             <div className={`${styles.modeCard} ${mode === 'scale' ? styles.modeActive : ''}`} onClick={() => setMode('scale')}>
               <div className={styles.modeLabel}>📈 Scale</div>
@@ -313,9 +278,7 @@ function CreatePageInner() {
         <div className={styles.loading}>
           <div className={styles.spinner} />
           <p>Building creative tree...</p>
-          <p className={styles.loadingSub}>
-            Generating concept brief → {hookCount} hook variations → {selectedFormats.length} formats each
-          </p>
+          <p className={styles.loadingSub}>Generating concept brief → {hookCount} hook variations → {selectedFormats.length} formats each</p>
         </div>
       )}
 
@@ -324,7 +287,6 @@ function CreatePageInner() {
       {/* Results */}
       {brief && hooks.length > 0 && (
         <>
-          {/* Concept Brief */}
           <div className={styles.briefCard}>
             <h3 className={styles.briefTitle}>{fmt(brief.angle)} × {fmt(brief.persona)}</h3>
             <p className={styles.briefMessage}>{brief.core_message}</p>
@@ -332,20 +294,23 @@ function CreatePageInner() {
               <span className={styles.briefTag}>📦 {brief.product_name} ₱{brief.product_price.toLocaleString()}</span>
               <span className={styles.briefTag}>📐 {fmt(brief.framework)}</span>
               <span className={styles.briefTag}>🎯 {mode === 'scale' ? 'Scaling winner' : 'Exploring new angle'}</span>
-              <span className={styles.briefTag}>🏢 {brief.competitor_context.slice(0, 60)}...</span>
             </div>
           </div>
 
           <div className={styles.resultsHeader}>
             <h2>{hooks.length} Hook Variations × {selectedFormats.length} Formats = {hooks.reduce((s, h) => s + h.executions.length, 0)} Executions</h2>
-            <div className={styles.headerActions}>
-              <button className={styles.btnOutline} onClick={() => { setBrief(null); setHooks([]) }}>← New Concept</button>
-            </div>
+            <button className={styles.btnOutline} onClick={() => { setBrief(null); setHooks([]) }}>← New Concept</button>
           </div>
 
-          {/* Hook Sections */}
           {hooks.map(hook => (
-            <HookSection key={hook.id} hook={hook} onStatusChange={handleStatusChange} />
+            <HookSection
+              key={hook.id}
+              hook={hook}
+              angle={brief.angle}
+              persona={brief.persona}
+              onStatusChange={handleStatusChange}
+              onExecutionUpdate={handleExecutionUpdate}
+            />
           ))}
         </>
       )}
