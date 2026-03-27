@@ -85,24 +85,26 @@ export async function POST(request: Request) {
       const result = await generateAdVariants({
         angle: rec.angle,
         persona: rec.persona,
+        format: 'static_image',
         count: variantsPerBatch,
         userId: user.id,
       })
 
-      // Store variants
-      const variantRows = result.variants.map(v => ({
+      // Store variants (format-aware)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const variantRows = result.variants.map((v: any) => ({
         user_id: user.id,
         batch_id: batch.id,
-        headline: v.headline,
-        body_text: v.body_text,
-        cta_text: v.cta_text,
-        link_description: v.link_description,
+        headline: v.headline || '',
+        body_text: v.body_text || v.body_script || '',
+        cta_text: v.cta_text || v.cta_script || '',
+        link_description: v.link_description || '',
         hook_type: v.hook_type,
         framework: v.framework,
         emotional_tone: v.emotional_tone,
-        image_prompt: v.image_prompt,
+        image_prompt: v.image_prompt || v.visual_directions || '',
         image_status: 'pending',
-        compliance_flags: v.compliance_flags.length > 0 ? v.compliance_flags : null,
+        compliance_flags: v.compliance_flags?.length > 0 ? v.compliance_flags : null,
         compliance_clean: v.compliance_clean,
         factory_batch_id: batch.id,
       }))

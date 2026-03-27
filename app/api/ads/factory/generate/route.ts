@@ -20,11 +20,13 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}))
-  const { angle, persona, framework, offer, count } = body
+  const { angle, persona, framework, offer, count, format } = body
 
   if (!angle || !persona) {
     return NextResponse.json({ error: 'angle and persona are required' }, { status: 400 })
   }
+
+  const adFormat = format || 'static_image'
 
   try {
     // 1. Create batch record
@@ -50,28 +52,29 @@ export async function POST(request: Request) {
     const factoryReq: FactoryRequest = {
       angle,
       persona,
+      format: adFormat,
       framework,
-      offer,
       count: count || 3,
       userId: user.id,
     }
 
     const result = await generateAdVariants(factoryReq)
 
-    // 3. Store variants
-    const variantRows = result.variants.map(v => ({
+    // 3. Store variants (format-aware)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const variantRows = result.variants.map((v: any) => ({
       user_id: user.id,
       batch_id: batch.id,
-      headline: v.headline,
-      body_text: v.body_text,
-      cta_text: v.cta_text,
-      link_description: v.link_description,
+      headline: v.headline || '',
+      body_text: v.body_text || v.body_script || '',
+      cta_text: v.cta_text || v.cta_script || '',
+      link_description: v.link_description || '',
       hook_type: v.hook_type,
       framework: v.framework,
       emotional_tone: v.emotional_tone,
-      image_prompt: v.image_prompt,
+      image_prompt: v.image_prompt || v.visual_directions || '',
       image_status: 'pending',
-      compliance_flags: v.compliance_flags.length > 0 ? v.compliance_flags : null,
+      compliance_flags: v.compliance_flags?.length > 0 ? v.compliance_flags : null,
       compliance_clean: v.compliance_clean,
       factory_batch_id: batch.id,
     }))
