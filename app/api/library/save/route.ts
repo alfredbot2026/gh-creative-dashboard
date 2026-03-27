@@ -46,6 +46,8 @@ export async function POST(req: Request) {
     youtube: 'youtube',
     'facebook-post': 'story',
     'facebook-ad': 'ad',
+    'facebook-reels': 'reel',
+    'instagram-reels': 'reel',
     carousel: 'carousel',
     'static-image': 'ad',
   }
@@ -67,7 +69,7 @@ export async function POST(req: Request) {
       title: title.substring(0, 200),
       content_type: contentTypeMap[platform] || platform,
       platform: platform.includes('facebook') ? 'facebook'
-        : platform === 'reels' || platform === 'carousel' || platform === 'static-image' ? 'instagram'
+        : platform.includes('instagram') || platform === 'reels' || platform === 'carousel' || platform === 'static-image' ? 'instagram'
         : platform,
       status: 'created',
       hook: hook?.substring(0, 500),

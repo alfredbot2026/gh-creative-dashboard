@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback, useRef, Suspense } from 'react'
+import { useState, useCallback, useRef, Suspense, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Upload, X, Download, RotateCw, User, Sparkles, Image as ImageIcon, LayoutGrid, Save, Check } from 'lucide-react'
 import CarouselBuilder from '@/components/studio/CarouselBuilder'
@@ -38,8 +39,24 @@ interface GeneratedImage {
 }
 
 function StudioPage() {
-  // Tab
-  const [tab, setTab] = useState<StudioTab>('generate')
+  const searchParams = useSearchParams()
+
+  // Tab — read from ?tab= param
+  const [tab, setTab] = useState<StudioTab>(() => {
+    const t = searchParams.get('tab')
+    return (t === 'carousel' ? 'carousel' : 'generate') as StudioTab
+  })
+
+  // Pre-filled slide texts from Creative Factory (?slide0=text&slide1=text...)
+  const [carouselInitialTexts] = useState<string[]>(() => {
+    const texts: string[] = []
+    let i = 0
+    while (searchParams.get(`slide${i}`) !== null) {
+      texts.push(searchParams.get(`slide${i}`)!)
+      i++
+    }
+    return texts
+  })
 
   // Upload state
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
@@ -192,7 +209,7 @@ function StudioPage() {
       </div>
 
       {tab === 'carousel' ? (
-        <CarouselBuilder />
+        <CarouselBuilder initialTexts={carouselInitialTexts.length > 0 ? carouselInitialTexts : undefined} />
       ) : (
       <div className={styles.workspace}>
         {/* Left: Controls */}

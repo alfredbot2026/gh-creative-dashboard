@@ -90,3 +90,4 @@
    - ~16 hrs across 5 waves
 6. Topic Intelligence Engine (after 4e)
 7. Calendar rethink
+\n### WARNING\n- **Opus Note:** `references/ARCHITECTURE.md` is >24h old (last modified 2026-03-24). Refresh it before dispatching new tasks.

@@ -37,41 +37,61 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
   const handleSaveToLibrary = async () => {
     setSaving(true)
     try {
-      // Structure the data for content_items
-      const title = format === 'static_image' ? editedContent.headline
-        : format === 'carousel' ? editedContent.headline
-        : editedContent.hook_script?.slice(0, 50) + '...'
+      const isVideo = format === 'video_ugc' || format === 'video_hq'
+      const isCarousel = format === 'carousel' || format === 'ig_carousel'
+
+      const title = (editedContent.headline as string)
+        || (editedContent.hook_script as string)?.slice(0, 60)
+        || hookText.slice(0, 60)
 
       let platform = 'facebook-ad'
       if (format.includes('ig_')) platform = 'instagram-reels'
-      if (format.includes('video')) platform = 'facebook-reels' // Generic video default
+      if (format === 'video_ugc') platform = 'instagram-reels'
+      if (format === 'video_hq') platform = 'facebook-reels'
 
-      // content_data follows the schema we already use
-      const content_data = {
-        format,
-        angle,
-        persona,
-        hook: hookText,
-        hook_type: hookType,
-        ...editedContent,
-        image_url: imageUrl,
-      }
+      const type = isVideo ? 'script' : isCarousel ? 'carousel' : 'image'
 
-      const res = await fetch('/api/content/library', {
+      const res = await fetch('/api/library/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          topic: `${angle.replace(/_/g, ' ')} (${format})`,
+          type,
+          title,
           platform,
-          content_type: 'sell',
-          content_data,
-          status: 'draft',
+          hook: hookText,
+          cta: (editedContent.cta_script as string) || (editedContent.cta_text as string),
+          contentType: 'sell',
+          imageUrl: imageUrl || undefined,
+          // For scripts — full data in scriptData
+          scriptData: isVideo ? {
+            angle,
+            persona,
+            hook_type: hookType,
+            format,
+            ...editedContent,
+          } : undefined,
+          // For carousels — pass slide texts (no image URLs yet)
+          slideUrls: isCarousel ? [] : undefined,
+          // For static images
+          ...(type === 'image' ? {
+            scriptData: {
+              angle,
+              persona,
+              hook_type: hookType,
+              format,
+              ...editedContent,
+              image_url: imageUrl,
+            }
+          } : {}),
         }),
       })
 
       if (res.ok) {
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
+      } else {
+        const err = await res.json()
+        console.error('Save failed:', err)
       }
     } catch (err) {
       console.error('Save failed', err)
