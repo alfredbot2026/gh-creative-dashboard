@@ -76,52 +76,51 @@ export async function generateConceptBrief(
 ): Promise<ConceptBrief> {
   const supabase = await createClient()
 
-  // Load product
-  const { data: product } = await supabase
-    .from('product_catalog')
-    .select('name, price, description, offer_details, target_audience, usps')
-    .eq('is_active', true)
-    .limit(1)
-    .single()
+  // Load all context in parallel
+  const [productRes, winningAdsRes, allAdsForAngleRes, compAdsRes, bizCtx] = await Promise.all([
+    supabase.from('product_catalog').select('name, price, description, offer_details, target_audience, usps').eq('is_active', true).limit(1).single(),
+    // Winning ads for scale mode — top performers by ROAS
+    supabase.from('ad_creatives').select('hook_type, framework, body_text, video_transcription, avg_roas, headline').eq('user_id', userId).eq('angle', angle).eq('ad_status', 'winning').order('avg_roas', { ascending: false }).limit(mode === 'scale' ? 10 : 5),
+    // Scale mode: also get all tested ads for this angle to know what hooks already exist
+    mode === 'scale'
+      ? supabase.from('ad_creatives').select('hook_type, avg_roas').eq('user_id', userId).eq('angle', angle).not('avg_roas', 'is', null).order('avg_roas', { ascending: false }).limit(20)
+      : Promise.resolve({ data: null }),
+    supabase.from('competitor_ads').select('angle, hook_type').eq('user_id', userId).eq('is_active', true),
+    loadBusinessContext(supabase, userId),
+  ])
 
-  // Load winning ads for this angle
-  const { data: winningAds } = await supabase
-    .from('ad_creatives')
-    .select('hook_type, framework, body_text, video_transcription, avg_roas')
-    .eq('user_id', userId)
-    .eq('angle', angle)
-    .eq('ad_status', 'winning')
-    .order('avg_roas', { ascending: false })
-    .limit(5)
-
-  // Load competitor angles
-  const { data: compAds } = await supabase
-    .from('competitor_ads')
-    .select('angle, hook_type')
-    .eq('user_id', userId)
-    .eq('is_active', true)
+  const product = productRes.data
+  const winningAds = winningAdsRes.data || []
+  const allAdsForAngle = allAdsForAngleRes.data || []
+  const compAds = compAdsRes.data || []
+  const thresholds = getThresholds(bizCtx)
 
   const compAngles = new Map<string, number>()
-  for (const c of compAds || []) {
+  for (const c of compAds) {
     if (c.angle) compAngles.set(c.angle, (compAngles.get(c.angle) || 0) + 1)
   }
 
-  // Business context
-  const bizCtx = await loadBusinessContext(supabase, userId)
-  const thresholds = getThresholds(bizCtx)
-
-  // Best framework for this angle
+  // Best framework for this angle (weighted by ROAS in scale mode)
   const frameworkCounts = new Map<string, number>()
-  for (const ad of winningAds || []) {
-    if (ad.framework) frameworkCounts.set(ad.framework, (frameworkCounts.get(ad.framework) || 0) + 1)
+  for (const ad of winningAds) {
+    if (ad.framework) {
+      const weight = mode === 'scale' ? (ad.avg_roas || 1) : 1
+      frameworkCounts.set(ad.framework, (frameworkCounts.get(ad.framework) || 0) + weight)
+    }
   }
   const bestFramework = [...frameworkCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || 'PAS'
 
-  // Winning patterns summary
-  const winPatterns = (winningAds || []).slice(0, 3).map(ad => {
+  // Winning patterns — more detail in scale mode
+  const winPatterns = winningAds.slice(0, mode === 'scale' ? 5 : 3).map(ad => {
     const text = ad.video_transcription || ad.body_text || ''
-    return `[${ad.hook_type}/${ad.framework}, ${ad.avg_roas?.toFixed(1)}x ROAS] ${text.slice(0, 150)}`
+    const headline = ad.headline ? ` | Headline: "${ad.headline}"` : ''
+    return `[${ad.hook_type}/${ad.framework}, ${ad.avg_roas?.toFixed(1)}x ROAS${headline}] ${text.slice(0, 200)}`
   }).join('\n')
+
+  // Scale mode: list all hook_types already tested so we create DIFFERENT hooks
+  const testedHookTypes = mode === 'scale' && allAdsForAngle.length > 0
+    ? `\nHook types ALREADY TESTED for this angle (avoid repeating, create genuinely new variations): ${[...new Set(allAdsForAngle.map(a => a.hook_type).filter(Boolean))].join(', ')}`
+    : ''
 
   const proofPoints = product?.usps || []
   if (product?.offer_details) {
@@ -132,6 +131,10 @@ export async function generateConceptBrief(
   const competitorSummary = compAngles.size > 0
     ? `Competitors use: ${[...compAngles.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}(${v})`).join(', ')}. ${angle} is ${compAngles.has(angle) ? 'used by competitors — differentiate on execution' : 'NOT used by competitors — opportunity to stand out'}.`
     : 'No competitor data available.'
+
+  const modeContext = mode === 'scale'
+    ? `MODE: SCALE — This angle has winning ads. Goal is fresh creative variations that avoid fatigue. Study the winning patterns above and create NEW hooks that follow the same emotional logic but with different openings, proof points, and structure.${testedHookTypes}`
+    : `MODE: EXPLORE — This angle is untested. Goal is to find what works. Be bold, test different hook types.`
 
   return {
     angle,
@@ -145,7 +148,9 @@ export async function generateConceptBrief(
     proof_points: [...new Set(proofPoints)] as string[],
     competitor_context: competitorSummary,
     compliance_notes: 'No income guarantees, no false scarcity, no "guaranteed results", no specific earnings claims',
-    winning_patterns: winPatterns || 'No winning ad data for this angle yet — this is an exploration test.',
+    winning_patterns: winPatterns
+      ? `${modeContext}\n\nWINNING PATTERNS:\n${winPatterns}`
+      : modeContext,
   }
 }
 
@@ -350,13 +355,26 @@ export async function generateCreativeTree(
   // Step 2: Generate hook variations
   const hooks = await generateHookVariations(brief, hookCount)
 
-  // Step 3: Expand each hook into formats
-  const hooksWithExecutions = []
-  for (const hook of hooks) {
-    const executions = await expandToFormats(brief, hook, formats)
-    hooksWithExecutions.push({ ...hook, executions })
-    // Rate limit between expansions
-    await new Promise(r => setTimeout(r, 300))
+  // Step 3: Expand hooks into formats — parallel for non-video, sequential for video
+  // Video uses KB pipeline (longer) so we don't want all to pile up at once
+  const hasVideo = formats.some(f => f === 'video_ugc' || f === 'video_hq')
+  
+  let hooksWithExecutions
+  if (hasVideo) {
+    // Sequential for video to avoid KB pipeline overload
+    hooksWithExecutions = []
+    for (const hook of hooks) {
+      const executions = await expandToFormats(brief, hook, formats)
+      hooksWithExecutions.push({ ...hook, executions })
+    }
+  } else {
+    // Parallel for static/carousel — much faster
+    hooksWithExecutions = await Promise.all(
+      hooks.map(async hook => {
+        const executions = await expandToFormats(brief, hook, formats)
+        return { ...hook, executions }
+      })
+    )
   }
 
   return { brief, hooks: hooksWithExecutions }

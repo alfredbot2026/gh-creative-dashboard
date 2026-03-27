@@ -30,6 +30,14 @@ interface Recommendation {
   suggested_formats: string[]; hook_count: number; day: string
 }
 
+interface AngleCoverage {
+  angle: string
+  tested: boolean
+  winner_count: number
+  best_roas: number | null
+  ad_count: number
+}
+
 const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 const ANGLES = ['pain_point', 'aspiration', 'education', 'urgency', 'curiosity', 'transformation', 'comparison', 'social_proof', 'authority', 'fear']
@@ -90,6 +98,41 @@ function HookSection({
   )
 }
 
+// ─── Angle Coverage Map ───
+function AngleCoveragePanel({ coverage, onSelect }: { coverage: AngleCoverage[]; onSelect: (angle: string, mode: 'explore' | 'scale') => void }) {
+  return (
+    <div className={styles.coveragePanel}>
+      <h3 className={styles.coverageTitle}>Your Angle Coverage</h3>
+      <p className={styles.coverageDesc}>What you&apos;ve tested vs what&apos;s untapped</p>
+      <div className={styles.coverageGrid}>
+        {coverage.map(c => (
+          <div
+            key={c.angle}
+            className={`${styles.coverageCard} ${c.tested ? (c.winner_count > 0 ? styles.coverageWinner : styles.coverageTested) : styles.coverageUntested}`}
+            onClick={() => onSelect(c.angle, c.winner_count > 0 ? 'scale' : 'explore')}
+          >
+            <div className={styles.coverageAngle}>{fmt(c.angle)}</div>
+            {c.tested ? (
+              <>
+                <div className={styles.coverageStats}>
+                  {c.ad_count} ads · {c.winner_count > 0 ? `${c.winner_count} winner${c.winner_count > 1 ? 's' : ''}` : 'no winners yet'}
+                </div>
+                {c.best_roas && <div className={styles.coverageRoas}>{c.best_roas.toFixed(1)}x ROAS</div>}
+                <div className={styles.coverageAction}>{c.winner_count > 0 ? '📈 Scale' : '🔄 Retry'}</div>
+              </>
+            ) : (
+              <>
+                <div className={styles.coverageStats}>Never tested</div>
+                <div className={styles.coverageAction}>🔍 Explore</div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Page ───
 function CreatePageInner() {
   const searchParams = useSearchParams()
@@ -100,8 +143,9 @@ function CreatePageInner() {
   const [angle, setAngle] = useState(angleParam)
   const [persona, setPersona] = useState(personaParam)
   const [mode, setMode] = useState<'explore' | 'scale'>(modeParam === 'scale' ? 'scale' : 'explore')
-  const [selectedFormats, setSelectedFormats] = useState(['static_image', 'carousel', 'video_ugc'])
-  const [hookCount, setHookCount] = useState(3)
+  // Safer defaults: 2 hooks, Static + Carousel only (no video by default — too slow)
+  const [selectedFormats, setSelectedFormats] = useState(['static_image', 'carousel'])
+  const [hookCount, setHookCount] = useState(2)
 
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
@@ -109,12 +153,22 @@ function CreatePageInner() {
   const [hooks, setHooks] = useState<Hook[]>([])
 
   const [weeklyPlan, setWeeklyPlan] = useState<{ week_label: string; recommendations: Recommendation[] } | null>(null)
+  const [coverage, setCoverage] = useState<AngleCoverage[]>([])
+  const [loadingCoverage, setLoadingCoverage] = useState(true)
 
   useEffect(() => {
-    fetch('/api/ads/weekly-plan').then(r => r.json()).then(data => {
-      setWeeklyPlan(data)
-    }).catch(() => {})
+    fetch('/api/ads/weekly-plan').then(r => r.json()).then(data => setWeeklyPlan(data)).catch(() => {})
+    // Load angle coverage from ad_creatives
+    fetch('/api/ads/angle-coverage').then(r => r.json()).then(data => {
+      setCoverage(data.coverage || [])
+      setLoadingCoverage(false)
+    }).catch(() => setLoadingCoverage(false))
   }, [])
+
+  const hasVideo = selectedFormats.some(f => f === 'video_ugc' || f === 'video_hq')
+  const estimatedTime = hasVideo
+    ? `~${hookCount * 2}-${hookCount * 3} min`
+    : `~${Math.ceil(hookCount * 20 / 60)} min`
 
   const handleGenerate = async () => {
     if (!angle || !persona) return
@@ -128,7 +182,14 @@ function CreatePageInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ angle, persona, mode, hookCount, formats: selectedFormats }),
       })
-      const data = await res.json()
+      // Handle non-JSON responses (timeout, server error)
+      const text = await res.text()
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error(`Server error (likely timeout). Try fewer hooks or formats — especially avoid video for large batches.`)
+      }
       if (!res.ok) throw new Error(data.error || 'Generation failed')
       setBrief(data.brief)
       setHooks(data.hooks || [])
@@ -171,8 +232,15 @@ function CreatePageInner() {
     setAngle(rec.angle)
     setPersona(rec.persona)
     setMode(rec.mode === 'scale' ? 'scale' : 'explore')
-    setSelectedFormats(rec.suggested_formats)
-    setHookCount(rec.hook_count)
+    setSelectedFormats(rec.suggested_formats.filter(f => f !== 'video_ugc' && f !== 'video_hq'))
+    setHookCount(Math.min(rec.hook_count, 2))
+  }
+
+  const selectFromCoverage = (selectedAngle: string, selectedMode: 'explore' | 'scale') => {
+    setAngle(selectedAngle)
+    setMode(selectedMode)
+    // Scroll to config
+    document.querySelector('[data-section="config"]')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
@@ -180,97 +248,109 @@ function CreatePageInner() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Creative Factory</h1>
-          <p className={styles.subtitle}>One concept → hook variations → format expansions → test batch</p>
+          <p className={styles.subtitle}>Pick an angle → generate hooks → get format-ready ads</p>
         </div>
         <div className={styles.headerActions}>
           <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
           <Link href="/ads/strategy" className={styles.btnOutline}>Strategy Map</Link>
           <Link href="/ads/audit" className={styles.btnOutline}>Audit</Link>
-          <Link href="/ads/competitors" className={styles.btnOutline}>🏢 Intel</Link>
         </div>
       </header>
 
-      {/* Weekly Plan */}
-      {!brief && !generating && weeklyPlan && weeklyPlan.recommendations.length > 0 && (
-        <div className={styles.weeklySection}>
-          <h2 className={styles.weeklyTitle}>📅 {weeklyPlan.week_label} — Recommended Tests</h2>
-          <div className={styles.recCards}>
-            {weeklyPlan.recommendations.map((rec, i) => (
-              <div key={i} className={styles.recCard}>
-                <span className={styles.recDay}>{rec.day}</span>
-                <div className={styles.recContent}>
-                  <span className={`${styles.recMode} ${rec.mode === 'explore' ? styles.recExplore : rec.mode === 'scale' ? styles.recScale : styles.recIterate}`}>
-                    {rec.mode}
-                  </span>
-                  <div className={styles.recAngle}>{fmt(rec.angle)} × {fmt(rec.persona)}</div>
-                  <p className={styles.recReason}>{rec.reason}</p>
-                  <div className={styles.recFormats}>
-                    {rec.suggested_formats.map(f => <span key={f} className={styles.recFormatTag}>{fmt(f)}</span>)}
-                  </div>
-                  <button className={styles.recAction} onClick={() => useRecommendation(rec)}>Use This →</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Config Panel */}
+      {/* Angle Coverage — always visible, collapses when results shown */}
       {!brief && !generating && (
-        <div className={styles.configPanel}>
-          <div className={styles.modeRow}>
-            <div className={`${styles.modeCard} ${mode === 'explore' ? styles.modeActive : ''}`} onClick={() => setMode('explore')}>
-              <div className={styles.modeLabel}>🔍 Explore</div>
-              <div className={styles.modeDesc}>Test a new angle you haven&apos;t tried</div>
-            </div>
-            <div className={`${styles.modeCard} ${mode === 'scale' ? styles.modeActive : ''}`} onClick={() => setMode('scale')}>
-              <div className={styles.modeLabel}>📈 Scale</div>
-              <div className={styles.modeDesc}>Create fresh variations of a winning angle</div>
-            </div>
-          </div>
+        <>
+          {!loadingCoverage && coverage.length > 0 && (
+            <AngleCoveragePanel coverage={coverage} onSelect={selectFromCoverage} />
+          )}
 
-          <div className={styles.configRow}>
-            <label className={styles.label}>
-              Angle
-              <select className={styles.select} value={angle} onChange={e => setAngle(e.target.value)}>
-                <option value="">Select angle...</option>
-                {ANGLES.map(a => <option key={a} value={a}>{fmt(a)}</option>)}
-              </select>
-            </label>
-            <label className={styles.label}>
-              Target Persona
-              <select className={styles.select} value={persona} onChange={e => setPersona(e.target.value)}>
-                <option value="">Select persona...</option>
-                {PERSONAS.map(p => <option key={p} value={p}>{fmt(p)}</option>)}
-              </select>
-            </label>
-          </div>
+          {/* Weekly Plan */}
+          {weeklyPlan && weeklyPlan.recommendations.length > 0 && (
+            <div className={styles.weeklySection}>
+              <h2 className={styles.weeklyTitle}>📅 {weeklyPlan.week_label} — Recommended</h2>
+              <div className={styles.recCards}>
+                {weeklyPlan.recommendations.map((rec, i) => (
+                  <div key={i} className={styles.recCard}>
+                    <span className={styles.recDay}>{rec.day}</span>
+                    <div className={styles.recContent}>
+                      <span className={`${styles.recMode} ${rec.mode === 'scale' ? styles.recScale : styles.recExplore}`}>{rec.mode}</span>
+                      <div className={styles.recAngle}>{fmt(rec.angle)} × {fmt(rec.persona)}</div>
+                      <p className={styles.recReason}>{rec.reason}</p>
+                      <button className={styles.recAction} onClick={() => useRecommendation(rec)}>Use This →</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-          <div className={styles.label}>Formats to Generate</div>
-          <div className={styles.formatRow}>
-            {ALL_FORMATS.map(f => (
-              <label key={f.value} className={styles.formatCheck}>
-                <input type="checkbox" checked={selectedFormats.includes(f.value)} onChange={() => toggleFormat(f.value)} />
-                {f.label}
+          {/* Config Panel */}
+          <div className={styles.configPanel} data-section="config">
+            {/* Mode toggle — now explains the difference clearly */}
+            <div className={styles.modeRow}>
+              <div className={`${styles.modeCard} ${mode === 'explore' ? styles.modeActive : ''}`} onClick={() => setMode('explore')}>
+                <div className={styles.modeLabel}>🔍 Explore</div>
+                <div className={styles.modeDesc}>Test an angle you haven&apos;t run yet. Bold, varied hooks — find what resonates.</div>
+              </div>
+              <div className={`${styles.modeCard} ${mode === 'scale' ? styles.modeActive : ''}`} onClick={() => setMode('scale')}>
+                <div className={styles.modeLabel}>📈 Scale</div>
+                <div className={styles.modeDesc}>You have a winning angle. Generate fresh creative to prevent fatigue — different hooks, same proven logic.</div>
+              </div>
+            </div>
+            {mode === 'scale' && (
+              <div className={styles.scaleTip}>
+                ℹ️ Scale mode pulls your top-ROAS ads for this angle and generates new hooks that follow the same emotional pattern — without repeating the ones you&apos;ve already run.
+              </div>
+            )}
+
+            <div className={styles.configRow}>
+              <label className={styles.label}>
+                Angle
+                <select className={styles.select} value={angle} onChange={e => setAngle(e.target.value)}>
+                  <option value="">Select angle...</option>
+                  {ANGLES.map(a => {
+                    const cov = coverage.find(c => c.angle === a)
+                    const tag = cov?.winner_count ? ` ✅ ${cov.best_roas?.toFixed(1)}x` : cov?.tested ? ' (tested)' : ' (new)'
+                    return <option key={a} value={a}>{fmt(a)}{cov ? tag : ''}</option>
+                  })}
+                </select>
               </label>
-            ))}
-          </div>
+              <label className={styles.label}>
+                Target Persona
+                <select className={styles.select} value={persona} onChange={e => setPersona(e.target.value)}>
+                  <option value="">Select persona...</option>
+                  {PERSONAS.map(p => <option key={p} value={p}>{fmt(p)}</option>)}
+                </select>
+              </label>
+            </div>
 
-          <div className={styles.configBottom}>
-            <label className={styles.label}>
-              Hook Variations
-              <select className={styles.select} value={hookCount} onChange={e => setHookCount(Number(e.target.value))}>
-                <option value={2}>2 hooks</option>
-                <option value={3}>3 hooks</option>
-                <option value={4}>4 hooks</option>
-                <option value={5}>5 hooks</option>
-              </select>
-            </label>
-            <button className={styles.generateBtn} onClick={handleGenerate} disabled={!angle || !persona || selectedFormats.length === 0 || generating}>
-              ✨ Generate Creative Tree ({hookCount} hooks × {selectedFormats.length} formats = {hookCount * selectedFormats.length} executions)
-            </button>
+            <div className={styles.label}>Formats to Generate</div>
+            <div className={styles.formatRow}>
+              {ALL_FORMATS.map(f => (
+                <label key={f.value} className={`${styles.formatCheck} ${(f.value === 'video_ugc' || f.value === 'video_hq') ? styles.formatSlow : ''}`}>
+                  <input type="checkbox" checked={selectedFormats.includes(f.value)} onChange={() => toggleFormat(f.value)} />
+                  {f.label}
+                  {(f.value === 'video_ugc' || f.value === 'video_hq') && <span className={styles.slowTag}>~2min each</span>}
+                </label>
+              ))}
+            </div>
+
+            <div className={styles.configBottom}>
+              <label className={styles.label}>
+                Hook Variations
+                <select className={styles.select} value={hookCount} onChange={e => setHookCount(Number(e.target.value))}>
+                  <option value={1}>1 hook</option>
+                  <option value={2}>2 hooks</option>
+                  <option value={3}>3 hooks</option>
+                  <option value={4}>4 hooks</option>
+                </select>
+              </label>
+              <button className={styles.generateBtn} onClick={handleGenerate} disabled={!angle || !persona || selectedFormats.length === 0 || generating}>
+                ✨ Generate ({hookCount} hooks × {selectedFormats.length} formats = {hookCount * selectedFormats.length} ads · {estimatedTime})
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Loading */}
@@ -278,28 +358,40 @@ function CreatePageInner() {
         <div className={styles.loading}>
           <div className={styles.spinner} />
           <p>Building creative tree...</p>
-          <p className={styles.loadingSub}>Generating concept brief → {hookCount} hook variations → {selectedFormats.length} formats each</p>
+          <p className={styles.loadingSub}>
+            {hasVideo
+              ? `Video scripts use the full KB pipeline — expect ${estimatedTime}. Static/Carousel run in parallel.`
+              : `Generating ${hookCount} hooks in parallel × ${selectedFormats.length} formats. Should take ${estimatedTime}.`
+            }
+          </p>
         </div>
       )}
 
-      {error && <div className={styles.error}>{error}</div>}
+      {error && (
+        <div className={styles.error}>
+          {error}
+          <button className={styles.btnOutline} style={{marginLeft: '1rem', fontSize: '0.8rem'}} onClick={() => { setError(''); setBrief(null); setHooks([]) }}>Try Again</button>
+        </div>
+      )}
 
       {/* Results */}
       {brief && hooks.length > 0 && (
         <>
           <div className={styles.briefCard}>
-            <h3 className={styles.briefTitle}>{fmt(brief.angle)} × {fmt(brief.persona)}</h3>
+            <h3 className={styles.briefTitle}>
+              {fmt(brief.angle)} × {fmt(brief.persona)}
+              <span className={styles.modeTag}>{mode === 'scale' ? '📈 Scaling Winner' : '🔍 Exploring'}</span>
+            </h3>
             <p className={styles.briefMessage}>{brief.core_message}</p>
             <div className={styles.briefMeta}>
               <span className={styles.briefTag}>📦 {brief.product_name} ₱{brief.product_price.toLocaleString()}</span>
               <span className={styles.briefTag}>📐 {fmt(brief.framework)}</span>
-              <span className={styles.briefTag}>🎯 {mode === 'scale' ? 'Scaling winner' : 'Exploring new angle'}</span>
             </div>
           </div>
 
           <div className={styles.resultsHeader}>
-            <h2>{hooks.length} Hook Variations × {selectedFormats.length} Formats = {hooks.reduce((s, h) => s + h.executions.length, 0)} Executions</h2>
-            <button className={styles.btnOutline} onClick={() => { setBrief(null); setHooks([]) }}>← New Concept</button>
+            <h2>{hooks.length} hooks × {selectedFormats.length} formats = {hooks.reduce((s, h) => s + h.executions.length, 0)} ads</h2>
+            <button className={styles.btnOutline} onClick={() => { setBrief(null); setHooks([]) }}>← New Batch</button>
           </div>
 
           {hooks.map(hook => (

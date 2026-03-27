@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateCreativeTree, generateConceptBrief } from '@/lib/ads/creative-engine'
 
-export const maxDuration = 120
+export const maxDuration = 300
 export const dynamic = 'force-dynamic'
 
 // GET: List saved concepts

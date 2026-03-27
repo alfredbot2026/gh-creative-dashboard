@@ -122,14 +122,15 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
   }
 
   const sendToStudio = () => {
-    // For carousels, encode the slide text and send to studio
+    // Send carousel slides to the /create/ads carousel builder
     if (format !== 'carousel' && format !== 'ig_carousel') return
-    const slides = editedContent.slides || []
-    const texts = slides.map((s: any) => s.body_text || s.title || '')
+    const slides = (editedContent.slides || []) as Array<{ body_text?: string; title?: string }>
+    const texts = slides.map(s => s.body_text || s.title || '')
     const query = new URLSearchParams()
-    query.set('tab', 'carousel')
-    texts.forEach((t: string, i: number) => query.append(`slide${i}`, t))
-    router.push(`/studio?${query.toString()}`)
+    query.set('format', 'carousel')
+    query.set('headline', (editedContent.headline as string) || '')
+    texts.forEach((t, i) => query.append(`slide${i}`, t))
+    router.push(`/create/ads?${query.toString()}`)
   }
 
   // Edit Handlers

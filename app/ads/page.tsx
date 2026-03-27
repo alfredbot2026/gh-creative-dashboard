@@ -105,9 +105,10 @@ export default function AdDashboard() {
           <p className={styles.subtitle}>See what&apos;s working, what&apos;s tired, and what to create next</p>
         </div>
         <div className={styles.headerActions}>
+          <Link href="/ads/create" className={styles.createBtn}>✨ Create Ads</Link>
           <Link href="/ads/weekly" className={styles.stratLink}>📅 Weekly Plan</Link>
           <Link href="/ads/strategy" className={styles.stratLink}>📊 Strategy Map</Link>
-          <Link href="/insights/ads" className={styles.stratLink}>📈 Performance</Link>
+          <Link href="/ads/audit" className={styles.stratLink}>🔍 Audit</Link>
           <button className={styles.syncBtn} onClick={handleSync} disabled={syncing}>
             {syncing ? 'Syncing...' : '🔄 Sync Ads'}
           </button>

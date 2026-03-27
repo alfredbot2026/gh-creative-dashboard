@@ -104,12 +104,29 @@ function AdsCreationPageInner() {
     platform: 'facebook'
   })
 
-  // Pre-fill from query params (Today page suggestions)
+  // Pre-fill from query params (Today page / Creative Factory)
   useEffect(() => {
     const topic = searchParams.get('topic')
     const purpose = searchParams.get('purpose')
+    const format = searchParams.get('format')
+    const headline = searchParams.get('headline')
     if (topic) setFormData(prev => ({ ...prev, product: prev.product || topic }))
     if (purpose) setFormData(prev => ({ ...prev, content_purpose: purpose as any }))
+    // Coming from Creative Factory carousel — pre-select carousel format and pre-fill slides
+    if (format === 'carousel') {
+      setFormData(prev => ({ ...prev, ad_format: 'carousel' }))
+      // Pre-filled slide texts from Creative Factory
+      const slideTexts: string[] = []
+      let i = 0
+      while (searchParams.get(`slide${i}`) !== null) {
+        slideTexts.push(searchParams.get(`slide${i}`)!)
+        i++
+      }
+      if (slideTexts.length > 0 && headline) {
+        // Auto-trigger carousel generation with pre-filled data
+        setFormData(prev => ({ ...prev, product: headline || prev.product }))
+      }
+    }
   }, [searchParams])
 
   const handleGenerate = async () => {

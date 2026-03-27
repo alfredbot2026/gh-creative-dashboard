@@ -105,3 +105,32 @@
   .header { flex-direction: column; }
   .configBottom { flex-direction: column; }
 }
+
+/* Coverage Panel */
+.coveragePanel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.coverageTitle { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.1rem; }
+.coverageDesc { font-size: 0.72rem; color: var(--color-text-dim); margin-bottom: 1rem; }
+.coverageGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; }
+.coverageCard { padding: 0.6rem 0.75rem; border-radius: 8px; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; }
+.coverageCard:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.coverageWinner { background: #f0fdf4; border-color: #86efac; }
+.coverageTested { background: #f8fafc; border-color: var(--color-border); }
+.coverageUntested { background: #eff6ff; border-color: #bfdbfe; border-style: dashed; }
+.coverageAngle { font-size: 0.75rem; font-weight: 700; text-transform: capitalize; margin-bottom: 0.2rem; }
+.coverageStats { font-size: 0.65rem; color: var(--color-text-dim); }
+.coverageRoas { font-size: 0.8rem; font-weight: 700; color: #16a34a; margin-top: 0.1rem; }
+.coverageAction { font-size: 0.6rem; margin-top: 0.3rem; color: var(--color-text-dim); font-weight: 600; }
+
+/* Scale tip */
+.scaleTip { font-size: 0.75rem; color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 0.6rem 0.875rem; margin-bottom: 1rem; line-height: 1.4; }
+
+/* Mode tag in brief */
+.modeTag { font-size: 0.65rem; font-weight: 600; background: var(--color-surface-low); padding: 2px 8px; border-radius: 10px; margin-left: 0.5rem; vertical-align: middle; }
+
+/* Slow format warning */
+.formatSlow { opacity: 0.85; }
+.slowTag { font-size: 0.6rem; color: #b45309; background: #fffbeb; border-radius: 4px; padding: 1px 5px; margin-left: 4px; }
+
+/* Results header */
+.resultsHeader { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 0.75rem; }
+.resultsHeader h2 { font-size: 1rem; font-weight: 600; }
