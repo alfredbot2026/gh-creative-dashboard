@@ -180,8 +180,10 @@ export function buildAdAccountMap(
     for (const persona of PERSONAS) {
       const cellAds = classified.filter(c => c.angle === angle && c.persona === persona)
       const totalSpend = cellAds.reduce((s, a) => s + (a.total_spend || 0), 0)
-      const roasValues = cellAds.filter(a => a.avg_roas && a.avg_roas > 0).map(a => a.avg_roas!)
-      const avgRoas = roasValues.length > 0 ? roasValues.reduce((a, b) => a + b, 0) / roasValues.length : null
+      // Spend-weighted ROAS: total_revenue / total_spend (matches /ads/audit methodology)
+      // Each ad's revenue ≈ avg_roas * total_spend (best we can do from denormalized data)
+      const totalRevenue = cellAds.reduce((s, a) => s + ((a.avg_roas || 0) * (a.total_spend || 0)), 0)
+      const avgRoas = totalSpend > 0 ? totalRevenue / totalSpend : null
       const cpaValues = cellAds.filter(a => a.avg_cpa && a.avg_cpa > 0).map(a => a.avg_cpa!)
       const avgCpa = cpaValues.length > 0 ? cpaValues.reduce((a, b) => a + b, 0) / cpaValues.length : null
       const ctrValues = cellAds.filter(a => a.avg_ctr && a.avg_ctr > 0).map(a => a.avg_ctr!)
