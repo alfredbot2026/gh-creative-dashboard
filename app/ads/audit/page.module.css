@@ -9,6 +9,7 @@
 .headerActions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 .btn { padding: 0.4rem 0.85rem; background: var(--color-primary); color: #fff; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnPrimary { composes: btn; font-weight: 700; }
 .btnOutline { composes: btn; background: transparent; color: var(--color-primary); border: 1px solid var(--color-primary); }
 .btnOutline:hover:not(:disabled) { background: var(--color-primary-fixed); }
 .syncMsg { padding: 0.5rem 0.75rem; background: var(--color-surface-low); border-radius: 6px; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1rem; }

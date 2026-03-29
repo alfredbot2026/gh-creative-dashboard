@@ -517,11 +517,12 @@ export default function AuditPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Ad Audit</h1>
-          <p className={styles.subtitle}>Metrics computed from daily data. Click classifications to correct.</p>
+          <h1 className={styles.title}>Your Ads</h1>
+          <p className={styles.subtitle}>Campaign → Ad Set → Ad. Metrics from daily data. Click classifications to correct.</p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
+          <Link href="/ads/create" className={styles.btnPrimary}>✨ Create Ads</Link>
+          <Link href="/ads/strategy" className={styles.btnOutline}>📊 Strategy Map</Link>
           <Link href="/ads/competitors" className={styles.btnOutline}>🏢 Intel</Link>
           <button className={styles.btnOutline} onClick={() => handleSync(false)} disabled={syncing}>🔄 Sync</button>
           <button className={styles.btn} onClick={() => handleSync(true)} disabled={syncing}>🔁 Reclassify</button>
