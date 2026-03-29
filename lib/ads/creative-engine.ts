@@ -34,11 +34,15 @@ export interface HookVariation {
   hook_text: string
   hook_type: string
   proof_points_used: string[]
+  llm_provider?: string
+  llm_model?: string
 }
 
 export interface FormatExecution {
   format: string
   content: Record<string, unknown>
+  llm_provider?: string
+  llm_model?: string
 }
 
 // ─── Persona Map ───
@@ -160,7 +164,7 @@ export async function generateHookVariations(
   brief: ConceptBrief,
   count: number = 4,
 ): Promise<HookVariation[]> {
-  const { data } = await generateJSON<{ hooks: HookVariation[] }>(
+  const { data, provider: hookProvider, model: hookModel } = await generateJSON<{ hooks: HookVariation[] }>(
     `You generate hook variations for Meta ads. ALL hooks must serve the SAME concept — do not drift into other angles.
 
 RULES:
@@ -190,7 +194,7 @@ Return JSON: {"hooks": [{"hook_text": "the opening line in Taglish", "hook_type"
     { temperature: 0.8 },
   )
 
-  return data.hooks || []
+  return (data.hooks || []).map(h => ({ ...h, llm_provider: hookProvider, llm_model: hookModel }))
 }
 
 // ─── Format Expansion ───
@@ -268,7 +272,8 @@ async function expandVideoFormat(
     content.visual_directions = hookScene?.visual_direction || 'Professional setup: good lighting, clean background, product visible'
   }
 
-  return { format, content }
+  // Video scripts go through shortform generator which doesn't expose provider, but content has KB metadata
+  return { format, content, llm_provider: 'shortform-pipeline', llm_model: 'kb-backed' }
 }
 
 export async function expandToFormats(
@@ -293,7 +298,7 @@ export async function expandToFormats(
       }
     }).filter(Boolean).join('\n\n')
 
-    const { data } = await generateJSON<{ executions: Array<{ format: string; content: Record<string, unknown> }> }>(
+    const { data, provider: execProvider, model: execModel } = await generateJSON<{ executions: Array<{ format: string; content: Record<string, unknown> }> }>(
       `You expand a hook into format-specific ad executions. Stay EXACTLY on the concept.
 
 CONCEPT: ${brief.core_message}
@@ -317,7 +322,7 @@ ${formatInstructions}`,
       { temperature: 0.7 },
     )
 
-    results.push(...(data.executions || []))
+    results.push(...(data.executions || []).map(e => ({ ...e, llm_provider: execProvider, llm_model: execModel })))
   }
 
   // Video formats: route through full KB-backed script pipeline

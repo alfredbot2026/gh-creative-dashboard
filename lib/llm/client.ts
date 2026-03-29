@@ -205,7 +205,8 @@ export async function generateContent(
                 )
             }
 
-            // Success — return result
+            // Success — log and return result
+            console.log(`[LLM] ✅ ${provider.name}/${provider.model} — ${content.length} chars`)
             return {
                 content,
                 provider: provider.name,
@@ -254,6 +255,7 @@ export async function generateCreativeContent(
                 )
             }
 
+            console.log(`[LLM Creative] ✅ ${provider.name}/${provider.model} — ${content.length} chars`)
             return { content, provider: provider.name, model: provider.model }
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err)

@@ -100,19 +100,23 @@ export async function POST(request: NextRequest) {
           hook_type: hook.hook_type,
           proof_points_used: hook.proof_points_used,
           status: 'draft',
+          llm_provider: hook.llm_provider || null,
+          llm_model: hook.llm_model || null,
         })
         .select('id')
         .single()
 
       if (!savedHook) continue
 
-      const execRows = hook.executions.map(exec => ({
+      const execRows = hook.executions.map((exec: any) => ({
         hook_id: savedHook.id,
         concept_id: concept.id,
         user_id: user.id,
         format: exec.format,
         content: exec.content,
         status: 'draft',
+        llm_provider: exec.llm_provider || null,
+        llm_model: exec.llm_model || null,
       }))
 
       const { data: savedExecs } = await supabase
