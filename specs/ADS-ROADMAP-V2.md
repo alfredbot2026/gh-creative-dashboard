@@ -153,35 +153,57 @@ Top-to-bottom:
 
 **Deliverable:** `/ads` is a one-stop command center. User lands here, sees what to do, clicks a button, lands in create with everything pre-filled.
 
-### Phase D: Generation Refinement (P2) — ~4 hrs
+### Phase D: Generation Refinement (P2) — ~6 hrs
 
-> **Goal:** The creative factory produces better output, faster, and integrates  
-> seamlessly with the intelligence layer.
+> **Goal:** Rebuild `/ads/create` using the same wizard pattern as `/create`.  
+> Step-by-step, one decision per screen, progressive disclosure.  
+> Study: `app/create/page.tsx` — the organic content wizard is the reference.
 
-#### D1. Show winning patterns in Scale mode
-- When user selects Scale, show: "Your top ads for this angle:" with actual ad thumbnails/text
-- "The AI will create new variations that follow the same emotional logic but different hooks"
-- Make Scale mode feel like it's actually learning from your winners
+#### D1. Wizard flow for ad creation
+Current `/ads/create` dumps everything on one screen (angle, persona, format, hook count, explore/scale). 
+The `/create` wizard is better: one question per step, animated transitions, AI suggestions at each step.
 
-#### D2. Concept history
-- `/ads/create` shows previously generated concepts at the bottom
-- Can revisit, re-edit, or regenerate from an existing concept
-- Prevents duplicate generation
+**Proposed ad creation wizard steps:**
+1. **What mode?** — "Create new ads" vs "Scale a winning ad" vs "Refresh a tired ad"
+   - Scale/Refresh can pre-fill from a specific ad (linked from /ads action cards)
+2. **What angle?** — Show the strategy map inline (tested ✅ / untested ❌)
+   - AI recommendation: "Try comparison — untested but competitors use it"
+   - Or pick from tested winners to scale
+3. **Who's the audience?** — Persona picker with context
+   - "New moms (your best audience — 10 ads, 6 winners)"
+   - "Skeptics (never tested — opportunity)"
+4. **What format?** — Static Image / Carousel / Video Script / All
+   - With time estimate per format
+5. **What hook style?** — Pick from ad frameworks (PAS, AIDA, Before/After, etc.)
+   - Show which frameworks have worked for this angle before
+   - Or "Let AI decide"
+6. **Loading** — progressive (show brief first, then hooks as they arrive)
+7. **Results** — hook-by-hook with format executions, edit, save, export
 
-#### D3. Fix carousel routing
-- "Build in Studio" on carousel executions → routes to the correct carousel builder
-- One carousel flow, not two
+This mirrors `/create`'s pattern: Mode → Platform → Goal → Structure → Topic → Results
 
-#### D4. Generation speed
-- Show progress per hook (not just a single spinner)
-- Consider: generate hooks first, show them, THEN expand to formats on demand ("Generate Images" button per hook)
-- Avoids the 2+ minute wait before seeing anything
+#### D2. Show winning patterns in Scale mode
+- Step 1 "Scale a winning ad" → shows your top performers with thumbnails
+- Select one → AI generates new hooks following the same emotional logic
+- User sees WHAT the AI learned: "Your winner uses question hooks + PAS framework. Generating different questions with the same structure."
 
-#### D5. Weekly planner (rebuilt on V2)
-- If we want a weekly view: rebuild as a section on `/ads/create` or `/ads`
+#### D3. Concept history
+- `/ads/create` shows previously generated concepts (cards at the bottom or a "History" tab)
+- Can revisit, re-edit, or regenerate from existing concept
+- Prevents duplicate generation and wasted LLM calls
+
+#### D4. Progressive generation
+- Generate hooks first → show them immediately
+- User picks which hooks to expand → then generate format executions on demand
+- No more 2+ minute wait before seeing anything
+- "Generate Images" button per hook, not per batch
+
+#### D5. Weekly planner page (rebuilt on V2)
+- Keep `/ads/weekly` as its own page (Rob's decision)
 - Uses Creative Tree V2 engine, not legacy factory
-- "This week's plan" with Tue/Thu/Sat batches
-- Based on /api/ads/actions recommendations
+- Tue/Thu/Sat batches based on /api/ads/actions recommendations
+- "Generate All" creates concepts for each batch day
+- Links to `/ads/create` for individual batch generation
 
 ### Phase E: Automation + Freshness (P2) — ~2 hrs
 
@@ -206,18 +228,23 @@ Top-to-bottom:
 ## Page Architecture (Target State)
 
 ```
-/ads                          ← Command center (health + actions + strategy map + campaign tree)
-/ads/create                   ← Creative factory (generate concepts → hooks → formats)
-/ads/competitors              ← Competition + sentiment intel
+/ads                          ← Command center with tabs:
+                                 Tab 1: Overview (health + action cards)
+                                 Tab 2: Campaign Tree (existing audit view)
+                                 Tab 3: Strategy Map (angle × persona matrix)
+                                 Tab 4: Competitor Intel (key signals)
+/ads/create                   ← Creative factory (wizard: step-by-step, mirrors /create pattern)
+/ads/weekly                   ← Weekly planner (Tue/Thu/Sat batches, V2 engine)
+/ads/competitors              ← Full competition + sentiment detail page
 ```
 
-That's it. Three pages.
+4 pages. `/ads` uses tabs for different insight sources (Rob's decision).
 
-- `/ads/strategy` → absorbed into `/ads` as inline matrix
-- `/ads/weekly` → removed (rebuilt as section in /ads or /ads/create)
-- `/ads/audit` → IS `/ads` (already merged)
+**Removed:**
+- `/ads/audit` standalone route → content lives in `/ads` Campaign Tree tab
+- `/ads/strategy` standalone route → content lives in `/ads` Strategy Map tab  
 - `/insights/ads` → removed (redundant)
-- `/create/ads` → removed (redundant with /ads/create)
+- `/create/ads` → removed (redundant with `/ads/create`)
 
 ---
 
@@ -249,16 +276,25 @@ No page reads directly from `ad_creatives` denormalized fields for metrics. Thos
 |-------|------------|----------------------|
 | A: Data Integrity | ~4 hrs | Numbers become trustworthy |
 | B: Consolidation | ~3 hrs | Fewer pages, no confusion |
-| C: Intelligence | ~6 hrs | /ads tells you what to do |
-| D: Generation | ~4 hrs | Better creative output + history |
+| C: Intelligence | ~6 hrs | /ads tells you what to do (tabbed: overview, campaigns, strategy, competitors) |
+| D: Generation | ~6 hrs | Wizard-style creation (mirrors /create), progressive results, concept history |
 | E: Automation | ~2 hrs | Data stays fresh automatically |
-| **Total** | **~19 hrs** | **Complete ads command center** |
+| **Total** | **~21 hrs** | **Complete ads command center** |
 
 ---
 
-## Open Questions for Rob
+## Rob's Decisions (2026-03-31)
 
-1. **Weekly planner** — Do we want it as a section on `/ads` or `/ads/create`? Or kill it entirely and just rely on the Action Cards?
-2. **Competitor page** — Keep as separate page or absorb key insights into `/ads` Action Cards section?
-3. **Strategy map** — Inline on `/ads` (compact version) or keep as a link to full page?
-4. **Generation approach** — Should we generate everything upfront (current: wait 1-2 min) or show hooks first, then generate formats on-demand?
+1. **Weekly planner** → Own page (`/ads/weekly`). Rebuilt on V2 engine.
+2. **Competitors** → Tabs on `/ads` main page for different insight sources. Full detail stays on `/ads/competitors`.
+3. **Strategy map** → Option C: compact inline tab on `/ads` + full detail available in same tab.
+4. **Generation approach** → Study `/create` wizard and apply same step-by-step pattern to `/ads/create`.
+
+### Insight from studying `/create`:
+The organic content wizard (`app/create/page.tsx`) uses a clean step-by-step flow:
+1. Mode → 2. Platform → 3. Goal → 4. Structure → 5. Topic → 6. Loading → 7. Results
+
+Each step is one screen. Animated transitions. AI suggestions at each step. Results have per-block editing + regeneration.
+
+The current `/ads/create` dumps all config on one screen. Phase D rebuilds it as a wizard matching this pattern:
+1. Mode (create/scale/refresh) → 2. Angle (with strategy map) → 3. Persona → 4. Format → 5. Hook style (framework) → 6. Loading (progressive) → 7. Results (per-hook editing)
