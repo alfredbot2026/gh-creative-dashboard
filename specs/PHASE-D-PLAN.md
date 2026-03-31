@@ -1,8 +1,8 @@
-# Phase D: Generation Refinement — Detailed Plan
+# Phase D: Generation Refinement — Detailed Plan (v2)
 
-> **Created:** 2026-03-31 22:00 PHT
+> **Created:** 2026-03-31 22:00 PHT | **Revised:** 22:10 after re-reading V3 spec
 > **Author:** Dr. Strange (Coding Lead)
-> **Reference:** `specs/ADS-ROADMAP-V2.md` Phase D section
+> **Reference:** `specs/ADS-ROADMAP-V2.md` Phase D + `specs/ADS-GENERATION-V3.md`
 > **Depends on:** Phase A ✅, Phase C ✅
 > **Note:** Phase B (kill legacy pages) can happen in parallel — it's cleanup
 
@@ -116,12 +116,31 @@ Rob said weekly planner gets its own page. But it should use V2 engine.
 
 ---
 
+## Key V3 Spec Additions (from ADS-GENERATION-V3.md)
+
+The V3 spec adds a `media_buyer_briefs` table to persist recommendations:
+- Briefs are **saved to DB** (not recomputed every page load)
+- Each brief links to the concept it generated (`generated_concept_id`)
+- `/ads/create?briefId=xxx` pre-fills everything from the brief
+- Token conservation: retrieve before regenerate, auto-save everything
+
+**Decision needed from Rob:** Do we add the `media_buyer_briefs` table now (adds ~1hr for migration + wiring) or keep the current computed-on-fly actions and add persistence later?
+
+**My recommendation:** Keep computed actions for now. The current `/api/ads/actions` is fast (no LLM call, pure data analysis). Briefs table adds value when we want:
+1. "Dismiss" functionality (user dismisses a rec, it doesn't come back)
+2. Tracking which briefs led to which generated concepts
+3. Caching expensive LLM-generated briefs
+
+None of those are blocking. Ship D1-D4 first, add briefs table in Phase E when automation needs it.
+
+---
+
 ## Execution Order
 
 | Order | Task | Effort | Why this order |
 |-------|------|--------|----------------|
-| 1 | D2: KB Integration | 1.5hr | Improves generation quality NOW, even on current single-screen UI |
-| 2 | D3: Progressive Gen | 1hr | Better UX immediately — hooks show in seconds, not minutes |
+| 1 | D2: KB Integration | 1.5hr | Fixes the #1 quality gap — ad generation uses no KB today |
+| 2 | D3: Progressive Gen | 1hr | Hooks show in 5 seconds, not 60+. Instant UX win |
 | 3 | D1: Wizard Flow | 3hr | Big UI rewrite — builds on D2+D3 |
 | 4 | D4: Concept History | 0.5hr | Quick add after wizard exists |
 | 5 | D5: Weekly (defer) | — | After D1-D4 proven |
@@ -134,7 +153,8 @@ Rob said weekly planner gets its own page. But it should use V2 engine.
 
 | Risk | Mitigation |
 |------|-----------|
-| Wizard adds friction (more clicks before generating) | Pre-fill from recommendations, skip steps when params provided |
-| KB retrieval adds latency to generation | Cache KB entries, load in parallel with user's wizard steps |
+| Wizard adds friction (more clicks before generating) | Pre-fill from recommendations, skip steps when params provided via URL |
+| KB retrieval adds latency to generation | Load KB in parallel with user's wizard steps, cache per-session |
 | Splitting generation into 3 calls adds complexity | Each call is simpler and faster — net UX improvement |
 | /create wizard is 1004 lines — rewriting for ads is costly | Reuse patterns, not code. Ads wizard is simpler (no carousel design, no improve mode) |
+| V3 spec wants media_buyer_briefs table | Defer to Phase E — current computed actions work fine for now |
