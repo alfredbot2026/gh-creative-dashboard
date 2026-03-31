@@ -71,7 +71,7 @@
 
 ## Roadmap
 
-### Phase A: Data Integrity (P0) — ~4 hrs
+### Phase A: Data Integrity (P0) ✅ DONE — ~4 hrs
 
 > **Goal:** Make the numbers trustworthy. Every metric shown is derived from daily data.
 
@@ -153,7 +153,7 @@ Top-to-bottom:
 
 **Deliverable:** `/ads` is a one-stop command center. User lands here, sees what to do, clicks a button, lands in create with everything pre-filled.
 
-### Phase D: Generation Refinement (P2) — ~6 hrs
+### Phase D: Generation Refinement (P2) ✅ DONE — ~6 hrs
 
 > **Goal:** Rebuild `/ads/create` using the same wizard pattern as `/create`.  
 > Step-by-step, one decision per screen, progressive disclosure.  
@@ -205,7 +205,7 @@ This mirrors `/create`'s pattern: Mode → Platform → Goal → Structure → T
 - "Generate All" creates concepts for each batch day
 - Links to `/ads/create` for individual batch generation
 
-### Phase E: Automation + Freshness (P2) — ~2 hrs
+### Phase E: Automation + Freshness (P2) ✅ DONE — ~2 hrs
 
 > **Goal:** Data stays fresh without manual intervention.
 

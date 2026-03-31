@@ -1,8 +1,9 @@
 # Ads System — Technical Documentation
 
-> **Last Updated:** 2026-03-31  
-> **Phase:** 4e (Ad Intelligence + Creative Factory) — Complete  
+> **Last Updated:** 2026-04-01  
+> **Phase:** 4e-fix (Ads System Consolidation + Intelligence Layer) — All 5 phases COMPLETE  
 > **Owner:** Coding Team  
+> **Roadmap:** `specs/ADS-ROADMAP-V2.md` — Phases A through E all done  
 
 ---
 
@@ -503,25 +504,27 @@ app/
 │       ├── page.tsx                # Weekly creative planner
 │       └── page.module.css
 ├── api/ads/
+│   ├── actions/route.ts            # GET media buyer brain recommendations
 │   ├── angle-coverage/route.ts     # GET tested/untested angles
 │   ├── competitors/route.ts        # GET/POST competitor data
 │   ├── correlation/route.ts        # GET ad↔content correlations
-│   ├── creative-tree/route.ts      # POST/GET/PATCH creative tree
+│   ├── creative-tree/
+│   │   ├── route.ts                # POST/GET/PATCH creative tree (monolithic, backward compat)
+│   │   ├── brief/route.ts          # POST step 1: generate concept brief (~5s)
+│   │   ├── hooks/route.ts          # POST step 2: generate hook variations (~8s)
+│   │   └── expand/route.ts         # POST step 3: expand hook into format executions
 │   ├── creatives/
 │   │   ├── route.ts                # GET/PATCH ad creatives
-│   │   ├── sync/route.ts           # POST sync from Meta
+│   │   ├── sync/route.ts           # POST sync from Meta (+ fatigue detection)
 │   │   └── analyze-video/route.ts  # POST video analysis
-│   ├── factory/
-│   │   ├── generate/route.ts       # POST legacy single gen
-│   │   ├── batch/route.ts          # POST legacy batch gen
-│   │   └── track/route.ts          # POST match to live ads
 │   ├── intelligence/
 │   │   └── map/route.ts            # GET strategy map data
 │   ├── metrics/route.ts            # GET daily-data metrics
-│   ├── performance/route.ts        # GET legacy performance
 │   ├── sentiment/route.ts          # GET/POST sentiment data
-│   ├── sync/route.ts               # POST legacy ad_perf sync
 │   └── weekly-plan/route.ts        # GET weekly recommendations
+├── api/cron/
+│   ├── ads-sync/route.ts           # GET daily sync (Vercel cron, 6AM PHT)
+│   └── competitor-refresh/route.ts # GET weekly competitor refresh (Mon 7AM PHT)
 components/ads/
 │   ├── ExecutionCard.tsx            # Interactive ad execution card
 │   ├── ExecutionCard.module.css
