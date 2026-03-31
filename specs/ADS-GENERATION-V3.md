@@ -85,7 +85,40 @@ A complete set of ready-to-deploy ad creatives:
 - Per hook: format-specific executions (static, carousel, video)
 - Each execution: full copy + image prompt + visual treatment notes
 
-**This is what we already have** in `creative-engine.ts` — the concept → hooks → format expansion flow. It just needs to be triggered FROM a brief, not from manual config.
+**This SHOULD use the same generation stack as `/create`** but currently doesn't.
+
+### Gap: Ad Engine vs Organic Engine
+
+The organic content creation (`/create`) runs through a rich pipeline:
+- KB hook library (tested patterns, tiered by effectiveness)
+- KB scripting frameworks (PAS, AIDA, etc. from knowledge_entries)
+- KB virality science (what makes content spread)
+- KB content funnel (awareness → consideration → conversion context)
+- KB platform intelligence (IG Reels vs Facebook vs YouTube specifics)
+- Brand voice rubric (Taglish ratio target, tone descriptors, banned AI words, formality per platform, example phrases)
+- Content structures (45 proven techniques with block timing)
+- Quality gate (brand voice score, auto-reject below threshold)
+- Tiered KB selection (Tier A proven + Tier B random for variety)
+
+The ad engine (`creative-engine.ts`) has almost NONE of this:
+- ❌ No KB entries loaded (except video scripts which route through shortform)
+- ❌ Hardcoded `FRAMEWORK_MAP` instead of KB scripting frameworks
+- ❌ Hardcoded brand voice string instead of loading `brand_style_guide`
+- ❌ No virality science, content funnel, or platform intelligence
+- ❌ No content structures (45 techniques not available)
+- ❌ No quality gate on static/carousel (only video via shortform detour)
+- ❌ No tiered KB selection
+- ✅ Does load winning ad patterns + competitor context (organic engine doesn't)
+- ✅ Does load product catalog
+
+**The fix:** The Creative Director brain must use the SAME generation stack as `/create`, augmented with ad-specific context (winning patterns, competitor angles, media buyer brief). One pipeline, not two.
+
+**Implementation:**
+1. Ad generation calls the same `getGenerationContext()` + `getBrandContext()` as organic
+2. Ad generation uses the same `buildShortFormPrompt()` architecture (KB + brand + structure)
+3. PLUS: injects ad-specific context (winning patterns, competitor angles, brief reason)
+4. PLUS: runs quality gate on ALL formats (not just video)
+5. The `creative-engine.ts` hardcoded maps (FRAMEWORK_MAP, PERSONA_MAP, hardcoded tone) get replaced with DB-driven values
 
 ---
 
