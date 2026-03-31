@@ -269,11 +269,13 @@ async function expandVideoFormat(
     // Full scene breakdown for the UI
     scenes: scenes.map(s => ({
       scene_number: s.scene_number,
+      duration_seconds: s.duration_seconds || 5,
       timing: s.timing || `${s.duration_seconds}s`,
       script_text: s.script_text,
       visual_direction: s.visual_direction,
       on_screen_text: s.on_screen_text,
       production_notes: s.production_notes,
+      block_label: s.block_label,
     })),
     // Script metadata
     kb_hooks_used: response.knowledge_context?.hooks_used || [],

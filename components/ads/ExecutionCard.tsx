@@ -1,16 +1,19 @@
 /**
  * Ad Execution Card Component
  * 
- * Interactive UI for an ad execution. Allows:
- * - Editing text (headline, body, script)
- * - Generating images for static ads
- * - Saving to content_items (Library)
- * - Launching Carousel Builder
+ * Unified editing experience matching /create:
+ * - Video scripts → BlockEditor (scene-by-scene edit + regenerate + undo)
+ * - Carousels → SlideBlockEditor (per-slide edit, block-style)
+ * - Static ads → inline fields
+ * - Save to Library, Generate Image, Build in Studio
  */
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import BlockEditor from '@/components/create/BlockEditor'
+import type { RegenerateContext } from '@/components/create/BlockEditor'
+import type { ScriptScene } from '@/lib/create/types'
 import styles from './ExecutionCard.module.css'
 
 interface ExecutionCardProps {
@@ -24,6 +27,91 @@ interface ExecutionCardProps {
   onUpdate: (id: string, newContent: any) => void
 }
 
+// ─── Slide Block Editor (carousel/ig_carousel) ───
+function SlideBlockEditor({ slides, format, onChange }: {
+  slides: any[]
+  format: string
+  onChange: (slides: any[]) => void
+}) {
+  const [editingIdx, setEditingIdx] = useState<number | null>(null)
+  const [draft, setDraft] = useState<any>({})
+
+  const startEdit = (i: number) => {
+    setEditingIdx(i)
+    setDraft({ ...slides[i] })
+  }
+
+  const saveEdit = () => {
+    if (editingIdx === null) return
+    const updated = [...slides]
+    updated[editingIdx] = draft
+    onChange(updated)
+    setEditingIdx(null)
+  }
+
+  const cancelEdit = () => {
+    setEditingIdx(null)
+    setDraft({})
+  }
+
+  return (
+    <div className={styles.slideEditor}>
+      {slides.map((slide, i) => (
+        <div key={i} className={styles.slideBlock}>
+          <div className={styles.slideBlockHeader}>
+            <span className={styles.slideNum}>Slide {i + 1}</span>
+            {editingIdx !== i && (
+              <button className={styles.editBlockBtn} onClick={() => startEdit(i)}>✏️ Edit</button>
+            )}
+          </div>
+          {editingIdx === i ? (
+            <div className={styles.slideEditArea}>
+              {format === 'ig_carousel' && (
+                <input
+                  className={styles.input}
+                  value={draft.title || ''}
+                  onChange={e => setDraft({ ...draft, title: e.target.value })}
+                  placeholder="Slide title"
+                />
+              )}
+              <textarea
+                className={styles.textarea}
+                value={draft.body_text || ''}
+                onChange={e => setDraft({ ...draft, body_text: e.target.value })}
+                placeholder="Slide text"
+                rows={3}
+              />
+              {draft.image_prompt !== undefined && (
+                <textarea
+                  className={styles.textarea}
+                  value={draft.image_prompt || ''}
+                  onChange={e => setDraft({ ...draft, image_prompt: e.target.value })}
+                  placeholder="Image description"
+                  rows={2}
+                  style={{ opacity: 0.7 }}
+                />
+              )}
+              <div className={styles.editBtns}>
+                <button className={styles.saveBlockBtn} onClick={saveEdit}>✓ Save</button>
+                <button className={styles.cancelBlockBtn} onClick={cancelEdit}>✕ Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.slidePreview}>
+              {slide.title && <div className={styles.slideTitle}>{slide.title}</div>}
+              <p className={styles.slideText}>{slide.body_text}</p>
+              {slide.image_prompt && (
+                <p className={styles.slidePrompt}>🖼️ {slide.image_prompt}</p>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Main Card ───
 export default function ExecutionCard({ id, format, content, angle, persona, hookText, hookType, onUpdate }: ExecutionCardProps) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
@@ -34,12 +122,50 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
   const [genImage, setGenImage] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(content.image_url || null)
 
+  const isVideo = format === 'video_ugc' || format === 'video_hq'
+  const isCarousel = format === 'carousel' || format === 'ig_carousel'
+  const hasScenes = isVideo && Array.isArray(editedContent.scenes) && editedContent.scenes.length > 0
+
+  // ─── BlockEditor handlers for video ───
+  const handleScenesChange = useCallback((newScenes: ScriptScene[]) => {
+    const next = {
+      ...editedContent,
+      scenes: newScenes,
+      hook_script: newScenes[0]?.script_text || editedContent.hook_script,
+      body_script: newScenes.slice(1, -1).map((s: ScriptScene) => s.script_text).join('\n\n'),
+      cta_script: newScenes[newScenes.length - 1]?.script_text || editedContent.cta_script,
+    }
+    setEditedContent(next)
+    onUpdate(id, next)
+  }, [editedContent, id, onUpdate])
+
+  const handleRegenerateBlock = useCallback(async (blockIndex: number, context: RegenerateContext) => {
+    const res = await fetch('/api/create/regenerate-block', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        blockIndex,
+        block: context.block,
+        allBlocks: context.allBlocks,
+        topic: `${angle} ad for ${persona}: ${hookText}`,
+        platform: format === 'video_ugc' ? 'instagram-reels' : 'facebook-reels',
+      }),
+    })
+    if (!res.ok) throw new Error('Regenerate failed')
+    return res.json()
+  }, [angle, persona, hookText, format])
+
+  // ─── Carousel slide changes ───
+  const handleSlidesChange = useCallback((newSlides: any[]) => {
+    const next = { ...editedContent, slides: newSlides }
+    setEditedContent(next)
+    onUpdate(id, next)
+  }, [editedContent, id, onUpdate])
+
+  // ─── Save / Image / Studio ───
   const handleSaveToLibrary = async () => {
     setSaving(true)
     try {
-      const isVideo = format === 'video_ugc' || format === 'video_hq'
-      const isCarousel = format === 'carousel' || format === 'ig_carousel'
-
       const title = (editedContent.headline as string)
         || (editedContent.hook_script as string)?.slice(0, 60)
         || hookText.slice(0, 60)
@@ -62,40 +188,15 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
           cta: (editedContent.cta_script as string) || (editedContent.cta_text as string),
           contentType: 'sell',
           imageUrl: imageUrl || undefined,
-          // For scripts — full data in scriptData
-          scriptData: isVideo ? {
-            angle,
-            persona,
-            hook_type: hookType,
-            format,
-            ...editedContent,
+          scriptData: (isVideo || type === 'image') ? {
+            angle, persona, hook_type: hookType, format,
+            ...editedContent, image_url: imageUrl,
           } : undefined,
-          // For carousels — pass slide texts (no image URLs yet)
           slideUrls: isCarousel ? [] : undefined,
-          // For static images
-          ...(type === 'image' ? {
-            scriptData: {
-              angle,
-              persona,
-              hook_type: hookType,
-              format,
-              ...editedContent,
-              image_url: imageUrl,
-            }
-          } : {}),
         }),
       })
-
-      if (res.ok) {
-        setSaved(true)
-        setTimeout(() => setSaved(false), 3000)
-      } else {
-        const err = await res.json()
-        console.error('Save failed:', err)
-      }
-    } catch (err) {
-      console.error('Save failed', err)
-    }
+      if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000) }
+    } catch (err) { console.error('Save failed', err) }
     setSaving(false)
   }
 
@@ -106,24 +207,19 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
       const formData = new FormData()
       formData.append('prompt', editedContent.image_prompt)
       formData.append('aspectRatio', '1:1')
-
       const res = await fetch('/api/studio/generate', { method: 'POST', body: formData })
       const data = await res.json()
-      
       const imgUrl = data.imageUrl || data.image_url
       if (imgUrl) {
         setImageUrl(imgUrl)
         onUpdate(id, { ...editedContent, image_url: imgUrl })
       }
-    } catch (err) {
-      console.error(err)
-    }
+    } catch (err) { console.error(err) }
     setGenImage(false)
   }
 
   const sendToStudio = () => {
-    // Send carousel slides to the /create/ads carousel builder
-    if (format !== 'carousel' && format !== 'ig_carousel') return
+    if (!isCarousel) return
     const slides = (editedContent.slides || []) as Array<{ body_text?: string; title?: string }>
     const texts = slides.map(s => s.body_text || s.title || '')
     const query = new URLSearchParams()
@@ -133,17 +229,11 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
     router.push(`/create/ads?${query.toString()}`)
   }
 
-  // Edit Handlers
+  // ─── Static field handlers ───
   const updateField = (field: string, value: any) => {
     const next = { ...editedContent, [field]: value }
     setEditedContent(next)
     onUpdate(id, next)
-  }
-
-  const updateSlide = (idx: number, field: string, value: string) => {
-    const slides = [...(editedContent.slides || [])]
-    slides[idx] = { ...slides[idx], [field]: value }
-    updateField('slides', slides)
   }
 
   return (
@@ -155,22 +245,25 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
            format === 'ig_carousel' ? '📱 IG Carousel' : '🎬 Video Script'}
         </span>
         <div className={styles.actions}>
-          <button className={styles.iconBtn} onClick={() => setEditing(!editing)}>
-            {editing ? '👁️ Preview' : '✏️ Edit'}
-          </button>
-          {format.includes('carousel') && (
+          {/* Video: BlockEditor handles its own edit mode. Static: toggle edit. Carousel: inline per-slide. */}
+          {!isVideo && !isCarousel && (
+            <button className={styles.iconBtn} onClick={() => setEditing(!editing)}>
+              {editing ? '👁️ Preview' : '✏️ Edit'}
+            </button>
+          )}
+          {isCarousel && (
             <button className={styles.primaryBtn} onClick={sendToStudio}>
               ✨ Build in Studio
             </button>
           )}
           <button className={styles.saveBtn} onClick={handleSaveToLibrary} disabled={saving || saved}>
-            {saved ? '✅ Saved' : saving ? '⏳...' : '💾 Save to Library'}
+            {saved ? '✅ Saved' : saving ? '⏳...' : '💾 Save'}
           </button>
         </div>
       </div>
 
       <div className={styles.body}>
-        {/* --- STATIC IMAGE --- */}
+        {/* ─── STATIC IMAGE ─── */}
         {format === 'static_image' && (
           <div className={styles.layout}>
             <div className={styles.imageCol}>
@@ -210,50 +303,32 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
           </div>
         )}
 
-        {/* --- CAROUSEL --- */}
-        {(format === 'carousel' || format === 'ig_carousel') && (
+        {/* ─── CAROUSEL (Block-style slide editor) ─── */}
+        {isCarousel && (
           <div className={styles.carouselLayout}>
-            {editing && <input className={styles.input} value={editedContent.headline || ''} onChange={e => updateField('headline', e.target.value)} placeholder="Carousel Title/Headline" style={{marginBottom: '1rem'}} />}
-            {!editing && editedContent.headline && <div className={styles.previewLine} style={{marginBottom: '1rem'}}><strong>{editedContent.headline}</strong></div>}
-            
-            <div className={styles.slidesGrid}>
-              {(editedContent.slides || []).map((slide: any, i: number) => (
-                <div key={i} className={styles.slideCard}>
-                  <div className={styles.slideNum}>Slide {i + 1}</div>
-                  {editing ? (
-                    <>
-                      {slide.title !== undefined && <input className={styles.input} value={slide.title} onChange={e => updateSlide(i, 'title', e.target.value)} placeholder="Title" />}
-                      <textarea className={styles.textarea} value={slide.body_text || ''} onChange={e => updateSlide(i, 'body_text', e.target.value)} placeholder="Slide text" rows={3} />
-                    </>
-                  ) : (
-                    <>
-                      {slide.title && <strong>{slide.title}</strong>}
-                      <p>{slide.body_text}</p>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            <div style={{marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              {editing ? (
-                <select className={styles.select} value={editedContent.cta_text || ''} onChange={e => updateField('cta_text', e.target.value)} style={{width: '200px'}}>
-                  <option value="LEARN_MORE">Learn More</option>
-                  <option value="SIGN_UP">Sign Up</option>
-                  <option value="SEND_MESSAGE">Send Message</option>
-                </select>
-              ) : (
-                <div className={styles.previewCta}>{editedContent.cta_text?.replace('_', ' ')}</div>
-              )}
-            </div>
+            {editedContent.headline && (
+              <div className={styles.previewLine} style={{ marginBottom: '0.75rem' }}>
+                <strong>{editedContent.headline}</strong>
+              </div>
+            )}
+            <SlideBlockEditor
+              slides={editedContent.slides || []}
+              format={format}
+              onChange={handleSlidesChange}
+            />
+            {editedContent.cta_text && (
+              <div className={styles.previewCta} style={{ marginTop: '0.75rem' }}>
+                {editedContent.cta_text.replace(/_/g, ' ')}
+              </div>
+            )}
           </div>
         )}
 
-        {/* --- VIDEO SCRIPT --- */}
-        {(format === 'video_hq' || format === 'video_ugc') && (
+        {/* ─── VIDEO SCRIPT (BlockEditor — same as /create) ─── */}
+        {isVideo && (
           <div className={styles.scriptLayout}>
-            {/* KB metadata — shown when generated via full pipeline */}
-            {!editing && (editedContent.kb_hooks_used as string[] || []).length > 0 && (
+            {/* KB metadata */}
+            {(editedContent.kb_hooks_used as string[] || []).length > 0 && (
               <div className={styles.kbMeta}>
                 <span>📚 KB: {(editedContent.kb_hooks_used as string[]).slice(0, 2).join(', ')}</span>
                 {(editedContent.kb_frameworks_used as string[] || []).length > 0 && (
@@ -267,47 +342,27 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
               </div>
             )}
 
-            {editing ? (
+            {hasScenes ? (
               <>
-                <div className={styles.fieldGroup}>
-                  <label>Hook (First 3 seconds)</label>
-                  <textarea className={styles.textarea} value={editedContent.hook_script as string || ''} onChange={e => updateField('hook_script', e.target.value)} rows={2} />
-                </div>
-                <div className={styles.fieldGroup}>
-                  <label>Body Script</label>
-                  <textarea className={styles.textarea} value={editedContent.body_script as string || ''} onChange={e => updateField('body_script', e.target.value)} rows={6} />
-                </div>
-                <div className={styles.fieldGroup}>
-                  <label>Call to Action</label>
-                  <input className={styles.input} value={editedContent.cta_script as string || ''} onChange={e => updateField('cta_script', e.target.value)} />
-                </div>
-                <div className={styles.fieldGroup}>
-                  <label>Visual / Acting Notes</label>
-                  <textarea className={styles.textarea} value={(editedContent.visual_directions as string) || (editedContent.style_notes as string) || ''} onChange={e => updateField(format === 'video_ugc' ? 'style_notes' : 'visual_directions', e.target.value)} rows={2} />
-                </div>
+                <BlockEditor
+                  scenes={(editedContent.scenes as any[]).map((s: any, i: number) => ({
+                    scene_number: s.scene_number || i + 1,
+                    duration_seconds: s.duration_seconds || parseInt(s.timing) || 5,
+                    script_text: s.script_text || '',
+                    visual_direction: s.visual_direction || '',
+                    block_label: s.block_label || (i === 0 ? 'Hook' : i === (editedContent.scenes as any[]).length - 1 ? 'CTA' : `Scene ${i + 1}`),
+                    timing: s.timing,
+                    on_screen_text: s.on_screen_text,
+                    production_notes: s.production_notes,
+                  }))}
+                  topic={`${angle} ad: ${hookText}`}
+                  platform={format === 'video_ugc' ? 'instagram-reels' : 'facebook-reels'}
+                  onChange={handleScenesChange}
+                  onRegenerateBlock={handleRegenerateBlock}
+                />
+                {/* Caption draft below scenes */}
                 {editedContent.caption_draft && (
-                  <div className={styles.fieldGroup}>
-                    <label>Caption Draft</label>
-                    <textarea className={styles.textarea} value={editedContent.caption_draft as string} onChange={e => updateField('caption_draft', e.target.value)} rows={3} />
-                  </div>
-                )}
-              </>
-            ) : (editedContent.scenes as any[])?.length > 0 ? (
-              // Scene-by-scene view (from full KB pipeline)
-              <div className={styles.scriptPreview}>
-                {(editedContent.scenes as any[]).map((scene: any, i: number) => (
-                  <div key={i} className={styles.scriptRow}>
-                    <div className={styles.scriptTime}>{scene.timing || `${scene.duration_seconds}s`}</div>
-                    <div className={styles.scriptText}>
-                      <div>{scene.script_text}</div>
-                      {scene.visual_direction && <div className={styles.scriptVisual}>📷 {scene.visual_direction}</div>}
-                      {scene.on_screen_text && <div className={styles.scriptOnScreen}>📝 On screen: {scene.on_screen_text}</div>}
-                      {scene.production_notes && <div className={styles.scriptProdNote}>🎬 {scene.production_notes}</div>}
-                    </div>
-                  </div>
-                ))}
-                {editedContent.caption_draft && (
-                  <div className={styles.captionDraft}>
+                  <div className={styles.captionSection}>
                     <div className={styles.captionLabel}>📱 Caption Draft</div>
                     <div className={styles.captionText}>{editedContent.caption_draft as string}</div>
                     {(editedContent.hashtags as string[] || []).length > 0 && (
@@ -315,12 +370,9 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
                     )}
                   </div>
                 )}
-                <div className={styles.scriptNotes}>
-                  <em>🎬 {editedContent.visual_directions || editedContent.style_notes}</em>
-                </div>
-              </div>
+              </>
             ) : (
-              // Simple 3-part view (from basic generation)
+              /* Fallback: simple 3-part view for non-scene video content */
               <div className={styles.scriptPreview}>
                 <div className={styles.scriptRow}>
                   <div className={styles.scriptTime}>Hook</div>
@@ -333,9 +385,6 @@ export default function ExecutionCard({ id, format, content, angle, persona, hoo
                 <div className={styles.scriptRow}>
                   <div className={styles.scriptTime}>CTA</div>
                   <div className={styles.scriptText}><strong>{editedContent.cta_script as string}</strong></div>
-                </div>
-                <div className={styles.scriptNotes}>
-                  <em>🎬 {editedContent.visual_directions || editedContent.style_notes}</em>
                 </div>
               </div>
             )}

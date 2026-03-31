@@ -56,6 +56,25 @@
 .captionText { font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; white-space: pre-wrap; }
 .hashtags { font-size: 0.72rem; color: #6366f1; margin-top: 0.4rem; }
 
+/* ─── Slide Block Editor (carousel) ─── */
+.slideEditor { display: flex; flex-direction: column; gap: 0.5rem; }
+.slideBlock { border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; }
+.slideBlockHeader { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.65rem; background: var(--color-surface-low); }
+.slideNum { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-dim); }
+.editBlockBtn { font-size: 0.65rem; padding: 2px 6px; background: transparent; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; }
+.editBlockBtn:hover { background: var(--color-surface); }
+.slideEditArea { padding: 0.5rem 0.65rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.editBtns { display: flex; gap: 0.35rem; }
+.saveBlockBtn { font-size: 0.7rem; padding: 3px 10px; background: var(--color-primary); color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+.cancelBlockBtn { font-size: 0.7rem; padding: 3px 10px; background: transparent; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; }
+.slidePreview { padding: 0.5rem 0.65rem; }
+.slideTitle { font-weight: 600; font-size: 0.82rem; margin-bottom: 0.15rem; }
+.slideText { font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin: 0; }
+.slidePrompt { font-size: 0.68rem; color: var(--color-text-dim); margin: 0.25rem 0 0; font-style: italic; }
+
+/* ─── Caption section (below BlockEditor for video) ─── */
+.captionSection { margin-top: 0.75rem; padding: 0.65rem; background: var(--color-surface-low); border-radius: 8px; }
+
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
   .imageCol { max-width: 250px; margin: 0 auto; }
