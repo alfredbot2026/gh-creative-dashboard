@@ -412,7 +412,7 @@ function CampaignRow({ group, onCorrect, biz }: { group: CampaignGroup; onCorrec
 // ─── Page ───
 const INITIAL_CAMPAIGNS = 10
 
-export default function AuditPage() {
+export default function AuditPage({ embedded = false }: { embedded?: boolean } = {}) {
   const [allAds, setAllAds] = useState<AdCreative[]>([])
   const [metricsMap, setMetricsMap] = useState<Map<string, AdMetrics>>(new Map())
   const [accountMetrics, setAccountMetrics] = useState<AccountMetrics | null>(null)
@@ -517,7 +517,7 @@ export default function AuditPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
+      {!embedded && <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Your Ads</h1>
           <p className={styles.subtitle}>Campaign → Ad Set → Ad. Metrics from daily data. Click classifications to correct.</p>
@@ -529,9 +529,18 @@ export default function AuditPage() {
           <button className={styles.btnOutline} onClick={() => handleSync(false)} disabled={syncing}>🔄 Sync</button>
           <button className={styles.btn} onClick={() => handleSync(true)} disabled={syncing}>🔁 Reclassify</button>
         </div>
-      </div>
+      </div>}
 
-      {syncMsg && <div className={styles.syncMsg}>{syncMsg}</div>}
+      {/* Sync controls when embedded in tab */}
+      {embedded && (
+        <div className={styles.embeddedControls}>
+          <button className={styles.btnOutline} onClick={() => handleSync(false)} disabled={syncing}>🔄 Sync</button>
+          <button className={styles.btn} onClick={() => handleSync(true)} disabled={syncing}>🔁 Reclassify</button>
+          {syncMsg && <span className={styles.syncMsgInline}>{syncMsg}</span>}
+        </div>
+      )}
+
+      {!embedded && syncMsg && <div className={styles.syncMsg}>{syncMsg}</div>}
 
       {/* Data freshness banner */}
       {freshness?.is_stale && (

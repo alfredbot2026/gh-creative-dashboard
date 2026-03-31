@@ -153,3 +153,6 @@
   .adCard { grid-template-columns: 44px 1fr; }
   .adThumb, .adThumbPlaceholder { width: 44px; height: 44px; }
 }
+
+.embeddedControls { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+.syncMsgInline { font-size: 0.75rem; color: var(--color-text-dim); }
