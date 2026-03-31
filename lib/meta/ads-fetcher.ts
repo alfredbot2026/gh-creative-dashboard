@@ -78,7 +78,12 @@ export async function fetchAdInsights(
   const url = `https://graph.facebook.com/v25.0/${formattedAccountId}/insights?level=ad&fields=${fields}&time_range=${encodeURIComponent(timeRangeStr)}&time_increment=1`;
 
   try {
-    const response = await fetch(url, {
+    const insights: AdInsight[] = [];
+    let nextUrl: string | null = url
+
+    // Paginate through all pages (Meta returns 25 per page by default)
+    while (nextUrl) {
+    const response: Response = await fetch(nextUrl, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -92,7 +97,9 @@ export async function fetchAdInsights(
     }
 
     const data = await response.json();
-    const insights: AdInsight[] = [];
+
+    // Advance to next page (or stop)
+    nextUrl = data.paging?.next || null
 
     for (const item of data.data || []) {
       // Parse conversions and values
@@ -162,7 +169,9 @@ export async function fetchAdInsights(
         source_post_id: item.effective_object_story_id || null
       });
     }
+    } // end pagination while loop
 
+    console.log(`[Ads Fetcher] Fetched ${insights.length} insight rows total`)
     return insights;
   } catch (err: any) {
     console.error('[Ads Fetcher] Failed to fetch insights:', err.message);
