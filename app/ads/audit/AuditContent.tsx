@@ -549,13 +549,12 @@ export default function AuditPage({ embedded = false }: { embedded?: boolean } =
 
       {!embedded && syncMsg && <div className={styles.syncMsg}>{syncMsg}</div>}
 
-      {/* Data freshness banner */}
-      {freshness?.is_stale && (
+      {/* Data freshness banner — only show if >5 days (Meta has 2-3 day reporting delay) */}
+      {freshness?.is_stale && (freshness.stale_hours || 0) > 120 && (
         <div className={styles.staleBanner}>
-          ⚠️ Ad data last synced <strong>{freshness.latest_date}</strong> ({Math.floor((freshness.stale_hours || 0) / 24)} days ago).
-          Numbers may not reflect recent changes.
+          ℹ️ Latest data: <strong>{freshness.latest_date}</strong>. Meta typically has a 2-3 day reporting delay — this is normal.
           <button className={styles.staleSyncBtn} onClick={() => handleSync(false)} disabled={syncing}>
-            Sync Now
+            Sync
           </button>
         </div>
       )}
