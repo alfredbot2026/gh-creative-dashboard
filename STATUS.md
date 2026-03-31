@@ -22,7 +22,7 @@ Full audit completed (2026-03-31). Phase 4e shipped all 5 waves but produced fra
 |-------|-------|--------|------|
 | A: Data Integrity | ~4 | `DONE` | Pagination fix, sync now gets all 773 rows through today |
 | B: Consolidation | ~3 | `NOT_STARTED` | Kill legacy factory, remove 5 redundant pages → 4 pages |
-| C: Intelligence Layer | ~6 | `IN_PROGRESS` | Wave 1 (P0) + Wave 2 (P1) done. Wave 3 (P2: competitors, create unification) remaining |
+| C: Intelligence Layer | ~6 | `DONE` | All 3 waves shipped: ROAS fix, profit headline, actionable recs, tight strategy map, rich competitors, create flow |
 | D: Generation Refinement | ~6 | `NOT_STARTED` | Wizard UI, unified generation pipeline (same stack as /create), progressive gen |
 | E: Automation | ~2 | `NOT_STARTED` | Daily sync cron, weekly competitor refresh, fatigue detection |
 
