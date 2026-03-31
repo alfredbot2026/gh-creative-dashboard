@@ -12,6 +12,7 @@ import { generateJSON } from '@/lib/llm/client'
 import { createClient } from '@/lib/supabase/server'
 import { loadBusinessContext, getThresholds } from './business-context'
 import { generateShortFormScript } from '@/lib/create/shortform-generator'
+import { getAdGenerationContext, getBrandContext } from '@/lib/create/kb-retriever'
 
 // ─── Types ───
 
@@ -80,17 +81,17 @@ export async function generateConceptBrief(
 ): Promise<ConceptBrief> {
   const supabase = await createClient()
 
-  // Load all context in parallel
-  const [productRes, winningAdsRes, allAdsForAngleRes, compAdsRes, bizCtx] = await Promise.all([
+  // Load all context in parallel — including KB + brand voice
+  const [productRes, winningAdsRes, allAdsForAngleRes, compAdsRes, bizCtx, kbContext, brandContext] = await Promise.all([
     supabase.from('product_catalog').select('name, price, description, offer_details, target_audience, usps').eq('is_active', true).limit(1).single(),
-    // Winning ads for scale mode — top performers by ROAS
     supabase.from('ad_creatives').select('hook_type, framework, body_text, video_transcription, avg_roas, headline').eq('user_id', userId).eq('angle', angle).eq('ad_status', 'winning').order('avg_roas', { ascending: false }).limit(mode === 'scale' ? 10 : 5),
-    // Scale mode: also get all tested ads for this angle to know what hooks already exist
     mode === 'scale'
       ? supabase.from('ad_creatives').select('hook_type, avg_roas').eq('user_id', userId).eq('angle', angle).not('avg_roas', 'is', null).order('avg_roas', { ascending: false }).limit(20)
       : Promise.resolve({ data: null }),
     supabase.from('competitor_ads').select('angle, hook_type').eq('user_id', userId).eq('is_active', true),
     loadBusinessContext(supabase, userId),
+    getAdGenerationContext(15),
+    getBrandContext(),
   ])
 
   const product = productRes.data
@@ -140,6 +141,18 @@ export async function generateConceptBrief(
     ? `MODE: SCALE — This angle has winning ads. Goal is fresh creative variations that avoid fatigue. Study the winning patterns above and create NEW hooks that follow the same emotional logic but with different openings, proof points, and structure.${testedHookTypes}`
     : `MODE: EXPLORE — This angle is untested. Goal is to find what works. Be bold, test different hook types.`
 
+  // Build KB context string for injection into prompts
+  const kbEntries = kbContext.entries || []
+  const kbSummary = kbEntries.length > 0
+    ? kbEntries.slice(0, 8).map(e => `[${e.category}] ${e.title}: ${(e.content || '').substring(0, 300)}`).join('\n')
+    : ''
+
+  // Brand voice from DB (overrides hardcoded tone)
+  const brand = brandContext as Record<string, unknown> | null
+  const brandTone = brand
+    ? `${brand.tone_descriptors || 'Warm, encouraging'}. Taglish ratio: ${brand.taglish_ratio || '60/40 Filipino/English'}. ${brand.vocabulary_notes || ''}. BANNED words: ${brand.banned_words || 'AI slop, guaranteed income, passive income'}`.trim()
+    : 'Warm, encouraging, Taglish (Filipino + English mix), natural and conversational'
+
   return {
     angle,
     persona,
@@ -147,14 +160,14 @@ export async function generateConceptBrief(
     product_name: product?.name || 'Papers to Profits',
     product_price: thresholds.productPrice,
     persona_context: PERSONA_MAP[persona] || `Target: ${persona.replace(/_/g, ' ')}`,
-    tone: 'Warm, encouraging, Taglish (Filipino + English mix), natural and conversational',
+    tone: brandTone,
     framework: bestFramework,
     proof_points: [...new Set(proofPoints)] as string[],
     competitor_context: competitorSummary,
     compliance_notes: 'No income guarantees, no false scarcity, no "guaranteed results", no specific earnings claims',
     winning_patterns: winPatterns
-      ? `${modeContext}\n\nWINNING PATTERNS:\n${winPatterns}`
-      : modeContext,
+      ? `${modeContext}\n\nWINNING PATTERNS:\n${winPatterns}${kbSummary ? `\n\nKNOWLEDGE BASE (proven ad patterns, hooks, frameworks):\n${kbSummary}` : ''}`
+      : `${modeContext}${kbSummary ? `\n\nKNOWLEDGE BASE (proven ad patterns, hooks, frameworks):\n${kbSummary}` : ''}`,
   }
 }
 
@@ -163,7 +176,12 @@ export async function generateConceptBrief(
 export async function generateHookVariations(
   brief: ConceptBrief,
   count: number = 4,
+  kbHooks?: string,
 ): Promise<HookVariation[]> {
+  const kbHookSection = kbHooks
+    ? `\n\nPROVEN HOOK PATTERNS FROM KNOWLEDGE BASE (adapt, don't copy verbatim):\n${kbHooks}`
+    : ''
+
   const { data, provider: hookProvider, model: hookModel } = await generateJSON<{ hooks: HookVariation[] }>(
     `You generate hook variations for Meta ads. ALL hooks must serve the SAME concept — do not drift into other angles.
 
@@ -171,10 +189,11 @@ RULES:
 1. Every hook must open with a different hook TYPE (question, how_to, social_proof, direct_benefit, story_opening, bold_claim, pain_call, curiosity_gap)
 2. Every hook must be about the SAME core message: "${brief.core_message}"
 3. Every hook must target the SAME persona: ${brief.persona_context}
-4. Hooks must be in Taglish (Filipino + English mix), natural and conversational
+4. Hooks must be in Taglish — ${brief.tone}
 5. Each hook picks 2-3 proof points from the available list to highlight
 6. DO NOT drift into other angles. The angle is "${brief.angle}" — every hook must be ${brief.angle}.
 7. Hooks are the FIRST LINE the viewer reads/hears. Max 2 sentences. Must stop the scroll.
+8. Study the proven hook patterns below — adapt the patterns to this specific concept.
 
 COMPLIANCE: ${brief.compliance_notes}`,
 
@@ -188,7 +207,7 @@ CONCEPT:
 - Framework: ${brief.framework} (${FRAMEWORK_MAP[brief.framework] || ''})
 - Available proof points: ${brief.proof_points.join(' | ')}
 ${brief.winning_patterns ? `\nWINNING PATTERNS (reference, don't copy):\n${brief.winning_patterns}` : ''}
-${brief.competitor_context ? `\nCOMPETITOR CONTEXT: ${brief.competitor_context}` : ''}
+${brief.competitor_context ? `\nCOMPETITOR CONTEXT: ${brief.competitor_context}` : ''}${kbHookSection}
 
 Return JSON: {"hooks": [{"hook_text": "the opening line in Taglish", "hook_type": "question|how_to|social_proof|direct_benefit|story_opening|bold_claim|pain_call|curiosity_gap", "proof_points_used": ["proof point 1", "proof point 2"]}]}`,
     { temperature: 0.8 },
@@ -304,8 +323,10 @@ export async function expandToFormats(
 CONCEPT: ${brief.core_message}
 ANGLE: ${brief.angle} — do NOT drift to other angles
 PERSONA: ${brief.persona_context}
-TONE: ${brief.tone}
-COMPLIANCE: ${brief.compliance_notes}`,
+BRAND VOICE: ${brief.tone}
+COMPLIANCE: ${brief.compliance_notes}
+
+Write all ad copy in the brand voice above. Natural Taglish. No AI slop. Sound like a real person talking to a friend.`,
 
       `Expand this hook into ${staticFormats.length} format-specific executions.
 
@@ -354,11 +375,21 @@ export async function generateCreativeTree(
   const hookCount = options.hookCount || 3
   const formats = options.formats || ['static_image', 'carousel', 'video_ugc']
 
-  // Step 1: Generate concept brief
+  // Step 1: Generate concept brief (loads KB + brand internally)
   const brief = await generateConceptBrief(angle, persona, userId, mode)
 
-  // Step 2: Generate hook variations
-  const hooks = await generateHookVariations(brief, hookCount)
+  // Step 2: Load KB hooks for hook generation
+  let kbHookContext: string | undefined
+  try {
+    const { entries: kbEntries } = await getAdGenerationContext(10)
+    const hookEntries = kbEntries.filter(e => e.category === 'hook_library')
+    if (hookEntries.length > 0) {
+      kbHookContext = hookEntries.slice(0, 5).map(e => `• ${e.title}: ${(e.content || '').substring(0, 200)}`).join('\n')
+    }
+  } catch { /* KB retrieval is non-fatal */ }
+
+  // Step 3: Generate hook variations
+  const hooks = await generateHookVariations(brief, hookCount, kbHookContext)
 
   // Step 3: Expand hooks into formats — parallel for non-video, sequential for video
   // Video uses KB pipeline (longer) so we don't want all to pile up at once
