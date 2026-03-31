@@ -70,6 +70,14 @@
 .detailLink { display: inline-block; margin-top: 1rem; font-size: 0.75rem; color: var(--color-primary); text-decoration: none; }
 .detailLink:hover { text-decoration: underline; }
 
+/* Money headline */
+.moneyHeadline { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.moneyMain { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: baseline; }
+.moneyItem { display: flex; flex-direction: column; gap: 0.15rem; }
+.moneyLabel { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-dim); font-weight: 600; }
+.moneyValue { font-size: 1.3rem; font-weight: 800; color: var(--color-text); }
+.moneySecondary { margin-top: 0.5rem; font-size: 0.7rem; color: var(--color-text-dim); padding-top: 0.5rem; border-top: 1px solid var(--color-border); }
+
 @media (max-width: 768px) {
   .header { flex-direction: column; gap: 0.75rem; }
   .healthBar { gap: 0.5rem; }

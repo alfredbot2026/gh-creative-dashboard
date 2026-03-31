@@ -20,11 +20,35 @@ Full audit completed (2026-03-31). Phase 4e shipped all 5 waves but produced fra
 ### Phase 4e-fix Sub-phases
 | Phase | Hours | Status | What |
 |-------|-------|--------|------|
-| A: Data Integrity | ~4 | `NOT_STARTED` | Fix phantom data, sync fresh, unify data source |
+| A: Data Integrity | ~4 | `DONE` | Pagination fix, sync now gets all 773 rows through today |
 | B: Consolidation | ~3 | `NOT_STARTED` | Kill legacy factory, remove 5 redundant pages → 4 pages |
-| C: Intelligence Layer | ~6 | `NOT_STARTED` | /ads as tabbed command center (overview + campaigns + strategy + competitors) |
+| C: Intelligence Layer | ~6 | `IN_PROGRESS` | /ads as tabbed command center — structure done, UX audit complete, fixes planned |
 | D: Generation Refinement | ~6 | `NOT_STARTED` | Wizard UI, unified generation pipeline (same stack as /create), progressive gen |
 | E: Automation | ~2 | `NOT_STARTED` | Daily sync cron, weekly competitor refresh, fatigue detection |
+
+### Phase C — Intelligence Layer UX Audit (2026-03-31 17:30)
+
+**Audited by:** Dr. Strange (Rob-requested, Grace/Rob lens)
+**Verdict:** Structure is solid (4-tab layout works), but data quality + actionability need fixing.
+
+#### Issues Found (priority order)
+
+| # | Issue | Severity | Effort | Fix |
+|---|-------|----------|--------|-----|
+| 1 | **ROAS wildly inflated** — Strategy map shows 224x, 35.9x. Calculation error or low-spend outlier skew. Kills trust. | P0 | 1hr | Fix ROAS calc in intelligence.ts — filter out low-spend outliers, use weighted avg |
+| 2 | **No profit headline** — Grace's #1 question ("did I make money?") is buried in Campaigns tab | P0 | 30min | Add spend/revenue/profit summary card to Overview tab |
+| 3 | **Recommendations too vague** — "Scale curiosity ads" doesn't tell Grace what to DO | P1 | 2hr | Show actual ad name, specific next step, link to generate variations |
+| 4 | **Strategy map too sparse** — 90 cells, most empty. Overwhelming + empty simultaneously | P1 | 1hr | Collapse to tested personas only, show tighter grid |
+| 5 | **No time context on recs** — "ROAS dropped 71%" over what period? | P1 | 30min | Add "last 7 days vs prior 7" to recommendation reason text |
+| 6 | **Competitors tab is hollow** — Shows 4 angles, no actual intelligence. Full /competitors page is better | P2 | 2hr | Pull actual competitor hooks/copy into tab, or embed full page |
+| 7 | **Frequency threshold too aggressive** — 2.5 flags red, most media buyers use 3.0+ | P2 | 15min | Raise threshold to 3.0 |
+| 8 | **Create flow disconnected** — /ads/create has its own angle coverage + weekly plan separate from Overview recs | P2 | 3hr | Merge recommendation → generate into one flow |
+
+#### Plan: Fix in 3 waves
+
+**Wave 1 (P0 — trust + value):** Fix ROAS calc, add profit headline, fix frequency threshold
+**Wave 2 (P1 — actionability):** Actionable recommendations, tighter strategy map, time context
+**Wave 3 (P2 — polish):** Competitors tab, create flow unification
 
 ### Critical Issues Found in Audit
 1. **Phantom performance data** — 4 engagement ads show ₱73,705 spend each with ZERO daily rows

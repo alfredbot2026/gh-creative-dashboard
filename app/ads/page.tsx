@@ -29,6 +29,9 @@ interface Health {
   untested_angles: number; total_angles: number; coverage_pct: number
 }
 
+interface MoneyPeriod { spend: number; revenue: number; conversations: number }
+interface Money { week: MoneyPeriod; month: MoneyPeriod }
+
 interface MatrixCell {
   angle: string; persona: string; ad_count: number; avg_roas: number | null
   status: string; confidence: string
@@ -52,11 +55,61 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 // ─── Overview Tab ───
-function OverviewTab({ actions, health }: { actions: Action[]; health: Health | null }) {
+function OverviewTab({ actions, health, money }: { actions: Action[]; health: Health | null; money: Money | null }) {
   if (!health) return <div className={styles.tabLoading}>Loading...</div>
+
+  const w = money?.week
+  const m = money?.month
+  const weekProfit = w ? w.revenue - w.spend : 0
+  const weekRoas = w && w.spend > 0 ? w.revenue / w.spend : 0
 
   return (
     <div className={styles.overviewTab}>
+      {/* Money Headline */}
+      {w && w.spend > 0 && (
+        <div className={styles.moneyHeadline}>
+          <div className={styles.moneyMain}>
+            <div className={styles.moneyItem}>
+              <span className={styles.moneyLabel}>Spent (7d)</span>
+              <span className={styles.moneyValue}>{formatPeso(w.spend)}</span>
+            </div>
+            {w.revenue > 0 && (
+              <div className={styles.moneyItem}>
+                <span className={styles.moneyLabel}>Revenue</span>
+                <span className={styles.moneyValue} style={{color: '#16a34a'}}>{formatPeso(w.revenue)}</span>
+              </div>
+            )}
+            {w.revenue > 0 && (
+              <div className={styles.moneyItem}>
+                <span className={styles.moneyLabel}>Profit</span>
+                <span className={styles.moneyValue} style={{color: weekProfit >= 0 ? '#16a34a' : '#dc2626'}}>
+                  {weekProfit >= 0 ? '+' : ''}{formatPeso(weekProfit)}
+                </span>
+              </div>
+            )}
+            {weekRoas > 0 && (
+              <div className={styles.moneyItem}>
+                <span className={styles.moneyLabel}>ROAS</span>
+                <span className={styles.moneyValue}>{weekRoas.toFixed(1)}x</span>
+              </div>
+            )}
+            {w.conversations > 0 && (
+              <div className={styles.moneyItem}>
+                <span className={styles.moneyLabel}>Conversations</span>
+                <span className={styles.moneyValue}>{w.conversations.toLocaleString()}</span>
+              </div>
+            )}
+          </div>
+          {m && m.spend > 0 && (
+            <div className={styles.moneySecondary}>
+              30d: {formatPeso(m.spend)} spent
+              {m.revenue > 0 && ` → ${formatPeso(m.revenue)} revenue (${(m.revenue / m.spend).toFixed(1)}x)`}
+              {m.conversations > 0 && ` · ${m.conversations.toLocaleString()} convos`}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Health Bar */}
       <div className={styles.healthBar}>
         <div className={styles.healthItem}>
@@ -215,6 +268,7 @@ export default function AdsCommandCenter() {
   const [tab, setTab] = useState<Tab>('overview')
   const [actions, setActions] = useState<Action[]>([])
   const [health, setHealth] = useState<Health | null>(null)
+  const [money, setMoney] = useState<Money | null>(null)
   const [matrix, setMatrix] = useState<Record<string, Record<string, MatrixCell>> | null>(null)
   const [compSignals, setCompSignals] = useState<CompSignal[]>([])
   const [loading, setLoading] = useState(true)
@@ -224,6 +278,7 @@ export default function AdsCommandCenter() {
     fetch('/api/ads/actions').then(r => r.json()).then(data => {
       setActions(data.actions || [])
       setHealth(data.health || null)
+      setMoney(data.money || null)
       setLoading(false)
     }).catch(() => setLoading(false))
 
@@ -298,7 +353,7 @@ export default function AdsCommandCenter() {
 
       {/* Tab Content */}
       <div className={styles.tabContent}>
-        {tab === 'overview' && <OverviewTab actions={actions} health={health} />}
+        {tab === 'overview' && <OverviewTab actions={actions} health={health} money={money} />}
         {tab === 'campaigns' && <AuditContent embedded />}
         {tab === 'strategy' && <StrategyTab matrix={matrix} />}
         {tab === 'competitors' && <CompetitorsTab signals={compSignals} />}

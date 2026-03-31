@@ -216,6 +216,29 @@ export async function GET() {
   const deadCount = activeWithSpend.filter(c => c.ad_status === 'dead').length
   const untestedAngles = ALL_ANGLES.filter(a => !testedAngles.has(a)).length
 
+  // Profit headline — last 7 days spend/revenue from daily data
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const recentPerf = perfRows.filter(r => r.date_start >= sevenDaysAgo)
+  const weekSpend = recentPerf.reduce((s, r) => s + Number(r.spend || 0), 0)
+  // Reconstruct revenue from daily spend × daily ROAS (conversion_value may not be synced)
+  const weekRevenue = recentPerf.reduce((s, r) => {
+    const cv = Number(r.conversion_value || 0)
+    if (cv > 0) return s + cv
+    return s + Number(r.spend || 0) * Number(r.roas || 0)
+  }, 0)
+  const weekConversations = recentPerf.reduce((s, r) => s + Number(r.messaging_conversations || 0), 0)
+
+  // Also get last 30 days for context
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const monthPerf = perfRows.filter(r => r.date_start >= thirtyDaysAgo)
+  const monthSpend = monthPerf.reduce((s, r) => s + Number(r.spend || 0), 0)
+  const monthRevenue = monthPerf.reduce((s, r) => {
+    const cv = Number(r.conversion_value || 0)
+    if (cv > 0) return s + cv
+    return s + Number(r.spend || 0) * Number(r.roas || 0)
+  }, 0)
+  const monthConversations = monthPerf.reduce((s, r) => s + Number(r.messaging_conversations || 0), 0)
+
   return NextResponse.json({
     actions: topActions,
     health: {
@@ -226,6 +249,10 @@ export async function GET() {
       untested_angles: untestedAngles,
       total_angles: ALL_ANGLES.length,
       coverage_pct: Math.round(((ALL_ANGLES.length - untestedAngles) / ALL_ANGLES.length) * 100),
+    },
+    money: {
+      week: { spend: Math.round(weekSpend), revenue: Math.round(weekRevenue), conversations: weekConversations },
+      month: { spend: Math.round(monthSpend), revenue: Math.round(monthRevenue), conversations: monthConversations },
     },
   })
 }

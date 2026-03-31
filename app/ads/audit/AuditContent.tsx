@@ -309,7 +309,7 @@ function AdCard({ ad, onCorrect, biz }: { ad: AdCreative & { metrics?: AdMetrics
               </div>
               <div className={styles.metric}>
                 <span className={styles.metricLabel}>Freq</span>
-                <span className={`${styles.metricValue} ${m.frequency !== null && m.frequency > 2.5 ? styles.metricBad : ''}`}>
+                <span className={`${styles.metricValue} ${m.frequency !== null && m.frequency > 3.0 ? styles.metricBad : ''}`}>
                   {m.frequency !== null ? m.frequency.toFixed(1) : '—'}
                 </span>
               </div>
@@ -614,7 +614,7 @@ export default function AuditPage({ embedded = false }: { embedded?: boolean } =
           </div>
           <div className={styles.accountMetric}>
             <span className={styles.accountLabel}>Freq</span>
-            <span className={`${styles.accountValue} ${a.frequency !== null && a.frequency > 2.5 ? styles.metricBad : ''}`}>
+            <span className={`${styles.accountValue} ${a.frequency !== null && a.frequency > 3.0 ? styles.metricBad : ''}`}>
               {a.frequency !== null ? a.frequency.toFixed(1) : '—'}
             </span>
           </div>

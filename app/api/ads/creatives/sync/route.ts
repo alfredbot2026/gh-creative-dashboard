@@ -395,16 +395,19 @@ export async function POST(request: Request) {
           const totalImpressions = perfRows.reduce((s: number, r: any) => s + (r.impressions || 0), 0)
           const totalClicks = perfRows.reduce((s: number, r: any) => s + (r.clicks || 0), 0)
           const totalConversations = perfRows.reduce((s: number, r: any) => s + (r.messaging_conversations || 0), 0)
-          // ROAS: use pre-computed roas from Meta if conversion_value is missing
-          // Meta reports ROAS directly for sales campaigns. conversion_value may be 0 when not synced.
+          // ROAS: always spend-weighted (total_revenue / total_spend)
+          // Simple-averaging daily ROAS values inflates results (a ₱1 spend day with 100x ROAS dominates)
           const totalRevenue = perfRows.reduce((s: number, r: any) => s + (r.conversion_value || 0), 0)
-          const roas7dRows = perfRows.filter((r: any) => r.roas && r.roas > 0)
-          const avgRoasDirect = roas7dRows.length > 0
-            ? roas7dRows.reduce((s: number, r: any) => s + r.roas, 0) / roas7dRows.length
+          // Fallback: reconstruct revenue from Meta's daily ROAS × daily spend
+          const totalRevenueFromRoas = perfRows.reduce((s: number, r: any) => {
+            const daySpend = Number(r.spend || 0)
+            const dayRoas = Number(r.roas || 0)
+            return s + (daySpend * dayRoas)
+          }, 0)
+          const bestRevenue = totalRevenue > 0 ? totalRevenue : totalRevenueFromRoas
+          const avgRoas = totalSpend > 0 && bestRevenue > 0
+            ? bestRevenue / totalSpend  // spend-weighted ROAS
             : null
-          const avgRoas = totalSpend > 0 && totalRevenue > 0
-            ? totalRevenue / totalSpend  // prefer derived if conversion_value is available
-            : avgRoasDirect              // fall back to Meta's reported ROAS
           const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : null
           const avgCpa = totalPurchases > 0 ? totalSpend / totalPurchases : null
           const avgCostPerConv = totalConversations > 0 ? totalSpend / totalConversations : null
@@ -418,18 +421,19 @@ export async function POST(request: Request) {
           const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
           const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
           
-          const recentRoas = perfRows
-            .filter((r: any) => r.date_start && new Date(r.date_start) >= sevenDaysAgo && r.roas)
-            .map((r: any) => r.roas!)
-          const olderRoas = perfRows
-            .filter((r: any) => r.date_start && new Date(r.date_start) >= fourteenDaysAgo && new Date(r.date_start) < sevenDaysAgo && r.roas)
-            .map((r: any) => r.roas!)
+          // ROAS trend: spend-weighted (not simple average of daily ROAS values)
+          const recentRows = perfRows.filter((r: any) => r.date_start && new Date(r.date_start) >= sevenDaysAgo)
+          const olderRows = perfRows.filter((r: any) => r.date_start && new Date(r.date_start) >= fourteenDaysAgo && new Date(r.date_start) < sevenDaysAgo)
 
           let roasTrend: 'rising' | 'stable' | 'declining' | null = null
-          if (recentRoas.length >= 2 && olderRoas.length >= 2) {
-            const recentAvg = recentRoas.reduce((a: number, b: number) => a + b, 0) / recentRoas.length
-            const olderAvg = olderRoas.reduce((a: number, b: number) => a + b, 0) / olderRoas.length
-            const ratio = olderAvg > 0 ? recentAvg / olderAvg : 1
+          const recentSpendT = recentRows.reduce((s: number, r: any) => s + (r.spend || 0), 0)
+          const recentRevT = recentRows.reduce((s: number, r: any) => s + ((r.spend || 0) * (r.roas || 0)), 0)
+          const olderSpendT = olderRows.reduce((s: number, r: any) => s + (r.spend || 0), 0)
+          const olderRevT = olderRows.reduce((s: number, r: any) => s + ((r.spend || 0) * (r.roas || 0)), 0)
+          if (recentSpendT > 50 && olderSpendT > 50) {
+            const recentWeightedRoas = recentRevT / recentSpendT
+            const olderWeightedRoas = olderRevT / olderSpendT
+            const ratio = olderWeightedRoas > 0 ? recentWeightedRoas / olderWeightedRoas : 1
             if (ratio > 1.2) roasTrend = 'rising'
             else if (ratio < 0.8) roasTrend = 'declining'
             else roasTrend = 'stable'
