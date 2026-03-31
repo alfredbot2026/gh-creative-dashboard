@@ -492,18 +492,12 @@ export default function AuditPage({ embedded = false }: { embedded?: boolean } =
 
   const handleSync = async (reclassify = false) => {
     setSyncing(true)
-    setSyncMsg('Syncing daily performance data...')
+    setSyncMsg(reclassify ? 'Reclassifying ads...' : 'Syncing ads + performance data...')
     try {
-      // Step 1: Sync daily ad_performance rows from Meta
-      const perfRes = await fetch('/api/ads/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => null)
-      const perfData = perfRes ? await perfRes.json().catch(() => null) : null
-      const perfNote = perfData?.synced ? ` · ${perfData.synced} daily rows` : ''
-
-      // Step 2: Sync creatives (fetch + classify + aggregate performance)
-      setSyncMsg(reclassify ? 'Reclassifying ads...' : 'Updating ad creatives...')
+      // Single sync: fetches ads from Meta, syncs daily performance, classifies, aggregates
       const res = await fetch('/api/ads/creatives/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reclassify }) })
       const data = await res.json()
-      setSyncMsg(data.success ? `Done — ${data.ads_fetched} ads, ${data.performance_updated || 0} updated${perfNote}` : `Error: ${data.error}`)
+      setSyncMsg(data.success ? `Done — ${data.ads_fetched} ads, ${data.performance_updated || 0} updated` : `Error: ${data.error}`)
       await fetchAll()
     } catch (err) { setSyncMsg(`Failed: ${err}`) }
     setSyncing(false)
@@ -531,7 +525,7 @@ export default function AuditPage({ embedded = false }: { embedded?: boolean } =
         </div>
         <div className={styles.headerActions}>
           <Link href="/ads/create" className={styles.btnPrimary}>✨ Create Ads</Link>
-          <Link href="/ads/strategy" className={styles.btnOutline}>📊 Strategy Map</Link>
+          <Link href="/ads" className={styles.btnOutline}>📊 Strategy Map</Link>
           <Link href="/ads/competitors" className={styles.btnOutline}>🏢 Intel</Link>
           <button className={styles.btnOutline} onClick={() => handleSync(false)} disabled={syncing}>🔄 Sync</button>
           <button className={styles.btn} onClick={() => handleSync(true)} disabled={syncing}>🔁 Reclassify</button>
