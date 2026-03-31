@@ -253,7 +253,7 @@ function CreatePageInner() {
         <div className={styles.headerActions}>
           <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
           <Link href="/ads/strategy" className={styles.btnOutline}>Strategy Map</Link>
-          <Link href="/ads/audit" className={styles.btnOutline}>Audit</Link>
+          <Link href="/ads" className={styles.btnOutline}>Dashboard</Link>
         </div>
       </header>
 

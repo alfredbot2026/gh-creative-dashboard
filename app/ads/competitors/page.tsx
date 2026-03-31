@@ -107,7 +107,7 @@ export default function CompetitorsPage() {
         </div>
         <div className={styles.headerActions}>
           <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
-          <Link href="/ads/audit" className={styles.btnOutline}>Audit</Link>
+          <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
           <button className={styles.btn} onClick={collectSentiment} disabled={collecting}>
             {collecting ? '⏳ Collecting...' : '🔍 Collect Sentiment'}
           </button>
