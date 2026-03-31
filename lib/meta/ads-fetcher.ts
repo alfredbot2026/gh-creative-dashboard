@@ -171,7 +171,11 @@ export async function fetchAdInsights(
     }
     } // end pagination while loop
 
-    console.log(`[Ads Fetcher] Fetched ${insights.length} insight rows total`)
+    // Debug: log date range coverage
+    const dates = insights.map(i => i.date_start).filter(Boolean).sort()
+    const minDate = dates[0] || 'none'
+    const maxDate = dates[dates.length - 1] || 'none'
+    console.log(`[Ads Fetcher] Fetched ${insights.length} insight rows total | dates: ${minDate} to ${maxDate} | requested: ${dateRange.since} to ${dateRange.until}`)
     return insights;
   } catch (err: any) {
     console.error('[Ads Fetcher] Failed to fetch insights:', err.message);
