@@ -22,7 +22,7 @@ interface Action {
   persona: string
   title: string
   reason: string
-  metrics?: { spend?: number; roas?: number; cpa?: number; days_active?: number }
+  metrics?: { spend?: number; roas?: number; cpa?: number; cost_per_conv?: number; days_active?: number }
   ad_ids?: string[]
   urgency: 'high' | 'medium' | 'low'
 }
@@ -39,8 +39,8 @@ export async function GET() {
 
   // Load all data in parallel
   const [creativesRes, perfRes, compRes, bizCtx] = await Promise.all([
-    supabase.from('ad_creatives').select('id, meta_ad_id, angle, persona, ad_status, is_active, total_spend, avg_roas, avg_cpa, first_active_date, last_active_date, ad_name, campaign_name').eq('user_id', user.id),
-    supabase.from('ad_performance').select('meta_ad_id, date_start, spend, conversion_value, conversions').eq('user_id', user.id),
+    supabase.from('ad_creatives').select('id, meta_ad_id, angle, persona, ad_status, is_active, total_spend, avg_roas, avg_cpa, first_active_date, last_active_date, ad_name, campaign_name, campaign_objective, optimization_goal').eq('user_id', user.id),
+    supabase.from('ad_performance').select('meta_ad_id, date_start, spend, conversion_value, conversions, roas, messaging_conversations').eq('user_id', user.id),
     supabase.from('competitor_ads').select('angle').eq('user_id', user.id).eq('is_active', true),
     loadBusinessContext(supabase, user.id),
   ])
@@ -52,26 +52,39 @@ export async function GET() {
   const actions: Action[] = []
 
   // Build per-ad daily metrics for fatigue detection
-  const adDailyMap = new Map<string, Array<{ date: string; spend: number; revenue: number }>>()
+  // Separate tracking for sales (ROAS) vs engagement (cost/conv) campaigns
+  type DailyRow = { date: string; spend: number; revenue: number; roas: number; conversations: number }
+  const adDailyMap = new Map<string, DailyRow[]>()
   for (const r of perfRows) {
     if (!adDailyMap.has(r.meta_ad_id)) adDailyMap.set(r.meta_ad_id, [])
     adDailyMap.get(r.meta_ad_id)!.push({
       date: r.date_start,
       spend: Number(r.spend || 0),
       revenue: Number(r.conversion_value || 0),
+      roas: Number(r.roas || 0),
+      conversations: Number(r.messaging_conversations || 0),
     })
   }
 
-  // --- 1. KILL: Active ads losing money ---
+  const isEngagement = (ad: any) => {
+    const obj = ad.campaign_objective || ''
+    return obj === 'OUTCOME_ENGAGEMENT' || obj === 'MESSAGES' || ad.optimization_goal === 'CONVERSATIONS'
+  }
+  const isAwareness = (ad: any) => (ad.campaign_objective || '') === 'OUTCOME_AWARENESS'
+
+  // --- 1. KILL: Active ads that are confirmed dead by their own objective's metric ---
   const deadActive = creatives.filter(c => c.is_active && c.ad_status === 'dead' && Number(c.total_spend || 0) > 500)
   for (const ad of deadActive.slice(0, 2)) {
+    // Don't flag engagement/awareness ads as "losing money" via ROAS
+    if (isEngagement(ad) || isAwareness(ad)) continue
+
     actions.push({
       type: 'kill',
       priority: 1,
       angle: ad.angle || 'unknown',
       persona: ad.persona || 'unknown',
       title: `Stop "${ad.ad_name?.slice(0, 40)}"`,
-      reason: `Spent ${formatPeso(Number(ad.total_spend))} with ${ad.avg_roas ? ad.avg_roas.toFixed(1) + 'x' : 'no'} ROAS. Losing money.`,
+      reason: `Sales campaign. Spent ${formatPeso(Number(ad.total_spend))} with ${ad.avg_roas ? ad.avg_roas.toFixed(1) + 'x' : 'below 1.0x'} ROAS. Below breakeven.`,
       metrics: { spend: Number(ad.total_spend), roas: Number(ad.avg_roas || 0) },
       ad_ids: [ad.id],
       urgency: 'high',
@@ -87,23 +100,51 @@ export async function GET() {
     const sorted = [...daily].sort((a, b) => a.date.localeCompare(b.date))
     const recent7 = sorted.slice(-7)
     const older7 = sorted.slice(-14, -7)
+    const recentSpend = recent7.reduce((s, r) => s + r.spend, 1)
+    const olderSpend = older7.reduce((s, r) => s + r.spend, 1)
 
-    const recentRoas = recent7.reduce((s, r) => s + r.revenue, 0) / Math.max(recent7.reduce((s, r) => s + r.spend, 0), 1)
-    const olderRoas = older7.reduce((s, r) => s + r.revenue, 0) / Math.max(older7.reduce((s, r) => s + r.spend, 0), 1)
+    if (isEngagement(ad)) {
+      // Engagement: compare cost per conversation (lower is better, rising is bad)
+      const recentConvs = recent7.reduce((s, r) => s + r.conversations, 0)
+      const olderConvs = older7.reduce((s, r) => s + r.conversations, 0)
+      const recentCPC = recentConvs > 0 ? recentSpend / recentConvs : null
+      const olderCPC = olderConvs > 0 ? olderSpend / olderConvs : null
 
-    if (olderRoas > 0 && recentRoas / olderRoas < 0.7) {
-      const declinePct = Math.round((1 - recentRoas / olderRoas) * 100)
-      actions.push({
-        type: 'refresh',
-        priority: 2,
-        angle: ad.angle || 'unknown',
-        persona: ad.persona || 'unknown',
-        title: `Refresh "${ad.ad_name?.slice(0, 40)}"`,
-        reason: `ROAS dropped ${declinePct}% in the last 7 days (${olderRoas.toFixed(1)}x → ${recentRoas.toFixed(1)}x). Create fresh creative before it dies.`,
-        metrics: { spend: Number(ad.total_spend), roas: recentRoas },
-        ad_ids: [ad.id],
-        urgency: ad.ad_status === 'tired' ? 'high' : 'medium',
-      })
+      if (recentCPC && olderCPC && recentCPC / olderCPC > 1.5) {
+        const risePct = Math.round((recentCPC / olderCPC - 1) * 100)
+        actions.push({
+          type: 'refresh',
+          priority: 2,
+          angle: ad.angle || 'unknown',
+          persona: ad.persona || 'unknown',
+          title: `Refresh "${ad.ad_name?.slice(0, 40)}"`,
+          reason: `Engagement campaign. Cost per conversation rose ${risePct}% (${formatPeso(olderCPC)}/conv → ${formatPeso(recentCPC)}/conv). Audience is fatiguing.`,
+          metrics: { spend: Number(ad.total_spend), cost_per_conv: recentCPC },
+          ad_ids: [ad.id],
+          urgency: 'medium',
+        })
+      }
+    } else {
+      // Sales: compare ROAS trend (use meta-reported roas per day)
+      const recentRoas = recent7.filter(r => r.roas > 0)
+      const olderRoas = older7.filter(r => r.roas > 0)
+      const recentAvg = recentRoas.length > 0 ? recentRoas.reduce((s, r) => s + r.roas, 0) / recentRoas.length : null
+      const olderAvg = olderRoas.length > 0 ? olderRoas.reduce((s, r) => s + r.roas, 0) / olderRoas.length : null
+
+      if (recentAvg && olderAvg && recentAvg / olderAvg < 0.7) {
+        const declinePct = Math.round((1 - recentAvg / olderAvg) * 100)
+        actions.push({
+          type: 'refresh',
+          priority: 2,
+          angle: ad.angle || 'unknown',
+          persona: ad.persona || 'unknown',
+          title: `Refresh "${ad.ad_name?.slice(0, 40)}"`,
+          reason: `ROAS dropped ${declinePct}% in the last 7 days (${olderAvg.toFixed(1)}x → ${recentAvg.toFixed(1)}x). Creative is fatiguing.`,
+          metrics: { spend: Number(ad.total_spend), roas: recentAvg },
+          ad_ids: [ad.id],
+          urgency: ad.ad_status === 'tired' ? 'high' : 'medium',
+        })
+      }
     }
   }
 

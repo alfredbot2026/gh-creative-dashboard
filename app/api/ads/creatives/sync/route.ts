@@ -391,14 +391,23 @@ export async function POST(request: Request) {
 
         {
           const totalSpend = perfRows.reduce((s: number, r: any) => s + (r.spend || 0), 0)
-          const totalRevenue = perfRows.reduce((s: number, r: any) => s + (r.conversion_value || 0), 0)
           const totalPurchases = perfRows.reduce((s: number, r: any) => s + (r.conversions || 0), 0)
           const totalImpressions = perfRows.reduce((s: number, r: any) => s + (r.impressions || 0), 0)
           const totalClicks = perfRows.reduce((s: number, r: any) => s + (r.clicks || 0), 0)
-          // ROAS = total_revenue / total_spend (not averaged daily ROAS)
-          const avgRoas = totalSpend > 0 ? totalRevenue / totalSpend : null
+          const totalConversations = perfRows.reduce((s: number, r: any) => s + (r.messaging_conversations || 0), 0)
+          // ROAS: use pre-computed roas from Meta if conversion_value is missing
+          // Meta reports ROAS directly for sales campaigns. conversion_value may be 0 when not synced.
+          const totalRevenue = perfRows.reduce((s: number, r: any) => s + (r.conversion_value || 0), 0)
+          const roas7dRows = perfRows.filter((r: any) => r.roas && r.roas > 0)
+          const avgRoasDirect = roas7dRows.length > 0
+            ? roas7dRows.reduce((s: number, r: any) => s + r.roas, 0) / roas7dRows.length
+            : null
+          const avgRoas = totalSpend > 0 && totalRevenue > 0
+            ? totalRevenue / totalSpend  // prefer derived if conversion_value is available
+            : avgRoasDirect              // fall back to Meta's reported ROAS
           const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : null
           const avgCpa = totalPurchases > 0 ? totalSpend / totalPurchases : null
+          const avgCostPerConv = totalConversations > 0 ? totalSpend / totalConversations : null
 
           const dates = perfRows.map((r: any) => r.date_start).filter(Boolean).sort()
           const firstDate = dates[0] || null
@@ -430,11 +439,8 @@ export async function POST(request: Request) {
             ? Math.floor((now.getTime() - new Date(firstDate).getTime()) / (1000 * 60 * 60 * 24))
             : 0
 
-          // Calculate cost per conversation for engagement campaigns
-          const totalConversations = perfRows
-            .filter((r: any) => r.messaging_conversations)
-            .reduce((s: number, r: any) => s + (r.messaging_conversations || 0), 0)
-          const costPerConv = totalConversations > 0 ? totalSpend / totalConversations : null
+          // Use already-computed avgCostPerConv for engagement, avgCpm for awareness
+          const costPerConv = avgCostPerConv
           const avgCpm = totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : null
 
           const adStatus = calculateAdStatus(
