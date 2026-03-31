@@ -174,23 +174,48 @@ function StrategyTab({ matrix }: { matrix: Record<string, Record<string, MatrixC
   if (!matrix) return <div className={styles.tabLoading}>Loading strategy map...</div>
 
   const angles = Object.keys(matrix)
-  const personas = angles.length > 0 ? Object.keys(matrix[angles[0]]) : []
-
   if (angles.length === 0) return <div className={styles.tabLoading}>No data yet. Sync your ads first.</div>
+
+  // Only show personas that have at least one ad (collapse empty columns)
+  const allPersonas = angles.length > 0 ? Object.keys(matrix[angles[0]]) : []
+  const activePersonas = allPersonas.filter(p =>
+    angles.some(a => matrix[a]?.[p]?.ad_count > 0)
+  )
+  // Also show up to 2 gap personas so Grace sees opportunities
+  const gapPersonas = allPersonas.filter(p => !activePersonas.includes(p)).slice(0, 2)
+  const personas = [...activePersonas, ...gapPersonas]
+
+  // Sort angles: ones with ads first, then gaps
+  const sortedAngles = [...angles].sort((a, b) => {
+    const aHas = personas.some(p => matrix[a]?.[p]?.ad_count > 0)
+    const bHas = personas.some(p => matrix[b]?.[p]?.ad_count > 0)
+    if (aHas && !bHas) return -1
+    if (!aHas && bHas) return 1
+    return 0
+  })
+
+  const personaLabels: Record<string, string> = {
+    new_mom_curious: 'New Mom', returning_buyer: 'Returning', price_sensitive: 'Price $',
+    aspirational: 'Aspiring', skeptic: 'Skeptic', beginner: 'Beginner',
+    advanced: 'Advanced', gift_buyer: 'Gift', busy_professional: 'Busy Pro',
+  }
 
   return (
     <div className={styles.strategyTab}>
-      <p className={styles.strategyHint}>Each cell = angle × persona combo. Click gaps to create ads.</p>
+      <p className={styles.strategyHint}>
+        Each cell = angle × audience. {activePersonas.length} active audiences shown.
+        {gapPersonas.length > 0 && ` +${gapPersonas.length} untested.`}
+      </p>
       <div className={styles.matrixContainer}>
         <table className={styles.matrix}>
           <thead>
             <tr>
               <th className={styles.matrixCorner}></th>
-              {personas.map(p => <th key={p} className={styles.matrixColHeader}>{fmt(p).split(' ')[0]}</th>)}
+              {personas.map(p => <th key={p} className={styles.matrixColHeader}>{personaLabels[p] || fmt(p).split(' ')[0]}</th>)}
             </tr>
           </thead>
           <tbody>
-            {angles.map(angle => (
+            {sortedAngles.map(angle => (
               <tr key={angle}>
                 <td className={styles.matrixRowHeader}>{fmt(angle)}</td>
                 {personas.map(persona => {

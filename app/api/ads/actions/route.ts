@@ -125,22 +125,24 @@ export async function GET() {
         })
       }
     } else {
-      // Sales: compare ROAS trend (use meta-reported roas per day)
-      const recentRoas = recent7.filter(r => r.roas > 0)
-      const olderRoas = older7.filter(r => r.roas > 0)
-      const recentAvg = recentRoas.length > 0 ? recentRoas.reduce((s, r) => s + r.roas, 0) / recentRoas.length : null
-      const olderAvg = olderRoas.length > 0 ? olderRoas.reduce((s, r) => s + r.roas, 0) / olderRoas.length : null
+      // Sales: compare spend-weighted ROAS trend (last 7d vs prior 7d)
+      const recentSpendR = recent7.reduce((s, r) => s + r.spend, 0)
+      const recentRevR = recent7.reduce((s, r) => s + r.spend * r.roas, 0)
+      const olderSpendR = older7.reduce((s, r) => s + r.spend, 0)
+      const olderRevR = older7.reduce((s, r) => s + r.spend * r.roas, 0)
+      const recentWRoas = recentSpendR > 50 ? recentRevR / recentSpendR : null
+      const olderWRoas = olderSpendR > 50 ? olderRevR / olderSpendR : null
 
-      if (recentAvg && olderAvg && recentAvg / olderAvg < 0.7) {
-        const declinePct = Math.round((1 - recentAvg / olderAvg) * 100)
+      if (recentWRoas !== null && olderWRoas !== null && olderWRoas > 0 && recentWRoas / olderWRoas < 0.7) {
+        const declinePct = Math.round((1 - recentWRoas / olderWRoas) * 100)
         actions.push({
           type: 'refresh',
           priority: 2,
           angle: ad.angle || 'unknown',
           persona: ad.persona || 'unknown',
           title: `Refresh "${ad.ad_name?.slice(0, 40)}"`,
-          reason: `ROAS dropped ${declinePct}% in the last 7 days (${olderAvg.toFixed(1)}x → ${recentAvg.toFixed(1)}x). Creative is fatiguing.`,
-          metrics: { spend: Number(ad.total_spend), roas: recentAvg },
+          reason: `ROAS dropped ${declinePct}% — last 7 days: ${recentWRoas.toFixed(1)}x vs prior 7 days: ${olderWRoas.toFixed(1)}x. The creative is fatiguing. Make a new variation with the same angle but different hook or visual.`,
+          metrics: { spend: Number(ad.total_spend), roas: recentWRoas },
           ad_ids: [ad.id],
           urgency: ad.ad_status === 'tired' ? 'high' : 'medium',
         })
@@ -148,35 +150,38 @@ export async function GET() {
     }
   }
 
-  // --- 3. SCALE: Winning angles with room to grow ---
-  const anglePerf = new Map<string, { spend: number; revenue: number; count: number; winners: number }>()
+  // --- 3. SCALE: Winning ads with room to grow ---
+  // Group by angle, find best-performing ad per angle to reference
+  const angleAds = new Map<string, typeof creatives>()
   for (const c of creatives) {
     if (!c.angle) continue
-    const existing = anglePerf.get(c.angle) || { spend: 0, revenue: 0, count: 0, winners: 0 }
-    existing.count++
-    existing.spend += Number(c.total_spend || 0)
-    if (c.avg_roas && Number(c.total_spend || 0) > 0) {
-      existing.revenue += Number(c.avg_roas) * Number(c.total_spend)
-    }
-    if (c.ad_status === 'winning') existing.winners++
-    anglePerf.set(c.angle, existing)
+    if (!angleAds.has(c.angle)) angleAds.set(c.angle, [])
+    angleAds.get(c.angle)!.push(c)
   }
 
-  for (const [angle, data] of anglePerf) {
-    if (data.winners < 1 || data.count >= 8) continue
-    const roas = data.spend > 0 ? data.revenue / data.spend : 0
-    if (roas >= 2) {
-      actions.push({
-        type: 'scale',
-        priority: 3,
-        angle,
-        persona: 'new_mom_curious', // Default — most tested persona
-        title: `Scale ${angle.replace(/_/g, ' ')} ads`,
-        reason: `${data.winners} winner(s) at ${roas.toFixed(1)}x ROAS with only ${data.count} ads. Room for more creative variations.`,
-        metrics: { spend: data.spend, roas },
-        urgency: 'medium',
-      })
-    }
+  for (const [angle, ads] of angleAds) {
+    const winners = ads.filter(a => a.ad_status === 'winning')
+    if (winners.length < 1 || ads.length >= 8) continue
+    const totalSpendAngle = ads.reduce((s, a) => s + Number(a.total_spend || 0), 0)
+    const totalRevAngle = ads.reduce((s, a) => s + (Number(a.avg_roas || 0) * Number(a.total_spend || 0)), 0)
+    const roas = totalSpendAngle > 0 ? totalRevAngle / totalSpendAngle : 0
+    if (roas < 2) continue
+
+    // Find the best-performing ad to reference
+    const bestAd = [...winners].sort((a, b) => Number(b.avg_roas || 0) - Number(a.avg_roas || 0))[0]
+    const bestName = bestAd?.ad_name?.slice(0, 35) || angle.replace(/_/g, ' ')
+
+    actions.push({
+      type: 'scale',
+      priority: 3,
+      angle,
+      persona: bestAd?.persona || 'new_mom_curious',
+      title: `Make more like "${bestName}"`,
+      reason: `Your ${angle.replace(/_/g, ' ')} angle is working — ${roas.toFixed(1)}x ROAS across ${ads.length} ads. "${bestName}" is the standout. Create 2-3 variations with different hooks or visuals.`,
+      metrics: { spend: totalSpendAngle, roas },
+      ad_ids: winners.map(w => w.id),
+      urgency: 'medium',
+    })
   }
 
   // --- 4. EXPLORE: Untested angles (especially if competitors use them) ---
@@ -187,18 +192,33 @@ export async function GET() {
 
   const testedAngles = new Set(creatives.filter(c => c.angle && Number(c.total_spend || 0) > 0).map(c => c.angle))
 
+  // Build angle-specific suggestions
+  const ANGLE_SUGGESTIONS: Record<string, string> = {
+    pain_point: 'Show the frustration of the current way (manual, expensive, unreliable) → then your solution.',
+    aspiration: 'Show the dream outcome — what life looks like AFTER they buy. Lifestyle transformation.',
+    fear: 'What happens if they DON\'T act? Missing out, falling behind, wasting money.',
+    social_proof: 'Customer testimonials, review screenshots, "X people bought this week" proof.',
+    comparison: 'Side-by-side: your product vs alternatives. Price, quality, ease of use.',
+    education: 'Teach something valuable first, then naturally lead to your product as the tool.',
+    urgency: 'Limited time, limited stock, seasonal relevance. Create a reason to buy NOW.',
+    curiosity: 'Tease the result without revealing how. "This one trick..." pattern.',
+    transformation: 'Before/after stories. Show the journey from struggle → success using your product.',
+    authority: 'Expert positioning — years of experience, credentials, behind-the-scenes process.',
+  }
+
   for (const angle of ALL_ANGLES) {
     if (testedAngles.has(angle)) continue
     const compCount = compAngleCounts.get(angle) || 0
+    const suggestion = ANGLE_SUGGESTIONS[angle] || ''
     actions.push({
       type: 'explore',
       priority: compCount > 0 ? 3 : 4,
       angle,
       persona: 'new_mom_curious',
-      title: `Test ${angle.replace(/_/g, ' ')} ads`,
+      title: `Try a ${angle.replace(/_/g, ' ')} ad`,
       reason: compCount > 0
-        ? `Never tested. ${compCount} competitor(s) use this angle — opportunity to compete.`
-        : `Never tested. Could uncover a new winning angle.`,
+        ? `You haven't tested this yet, but ${compCount} competitor(s) are using it. ${suggestion}`
+        : `Untested angle. ${suggestion}`,
       urgency: compCount > 0 ? 'medium' : 'low',
     })
   }
