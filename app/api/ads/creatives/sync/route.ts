@@ -355,7 +355,7 @@ export async function POST(request: Request) {
     let perfUpdated = 0
     const { data: creatives } = await supabase
       .from('ad_creatives')
-      .select('id, meta_ad_id, ad_name, campaign_objective')
+      .select('id, meta_ad_id, ad_name, campaign_objective, ad_status, angle')
       .eq('user_id', userId)
 
     // Pre-fetch ALL ad_performance rows for this user (avoid N+1 queries)
@@ -364,6 +364,9 @@ export async function POST(request: Request) {
       .select('meta_ad_id, ad_name, spend, conversions, impressions, roas, ctr, cpa, cpm, date_start, messaging_conversations')
       .eq('user_id', userId)
       .gt('spend', 0)
+
+    // Track status changes for fatigue detection
+    const statusChanges: Array<{ ad_name: string; meta_ad_id: string; old_status: string; new_status: string; angle?: string }> = []
 
     if (creatives && allPerfRows && allPerfRows.length > 0) {
       // Build lookup maps for performance data
@@ -453,6 +456,17 @@ export async function POST(request: Request) {
             businessCtx,
           )
 
+          // Track status transitions (fatigue detection)
+          if (creative.ad_status && creative.ad_status !== adStatus) {
+            statusChanges.push({
+              ad_name: creative.ad_name || creative.meta_ad_id,
+              meta_ad_id: creative.meta_ad_id,
+              old_status: creative.ad_status,
+              new_status: adStatus,
+              angle: creative.angle,
+            })
+          }
+
           await supabase
             .from('ad_creatives')
             .update({
@@ -474,6 +488,15 @@ export async function POST(request: Request) {
       }
     }
 
+    // Log significant status transitions
+    const fatigueAlerts = statusChanges.filter(c =>
+      (c.old_status === 'winning' && (c.new_status === 'tired' || c.new_status === 'dead')) ||
+      (c.old_status === 'tired' && c.new_status === 'dead')
+    )
+    if (fatigueAlerts.length > 0) {
+      console.log(`[Creative Sync] ⚠️ Fatigue detected: ${fatigueAlerts.map(a => `${a.ad_name} (${a.old_status}→${a.new_status})`).join(', ')}`)
+    }
+
     return NextResponse.json({
       success: true,
       ads_fetched: metaAds.length,
@@ -481,6 +504,8 @@ export async function POST(request: Request) {
       videos_analyzed: videosAnalyzed,
       creatives_classified: classified,
       performance_updated: perfUpdated,
+      status_changes: statusChanges.length > 0 ? statusChanges : undefined,
+      fatigue_alerts: fatigueAlerts.length > 0 ? fatigueAlerts : undefined,
       errors: errors > 0 ? errors : undefined,
     })
   } catch (err) {
