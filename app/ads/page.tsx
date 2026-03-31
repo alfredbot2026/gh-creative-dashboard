@@ -21,6 +21,7 @@ interface Action {
   title: string
   reason: string
   metrics?: { spend?: number; roas?: number }
+  ad_ids?: string[]
   urgency: 'high' | 'medium' | 'low'
 }
 
@@ -39,6 +40,11 @@ interface MatrixCell {
 
 interface CompSignal {
   angle: string; count: number; we_have: boolean; our_roas: number | null
+}
+
+interface CompAd {
+  page_name: string; ad_body: string; angle: string | null; hook_type: string | null
+  ad_started_at: string | null; is_active: boolean
 }
 
 type Tab = 'overview' | 'campaigns' | 'strategy' | 'competitors'
@@ -149,10 +155,10 @@ function OverviewTab({ actions, health, money }: { actions: Action[]; health: He
                 <p className={styles.actionReason}>{action.reason}</p>
                 {action.type !== 'kill' && (
                   <Link
-                    href={`/ads/create?angle=${action.angle}&persona=${action.persona}&mode=${action.type === 'explore' ? 'explore' : 'scale'}`}
+                    href={`/ads/create?angle=${action.angle}&persona=${action.persona}&mode=${action.type === 'explore' ? 'explore' : action.type === 'refresh' ? 'refresh' : 'scale'}${action.ad_ids?.length ? `&ref=${action.ad_ids[0]}` : ''}`}
                     className={styles.actionCta}
                   >
-                    {action.type === 'explore' ? 'Create Ads →' : action.type === 'scale' ? 'Create Variations →' : 'Create Refresh →'}
+                    {action.type === 'explore' ? 'Create Ad →' : action.type === 'scale' ? 'Create Variations →' : 'Create Fresh Version →'}
                   </Link>
                 )}
               </div>
@@ -255,34 +261,62 @@ function StrategyTab({ matrix }: { matrix: Record<string, Record<string, MatrixC
 }
 
 // ─── Competitors Tab ───
-function CompetitorsTab({ signals }: { signals: CompSignal[] }) {
-  if (signals.length === 0) return (
+function CompetitorsTab({ signals, compAds }: { signals: CompSignal[]; compAds: CompAd[] }) {
+  if (compAds.length === 0 && signals.length === 0) return (
     <div className={styles.tabLoading}>
       No competitor data yet.
       <Link href="/ads/competitors" className={styles.actionCta} style={{marginTop: '1rem'}}>Set Up Competitor Tracking →</Link>
     </div>
   )
 
+  // Group by angle
+  const byAngle = new Map<string, CompAd[]>()
+  for (const ad of compAds) {
+    const a = ad.angle || 'unclassified'
+    if (!byAngle.has(a)) byAngle.set(a, [])
+    byAngle.get(a)!.push(ad)
+  }
+
   return (
     <div className={styles.competitorsTab}>
-      <p className={styles.strategyHint}>What angles competitors are using vs yours.</p>
-      <div className={styles.compCards}>
-        {signals.map((s, i) => (
-          <div key={i} className={`${styles.compCard} ${!s.we_have ? styles.compGap : ''}`}>
-            <div className={styles.compAngle}>{fmt(s.angle)}</div>
-            <div className={styles.compDetail}>
-              {s.count} competitor ad{s.count > 1 ? 's' : ''}
-              {s.we_have
-                ? <span className={styles.compHave}> · You have this {s.our_roas ? `(${s.our_roas.toFixed(1)}x)` : ''}</span>
-                : <span className={styles.compMissing}> · You don&apos;t test this</span>
-              }
+      <p className={styles.strategyHint}>
+        {compAds.length} competitor ad{compAds.length !== 1 ? 's' : ''} tracked across {byAngle.size} angles. See what hooks they use.
+      </p>
+
+      {/* Angle groups with actual ad copy */}
+      {[...byAngle.entries()].sort((a, b) => b[1].length - a[1].length).map(([angle, ads]) => {
+        const signal = signals.find(s => s.angle === angle)
+        return (
+          <div key={angle} className={styles.compAngleGroup}>
+            <div className={styles.compAngleHeader}>
+              <span className={styles.compAngleTitle}>{fmt(angle)}</span>
+              <span className={styles.compAngleMeta}>
+                {ads.length} ad{ads.length > 1 ? 's' : ''}
+                {signal?.we_have
+                  ? <span className={styles.compHave}> · You test this {signal.our_roas ? `(${signal.our_roas.toFixed(1)}x)` : ''}</span>
+                  : <span className={styles.compMissing}> · You don&apos;t test this</span>
+                }
+              </span>
+              {!signal?.we_have && (
+                <Link href={`/ads/create?angle=${angle}&mode=explore`} className={styles.compCta}>Create →</Link>
+              )}
             </div>
-            {!s.we_have && (
-              <Link href={`/ads/create?angle=${s.angle}&mode=explore`} className={styles.compCta}>Create →</Link>
-            )}
+            <div className={styles.compAdsList}>
+              {ads.slice(0, 3).map((ad, i) => (
+                <div key={i} className={styles.compAdItem}>
+                  <div className={styles.compAdMeta}>
+                    <span className={styles.compAdPage}>{ad.page_name}</span>
+                    {ad.hook_type && <span className={styles.compAdHook}>{fmt(ad.hook_type)}</span>}
+                  </div>
+                  <p className={styles.compAdBody}>{ad.ad_body?.slice(0, 150)}{(ad.ad_body?.length || 0) > 150 ? '...' : ''}</p>
+                </div>
+              ))}
+              {ads.length > 3 && <span className={styles.compMore}>+{ads.length - 3} more</span>}
+            </div>
           </div>
-        ))}
-      </div>
+        )
+      })}
+
       <Link href="/ads/competitors" className={styles.detailLink}>View full competitor analysis →</Link>
     </div>
   )
@@ -296,6 +330,7 @@ export default function AdsCommandCenter() {
   const [money, setMoney] = useState<Money | null>(null)
   const [matrix, setMatrix] = useState<Record<string, Record<string, MatrixCell>> | null>(null)
   const [compSignals, setCompSignals] = useState<CompSignal[]>([])
+  const [compAds, setCompAds] = useState<CompAd[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -312,10 +347,21 @@ export default function AdsCommandCenter() {
       setMatrix(data.matrix || null)
     }).catch(() => {})
 
-    // Pre-load competitor signals
+    // Pre-load competitor ads (raw data for the tab)
     fetch('/api/ads/competitors').then(r => r.json()).then(data => {
-      // Extract angle breakdown from competitors' ads
-      const allCompAds = (data.competitors || []).flatMap((c: any) => c.ads || [])
+      const allCompAds: CompAd[] = (data.competitors || []).flatMap((c: any) =>
+        (c.ads || []).map((ad: any) => ({
+          page_name: c.page_name || ad.page_name || 'Unknown',
+          ad_body: ad.ad_body || '',
+          angle: ad.angle || null,
+          hook_type: ad.hook_type || null,
+          ad_started_at: ad.ad_started_at || null,
+          is_active: ad.is_active ?? true,
+        }))
+      )
+      setCompAds(allCompAds)
+
+      // Build angle signals
       const angleMap = new Map<string, number>()
       for (const ad of allCompAds) {
         if (ad.angle) angleMap.set(ad.angle, (angleMap.get(ad.angle) || 0) + 1)
@@ -331,7 +377,6 @@ export default function AdsCommandCenter() {
   // Update compSignals with our data once actions load
   useEffect(() => {
     if (actions.length > 0 && compSignals.length > 0) {
-      // Fetch our angle coverage to cross-reference
       fetch('/api/ads/angle-coverage').then(r => r.json()).then(data => {
         const coverage = data.coverage || []
         const coverageMap = new Map(coverage.map((c: any) => [c.angle, c]))
@@ -381,7 +426,7 @@ export default function AdsCommandCenter() {
         {tab === 'overview' && <OverviewTab actions={actions} health={health} money={money} />}
         {tab === 'campaigns' && <AuditContent embedded />}
         {tab === 'strategy' && <StrategyTab matrix={matrix} />}
-        {tab === 'competitors' && <CompetitorsTab signals={compSignals} />}
+        {tab === 'competitors' && <CompetitorsTab signals={compSignals} compAds={compAds} />}
       </div>
     </div>
   )
