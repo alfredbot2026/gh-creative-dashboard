@@ -309,7 +309,7 @@
 
 ## Phase 4d — Ad Performance Feedback Loop
 **Goal:** Close the loop between organic content → ad spend → real conversions → smarter content generation.
-**Status:** `READY` — spec written
+**Status:** `COMPLETE` ✅ (all 4 tasks shipped)
 **Depends on:** Phase 3.5 (classified content), FB Ads skill (existing)
 **Inspired by:** Ryan Mathews / Alex Hormozi content-first ad strategy
 
@@ -349,7 +349,7 @@
 
 ## Phase 4e — Ad Intelligence + Creative Factory
 **Goal:** AI media buyer brain that audits the ad account, finds gaps, and a creative factory that produces the missing ads.
-**Status:** `SPEC_READY` 📋
+**Status:** `SHIPPED_WITH_ISSUES` ⚠️ — All 5 waves built. Audit (2026-03-31) found data integrity issues, fragmented pages, and legacy code paths. See `specs/ADS-ROADMAP-V2.md` for the fix plan.
 **Depends on:** Phase 4d (Ad Performance Ingest)
 **Builds on:** Phase 4d, AD-FRAMEWORKS.md, Content Engine V2 Vision, existing carousel builder + image gen
 **Decision:** Rob 2026-03-26 — "We're creating a media buyer company + creative company. SaaS-ready UI."
@@ -387,6 +387,26 @@
 - Onboarding: connect Meta → classify → show map → first recommendation in < 5 min
 - Ad Account Map is the "aha moment"
 - Multi-tenant, RLS enforced
+
+---
+
+## Phase 4e-fix — Ads System Consolidation + Intelligence Layer
+**Goal:** Fix data integrity, remove fragmentation, build the command center that was promised.
+**Status:** `IN_PROGRESS` 🔄
+**Depends on:** Phase 4e (shipped with issues)
+**Spec:** `specs/ADS-ROADMAP-V2.md`
+**Audit:** `docs/ADS-AUDIT-2026-03-31.md`
+
+### Sub-phases:
+- **A: Data Integrity** (~4 hrs) — Fix phantom data, sync fresh, unify data source
+- **B: Consolidation** (~3 hrs) — Kill legacy factory, remove redundant pages (5 → 3)
+- **C: Intelligence Layer** (~6 hrs) — /ads becomes command center with action cards + inline strategy map
+- **D: Generation Refinement** (~4 hrs) — Better Scale mode, concept history, generation speed
+- **E: Automation** (~2 hrs) — Daily sync cron, weekly competitor refresh, fatigue auto-detection
+
+**Target page architecture:** `/ads` (command center) + `/ads/create` (factory) + `/ads/competitors` (intel)
+
+**UI/UX Principles:** One source of truth, daily data as truth, think like buyer / speak like friend, every insight → action, stale data labeled, no legacy code paths.
 
 ---
 
