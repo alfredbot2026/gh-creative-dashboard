@@ -492,11 +492,18 @@ export default function AuditPage({ embedded = false }: { embedded?: boolean } =
 
   const handleSync = async (reclassify = false) => {
     setSyncing(true)
-    setSyncMsg(reclassify ? 'Reclassifying...' : 'Syncing...')
+    setSyncMsg('Syncing daily performance data...')
     try {
+      // Step 1: Sync daily ad_performance rows from Meta
+      const perfRes = await fetch('/api/ads/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => null)
+      const perfData = perfRes ? await perfRes.json().catch(() => null) : null
+      const perfNote = perfData?.synced ? ` · ${perfData.synced} daily rows` : ''
+
+      // Step 2: Sync creatives (fetch + classify + aggregate performance)
+      setSyncMsg(reclassify ? 'Reclassifying ads...' : 'Updating ad creatives...')
       const res = await fetch('/api/ads/creatives/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reclassify }) })
       const data = await res.json()
-      setSyncMsg(data.success ? `Done — ${data.ads_fetched} ads, ${data.videos_analyzed || 0} videos, ${data.creatives_classified} classified` : `Error: ${data.error}`)
+      setSyncMsg(data.success ? `Done — ${data.ads_fetched} ads, ${data.performance_updated || 0} updated${perfNote}` : `Error: ${data.error}`)
       await fetchAll()
     } catch (err) { setSyncMsg(`Failed: ${err}`) }
     setSyncing(false)

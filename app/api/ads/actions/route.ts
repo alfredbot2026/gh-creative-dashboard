@@ -207,12 +207,13 @@ export async function GET() {
   actions.sort((a, b) => a.priority - b.priority || (a.urgency === 'high' ? -1 : b.urgency === 'high' ? 1 : 0))
   const topActions = actions.slice(0, 5)
 
-  // Account health summary
-  const totalSpend = creatives.reduce((s, c) => s + Number(c.total_spend || 0), 0)
-  const activeCount = creatives.filter(c => c.is_active).length
-  const winningCount = creatives.filter(c => c.ad_status === 'winning').length
-  const tiredCount = creatives.filter(c => c.ad_status === 'tired').length
-  const deadCount = creatives.filter(c => c.ad_status === 'dead' && c.is_active).length
+  // Account health summary — only count ads with actual spend
+  const adsWithSpend = creatives.filter(c => Number(c.total_spend || 0) > 0)
+  const activeWithSpend = adsWithSpend.filter(c => c.is_active)
+  const activeCount = activeWithSpend.length
+  const winningCount = activeWithSpend.filter(c => c.ad_status === 'winning').length
+  const tiredCount = activeWithSpend.filter(c => c.ad_status === 'tired').length
+  const deadCount = activeWithSpend.filter(c => c.ad_status === 'dead').length
   const untestedAngles = ALL_ANGLES.filter(a => !testedAngles.has(a)).length
 
   return NextResponse.json({
