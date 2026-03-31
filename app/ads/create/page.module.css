@@ -134,3 +134,51 @@
 /* Results header */
 .resultsHeader { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 0.75rem; }
 .resultsHeader h2 { font-size: 1rem; font-weight: 600; }
+
+/* ─── Wizard Step Indicator ─── */
+.stepIndicator { display: flex; align-items: center; gap: 0; margin-bottom: 1.5rem; padding: 0.5rem 0; }
+.stepDot { display: flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; border-radius: 99px; font-size: 0.7rem; color: var(--color-text-dim); transition: all 0.2s; position: relative; }
+.stepDot::after { content: '→'; margin-left: 0.5rem; color: var(--color-border); font-size: 0.6rem; }
+.stepDot:last-child::after { display: none; }
+.stepNum { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-surface-low); border: 1.5px solid var(--color-border); font-weight: 700; font-size: 0.6rem; }
+.stepActive .stepNum { background: var(--color-primary-fixed); border-color: var(--color-primary); color: var(--color-primary); }
+.stepCurrent { color: var(--color-text); font-weight: 600; }
+.stepCurrent .stepNum { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.stepLabel { white-space: nowrap; }
+
+/* ─── Brief Step (Step 2) ─── */
+.briefStep { max-width: 700px; margin: 0 auto; }
+.briefDetail { font-size: 0.75rem; color: var(--color-text-dim); margin-top: 0.5rem; line-height: 1.4; }
+.briefActions { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; }
+.hookConfig { margin-top: 1rem; max-width: 250px; }
+
+/* ─── Hooks Step (Step 3) ─── */
+.hooksStep { max-width: 700px; margin: 0 auto; }
+.hooksList { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
+.hookPickCard { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.75rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; }
+.hookPickNum { width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary-fixed); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+.hookPickContent { flex: 1; }
+.hookPickText { font-weight: 600; font-size: 0.85rem; margin: 0 0 0.25rem; line-height: 1.35; }
+.formatConfig { margin-bottom: 1rem; }
+
+/* ─── Expand button on hooks ─── */
+.expandBtn { padding: 0.25rem 0.6rem; background: var(--color-primary); color: #fff; border: none; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+.expandBtn:hover { opacity: 0.9; }
+.expandingTag { font-size: 0.7rem; color: var(--color-primary); font-weight: 600; }
+
+/* ─── Saved Concepts (D4) ─── */
+.savedSection { margin-bottom: 1.25rem; }
+.savedTitle { font-size: 0.9rem; font-weight: 700; margin: 0 0 0.5rem; }
+.savedGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
+.savedCard { padding: 0.6rem 0.75rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+.savedCard:hover { border-color: var(--color-primary); background: var(--color-primary-fixed); }
+.savedAngle { font-weight: 600; font-size: 0.8rem; margin-bottom: 0.15rem; }
+.savedMeta { font-size: 0.65rem; color: var(--color-text-dim); }
+.savedAction { font-size: 0.65rem; color: var(--color-primary); font-weight: 600; margin-top: 0.3rem; }
+
+@media (max-width: 768px) {
+  .stepIndicator { flex-wrap: wrap; gap: 0.25rem; }
+  .stepDot::after { display: none; }
+  .briefActions { flex-direction: column; }
+  .savedGrid { grid-template-columns: 1fr; }
+}

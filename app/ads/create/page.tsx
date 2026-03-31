@@ -38,6 +38,14 @@ interface AngleCoverage {
   ad_count: number
 }
 
+interface SavedConcept {
+  id: string; angle: string; persona: string; core_message: string
+  concept_brief: ConceptBrief; mode: string; status: string
+  updated_at: string; hooks: Hook[]
+}
+
+type WizardStep = 'pick' | 'brief' | 'hooks' | 'results'
+
 const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 const ANGLES = ['pain_point', 'aspiration', 'education', 'urgency', 'curiosity', 'transformation', 'comparison', 'social_proof', 'authority', 'fear']
@@ -52,13 +60,15 @@ const ALL_FORMATS = [
 
 // ─── Hook Section ───
 function HookSection({
-  hook, angle, persona, onStatusChange, onExecutionUpdate
+  hook, angle, persona, expanding, onExpand, onStatusChange, onExecutionUpdate
 }: {
-  hook: Hook; angle: string; persona: string
+  hook: Hook; angle: string; persona: string; expanding: boolean
+  onExpand: (hookId: string) => void
   onStatusChange: (id: string, status: string) => void
   onExecutionUpdate: (id: string, content: Record<string, unknown>) => void
 }) {
   const [open, setOpen] = useState(true)
+  const hasExecs = hook.executions.length > 0
   return (
     <div className={styles.hookSection}>
       <div className={styles.hookHeader} onClick={() => setOpen(!open)}>
@@ -67,9 +77,15 @@ function HookSection({
         </div>
         <div className={styles.hookStatus}>
           <span className={styles.hookType}>{hook.hook_type.replace(/_/g, ' ')}</span>
+          {!hasExecs && !expanding && (
+            <button className={styles.expandBtn} onClick={e => { e.stopPropagation(); onExpand(hook.id) }}>
+              ✨ Generate Ads
+            </button>
+          )}
+          {expanding && <span className={styles.expandingTag}>⏳ Generating...</span>}
           {hook.status === 'winner' && <span className={`${styles.statusBtn} ${styles.statusWinner}`}>🏆 Winner</span>}
           {hook.status === 'loser' && <span className={`${styles.statusBtn} ${styles.statusLoser}`}>❌ Loser</span>}
-          {hook.status === 'draft' && (
+          {hook.status === 'draft' && hasExecs && (
             <>
               <button className={`${styles.statusBtn} ${styles.statusWinner}`} onClick={e => { e.stopPropagation(); onStatusChange(hook.id, 'winner') }}>🏆</button>
               <button className={`${styles.statusBtn} ${styles.statusLoser}`} onClick={e => { e.stopPropagation(); onStatusChange(hook.id, 'loser') }}>❌</button>
@@ -77,7 +93,7 @@ function HookSection({
           )}
         </div>
       </div>
-      {open && (
+      {open && hasExecs && (
         <div className={styles.execGrid}>
           {hook.executions.map(exec => (
             <ExecutionCard
@@ -133,6 +149,27 @@ function AngleCoveragePanel({ coverage, onSelect }: { coverage: AngleCoverage[];
   )
 }
 
+// ─── Step Indicator ───
+function StepIndicator({ step }: { step: WizardStep }) {
+  const steps: { key: WizardStep; label: string }[] = [
+    { key: 'pick', label: 'Pick Angle' },
+    { key: 'brief', label: 'Review Brief' },
+    { key: 'hooks', label: 'Choose Hooks' },
+    { key: 'results', label: 'Ad Executions' },
+  ]
+  const idx = steps.findIndex(s => s.key === step)
+  return (
+    <div className={styles.stepIndicator}>
+      {steps.map((s, i) => (
+        <div key={s.key} className={`${styles.stepDot} ${i <= idx ? styles.stepActive : ''} ${i === idx ? styles.stepCurrent : ''}`}>
+          <span className={styles.stepNum}>{i + 1}</span>
+          <span className={styles.stepLabel}>{s.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ─── Main Page ───
 function CreatePageInner() {
   const searchParams = useSearchParams()
@@ -140,63 +177,128 @@ function CreatePageInner() {
   const personaParam = searchParams.get('persona') || ''
   const modeParam = searchParams.get('mode') || ''
 
+  // Wizard state
+  const [step, setStep] = useState<WizardStep>('pick')
   const [angle, setAngle] = useState(angleParam)
   const [persona, setPersona] = useState(personaParam)
   const [mode, setMode] = useState<'explore' | 'scale'>(modeParam === 'scale' ? 'scale' : 'explore')
-  // Safer defaults: 2 hooks, Static + Carousel only (no video by default — too slow)
   const [selectedFormats, setSelectedFormats] = useState(['static_image', 'carousel'])
-  const [hookCount, setHookCount] = useState(2)
+  const [hookCount, setHookCount] = useState(3)
 
-  const [generating, setGenerating] = useState(false)
-  const [error, setError] = useState('')
+  // Progressive generation state
+  const [conceptId, setConceptId] = useState<string | null>(null)
   const [brief, setBrief] = useState<ConceptBrief | null>(null)
   const [hooks, setHooks] = useState<Hook[]>([])
+  const [expandingHooks, setExpandingHooks] = useState<Set<string>>(new Set())
+
+  const [generating, setGenerating] = useState(false)
+  const [genStage, setGenStage] = useState('')
+  const [error, setError] = useState('')
 
   const [weeklyPlan, setWeeklyPlan] = useState<{ week_label: string; recommendations: Recommendation[] } | null>(null)
   const [coverage, setCoverage] = useState<AngleCoverage[]>([])
   const [loadingCoverage, setLoadingCoverage] = useState(true)
+  const [savedConcepts, setSavedConcepts] = useState<SavedConcept[]>([])
 
   useEffect(() => {
     fetch('/api/ads/weekly-plan').then(r => r.json()).then(data => setWeeklyPlan(data)).catch(() => {})
-    // Load angle coverage from ad_creatives
     fetch('/api/ads/angle-coverage').then(r => r.json()).then(data => {
       setCoverage(data.coverage || [])
       setLoadingCoverage(false)
     }).catch(() => setLoadingCoverage(false))
+    // Load previously generated concepts
+    fetch('/api/ads/creative-tree').then(r => r.json()).then(data => {
+      setSavedConcepts((data.concepts || []).slice(0, 5))
+    }).catch(() => {})
   }, [])
 
-  const hasVideo = selectedFormats.some(f => f === 'video_ugc' || f === 'video_hq')
-  const estimatedTime = hasVideo
-    ? `~${hookCount * 2}-${hookCount * 3} min`
-    : `~${Math.ceil(hookCount * 20 / 60)} min`
+  // Auto-advance to brief step if angle/persona pre-filled from URL
+  useEffect(() => {
+    if (angleParam && personaParam && step === 'pick') {
+      handleGenerateBrief()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const handleGenerate = async () => {
+  // ─── Step 1→2: Generate brief ───
+  const handleGenerateBrief = async () => {
     if (!angle || !persona) return
     setGenerating(true)
+    setGenStage('Analyzing your ad account + loading knowledge base...')
     setError('')
-    setBrief(null)
-    setHooks([])
     try {
-      const res = await fetch('/api/ads/creative-tree', {
+      const res = await fetch('/api/ads/creative-tree/brief', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ angle, persona, mode, hookCount, formats: selectedFormats }),
+        body: JSON.stringify({ angle, persona, mode }),
       })
-      // Handle non-JSON responses (timeout, server error)
-      const text = await res.text()
-      let data: any
-      try {
-        data = JSON.parse(text)
-      } catch {
-        throw new Error(`Server error (likely timeout). Try fewer hooks or formats — especially avoid video for large batches.`)
-      }
-      if (!res.ok) throw new Error(data.error || 'Generation failed')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Brief generation failed')
       setBrief(data.brief)
-      setHooks(data.hooks || [])
+      setConceptId(data.concept_id)
+      setStep('brief')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed')
     }
     setGenerating(false)
+    setGenStage('')
+  }
+
+  // ─── Step 2→3: Generate hooks ───
+  const handleGenerateHooks = async () => {
+    if (!conceptId) return
+    setGenerating(true)
+    setGenStage('Generating hook variations from knowledge base...')
+    setError('')
+    try {
+      const res = await fetch('/api/ads/creative-tree/hooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ concept_id: conceptId, hookCount }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Hook generation failed')
+      setHooks((data.hooks || []).map((h: Hook) => ({ ...h, executions: [] })))
+      setStep('hooks')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed')
+    }
+    setGenerating(false)
+    setGenStage('')
+  }
+
+  // ─── Step 3→4: Expand a single hook ───
+  const handleExpandHook = async (hookId: string) => {
+    if (!conceptId) return
+    setExpandingHooks(prev => new Set(prev).add(hookId))
+    try {
+      const res = await fetch('/api/ads/creative-tree/expand', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hook_id: hookId, concept_id: conceptId, formats: selectedFormats }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Expansion failed')
+      setHooks(prev => prev.map(h =>
+        h.id === hookId ? { ...h, executions: data.executions || [] } : h
+      ))
+      setStep('results')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Expansion failed')
+    }
+    setExpandingHooks(prev => { const next = new Set(prev); next.delete(hookId); return next })
+  }
+
+  // ─── Expand ALL hooks ───
+  const handleExpandAll = async () => {
+    const unexpanded = hooks.filter(h => h.executions.length === 0)
+    // Run in parallel for non-video, sequential would be safer for video
+    const hasVideo = selectedFormats.some(f => f === 'video_ugc' || f === 'video_hq')
+    if (hasVideo) {
+      for (const h of unexpanded) await handleExpandHook(h.id)
+    } else {
+      await Promise.all(unexpanded.map(h => handleExpandHook(h.id)))
+    }
   }
 
   const handleExecutionUpdate = async (id: string, newContent: Record<string, unknown>) => {
@@ -233,14 +335,37 @@ function CreatePageInner() {
     setPersona(rec.persona)
     setMode(rec.mode === 'scale' ? 'scale' : 'explore')
     setSelectedFormats(rec.suggested_formats.filter(f => f !== 'video_ugc' && f !== 'video_hq'))
-    setHookCount(Math.min(rec.hook_count, 2))
+    setHookCount(Math.min(rec.hook_count, 3))
   }
 
   const selectFromCoverage = (selectedAngle: string, selectedMode: 'explore' | 'scale') => {
     setAngle(selectedAngle)
     setMode(selectedMode)
-    // Scroll to config
     document.querySelector('[data-section="config"]')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const resumeConcept = (concept: SavedConcept) => {
+    setBrief(concept.concept_brief)
+    setConceptId(concept.id)
+    setAngle(concept.angle)
+    setPersona(concept.persona)
+    setMode(concept.mode === 'scale' ? 'scale' : 'explore')
+    if (concept.hooks.length > 0) {
+      setHooks(concept.hooks)
+      const hasExecs = concept.hooks.some(h => h.executions.length > 0)
+      setStep(hasExecs ? 'results' : 'hooks')
+    } else {
+      setStep('brief')
+    }
+  }
+
+  const resetWizard = () => {
+    setStep('pick')
+    setBrief(null)
+    setHooks([])
+    setConceptId(null)
+    setError('')
+    setExpandingHooks(new Set())
   }
 
   return (
@@ -248,26 +373,31 @@ function CreatePageInner() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Creative Factory</h1>
-          <p className={styles.subtitle}>Pick an angle → generate hooks → get format-ready ads</p>
+          <p className={styles.subtitle}>
+            {step === 'pick' && 'What should we create next?'}
+            {step === 'brief' && 'Review the creative brief'}
+            {step === 'hooks' && 'Pick hooks to expand into ads'}
+            {step === 'results' && 'Your generated ads'}
+          </p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/ads" className={styles.btnOutline}>← Ads</Link>
-          <Link href="/ads" className={styles.btnOutline}>Strategy Map</Link>
+          {step !== 'pick' && <button className={styles.btnOutline} onClick={resetWizard}>← Start Over</button>}
           <Link href="/ads" className={styles.btnOutline}>Dashboard</Link>
         </div>
       </header>
 
-      {/* Angle Coverage — always visible, collapses when results shown */}
-      {!brief && !generating && (
+      <StepIndicator step={step} />
+
+      {/* ─── STEP 1: Pick angle + persona ─── */}
+      {step === 'pick' && !generating && (
         <>
           {!loadingCoverage && coverage.length > 0 && (
             <AngleCoveragePanel coverage={coverage} onSelect={selectFromCoverage} />
           )}
 
-          {/* Weekly Plan */}
           {weeklyPlan && weeklyPlan.recommendations.length > 0 && (
             <div className={styles.weeklySection}>
-              <h2 className={styles.weeklyTitle}>📅 {weeklyPlan.week_label} — Recommended</h2>
+              <h2 className={styles.weeklyTitle}>📅 {weeklyPlan.week_label} — AI Recommends</h2>
               <div className={styles.recCards}>
                 {weeklyPlan.recommendations.map((rec, i) => (
                   <div key={i} className={styles.recCard}>
@@ -284,24 +414,39 @@ function CreatePageInner() {
             </div>
           )}
 
-          {/* Config Panel */}
+          {/* Previously generated — resume */}
+          {savedConcepts.length > 0 && (
+            <div className={styles.savedSection}>
+              <h3 className={styles.savedTitle}>📂 Previously Generated</h3>
+              <div className={styles.savedGrid}>
+                {savedConcepts.map(c => {
+                  const totalExecs = c.hooks.reduce((s, h) => s + h.executions.length, 0)
+                  const ago = Math.round((Date.now() - new Date(c.updated_at).getTime()) / 3600000)
+                  return (
+                    <div key={c.id} className={styles.savedCard} onClick={() => resumeConcept(c)}>
+                      <div className={styles.savedAngle}>{fmt(c.angle)} × {fmt(c.persona)}</div>
+                      <div className={styles.savedMeta}>
+                        {c.hooks.length} hooks · {totalExecs} ads · {ago < 24 ? `${ago}h ago` : `${Math.round(ago / 24)}d ago`}
+                      </div>
+                      <div className={styles.savedAction}>Resume →</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div className={styles.configPanel} data-section="config">
-            {/* Mode toggle — now explains the difference clearly */}
             <div className={styles.modeRow}>
               <div className={`${styles.modeCard} ${mode === 'explore' ? styles.modeActive : ''}`} onClick={() => setMode('explore')}>
                 <div className={styles.modeLabel}>🔍 Explore</div>
-                <div className={styles.modeDesc}>Test an angle you haven&apos;t run yet. Bold, varied hooks — find what resonates.</div>
+                <div className={styles.modeDesc}>Test an untested angle. Bold, varied hooks.</div>
               </div>
               <div className={`${styles.modeCard} ${mode === 'scale' ? styles.modeActive : ''}`} onClick={() => setMode('scale')}>
                 <div className={styles.modeLabel}>📈 Scale</div>
-                <div className={styles.modeDesc}>You have a winning angle. Generate fresh creative to prevent fatigue — different hooks, same proven logic.</div>
+                <div className={styles.modeDesc}>Fresh creative for a winning angle. Prevent fatigue.</div>
               </div>
             </div>
-            {mode === 'scale' && (
-              <div className={styles.scaleTip}>
-                ℹ️ Scale mode pulls your top-ROAS ads for this angle and generates new hooks that follow the same emotional pattern — without repeating the ones you&apos;ve already run.
-              </div>
-            )}
 
             <div className={styles.configRow}>
               <label className={styles.label}>
@@ -324,7 +469,77 @@ function CreatePageInner() {
               </label>
             </div>
 
-            <div className={styles.label}>Formats to Generate</div>
+            <button
+              className={styles.generateBtn}
+              onClick={handleGenerateBrief}
+              disabled={!angle || !persona}
+            >
+              Next: Generate Brief →
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ─── STEP 2: Review brief ─── */}
+      {step === 'brief' && brief && !generating && (
+        <div className={styles.briefStep}>
+          <div className={styles.briefCard}>
+            <h3 className={styles.briefTitle}>
+              {fmt(brief.angle)} × {fmt(brief.persona)}
+              <span className={styles.modeTag}>{mode === 'scale' ? '📈 Scale' : '🔍 Explore'}</span>
+            </h3>
+            <p className={styles.briefMessage}>{brief.core_message}</p>
+            <div className={styles.briefMeta}>
+              <span className={styles.briefTag}>📦 {brief.product_name} ₱{brief.product_price.toLocaleString()}</span>
+              <span className={styles.briefTag}>📐 {fmt(brief.framework)}</span>
+            </div>
+            {brief.competitor_context && (
+              <p className={styles.briefDetail}>🏢 {brief.competitor_context}</p>
+            )}
+            {brief.proof_points.length > 0 && (
+              <div className={styles.briefDetail}>
+                <strong>Proof Points:</strong> {brief.proof_points.slice(0, 5).join(' · ')}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.hookConfig}>
+            <label className={styles.label}>
+              How many hook variations?
+              <select className={styles.select} value={hookCount} onChange={e => setHookCount(Number(e.target.value))}>
+                <option value={2}>2 hooks (quick test)</option>
+                <option value={3}>3 hooks (recommended)</option>
+                <option value={4}>4 hooks (thorough)</option>
+              </select>
+            </label>
+          </div>
+
+          <div className={styles.briefActions}>
+            <button className={styles.btnOutline} onClick={() => setStep('pick')}>← Change Angle</button>
+            <button className={styles.generateBtn} onClick={handleGenerateHooks}>
+              Looks Good — Generate {hookCount} Hooks →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── STEP 3: Choose hooks + pick formats ─── */}
+      {step === 'hooks' && hooks.length > 0 && !generating && (
+        <div className={styles.hooksStep}>
+          <div className={styles.hooksList}>
+            {hooks.map((hook, i) => (
+              <div key={hook.id} className={styles.hookPickCard}>
+                <div className={styles.hookPickNum}>{i + 1}</div>
+                <div className={styles.hookPickContent}>
+                  <p className={styles.hookPickText}>&quot;{hook.hook_text}&quot;</p>
+                  <span className={styles.hookType}>{hook.hook_type.replace(/_/g, ' ')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.formatConfig}>
+            <div className={styles.label}>What formats to generate?</div>
             <div className={styles.formatRow}>
               {ALL_FORMATS.map(f => (
                 <label key={f.value} className={`${styles.formatCheck} ${(f.value === 'video_ugc' || f.value === 'video_hq') ? styles.formatSlow : ''}`}>
@@ -334,64 +549,35 @@ function CreatePageInner() {
                 </label>
               ))}
             </div>
-
-            <div className={styles.configBottom}>
-              <label className={styles.label}>
-                Hook Variations
-                <select className={styles.select} value={hookCount} onChange={e => setHookCount(Number(e.target.value))}>
-                  <option value={1}>1 hook</option>
-                  <option value={2}>2 hooks</option>
-                  <option value={3}>3 hooks</option>
-                  <option value={4}>4 hooks</option>
-                </select>
-              </label>
-              <button className={styles.generateBtn} onClick={handleGenerate} disabled={!angle || !persona || selectedFormats.length === 0 || generating}>
-                ✨ Generate ({hookCount} hooks × {selectedFormats.length} formats = {hookCount * selectedFormats.length} ads · {estimatedTime})
-              </button>
-            </div>
           </div>
-        </>
-      )}
 
-      {/* Loading */}
-      {generating && (
-        <div className={styles.loading}>
-          <div className={styles.spinner} />
-          <p>Building creative tree...</p>
-          <p className={styles.loadingSub}>
-            {hasVideo
-              ? `Video scripts use the full KB pipeline — expect ${estimatedTime}. Static/Carousel run in parallel.`
-              : `Generating ${hookCount} hooks in parallel × ${selectedFormats.length} formats. Should take ${estimatedTime}.`
-            }
-          </p>
+          <div className={styles.briefActions}>
+            <button className={styles.btnOutline} onClick={() => setStep('brief')}>← Back to Brief</button>
+            <button
+              className={styles.generateBtn}
+              onClick={handleExpandAll}
+              disabled={selectedFormats.length === 0}
+            >
+              ✨ Generate All ({hooks.length} hooks × {selectedFormats.length} formats = {hooks.length * selectedFormats.length} ads)
+            </button>
+          </div>
         </div>
       )}
 
-      {error && (
-        <div className={styles.error}>
-          {error}
-          <button className={styles.btnOutline} style={{marginLeft: '1rem', fontSize: '0.8rem'}} onClick={() => { setError(''); setBrief(null); setHooks([]) }}>Try Again</button>
-        </div>
-      )}
-
-      {/* Results */}
-      {brief && hooks.length > 0 && (
+      {/* ─── STEP 4: Results ─── */}
+      {step === 'results' && brief && hooks.length > 0 && (
         <>
           <div className={styles.briefCard}>
             <h3 className={styles.briefTitle}>
               {fmt(brief.angle)} × {fmt(brief.persona)}
-              <span className={styles.modeTag}>{mode === 'scale' ? '📈 Scaling Winner' : '🔍 Exploring'}</span>
+              <span className={styles.modeTag}>{mode === 'scale' ? '📈 Scale' : '🔍 Explore'}</span>
             </h3>
             <p className={styles.briefMessage}>{brief.core_message}</p>
-            <div className={styles.briefMeta}>
-              <span className={styles.briefTag}>📦 {brief.product_name} ₱{brief.product_price.toLocaleString()}</span>
-              <span className={styles.briefTag}>📐 {fmt(brief.framework)}</span>
-            </div>
           </div>
 
           <div className={styles.resultsHeader}>
-            <h2>{hooks.length} hooks × {selectedFormats.length} formats = {hooks.reduce((s, h) => s + h.executions.length, 0)} ads</h2>
-            <button className={styles.btnOutline} onClick={() => { setBrief(null); setHooks([]) }}>← New Batch</button>
+            <h2>{hooks.length} hooks · {hooks.reduce((s, h) => s + h.executions.length, 0)} ads generated</h2>
+            <button className={styles.btnOutline} onClick={resetWizard}>← New Batch</button>
           </div>
 
           {hooks.map(hook => (
@@ -400,11 +586,28 @@ function CreatePageInner() {
               hook={hook}
               angle={brief.angle}
               persona={brief.persona}
+              expanding={expandingHooks.has(hook.id)}
+              onExpand={handleExpandHook}
               onStatusChange={handleStatusChange}
               onExecutionUpdate={handleExecutionUpdate}
             />
           ))}
         </>
+      )}
+
+      {/* ─── Loading overlay ─── */}
+      {generating && (
+        <div className={styles.loading}>
+          <div className={styles.spinner} />
+          <p>{genStage || 'Working...'}</p>
+        </div>
+      )}
+
+      {error && (
+        <div className={styles.error}>
+          {error}
+          <button className={styles.btnOutline} style={{marginLeft: '1rem', fontSize: '0.8rem'}} onClick={() => setError('')}>Dismiss</button>
+        </div>
       )}
     </div>
   )
