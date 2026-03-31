@@ -21,9 +21,9 @@ Full audit completed (2026-03-31). Phase 4e shipped all 5 waves but produced fra
 | Phase | Hours | Status | What |
 |-------|-------|--------|------|
 | A: Data Integrity | ~4 | `DONE` | Pagination fix, sync now gets all 773 rows through today |
-| B: Consolidation | ~3 | `NOT_STARTED` | Kill legacy factory, remove 5 redundant pages → 4 pages |
+| B: Consolidation | ~3 | `DONE` | Removed legacy /api/ads/sync, /api/ads/performance, /ads/strategy redirect. 3 pages: /ads, /ads/create, /ads/competitors |
 | C: Intelligence Layer | ~6 | `DONE` | All 3 waves shipped: ROAS fix, profit headline, actionable recs, tight strategy map, rich competitors, create flow |
-| D: Generation Refinement | ~6 | `NOT_STARTED` | Wizard UI, unified generation pipeline (same stack as /create), progressive gen |
+| D: Generation Refinement | ~6 | `IN_PROGRESS` | D2 (KB integration) DONE. Next: D3 (progressive gen), D1 (wizard) |
 | E: Automation | ~2 | `NOT_STARTED` | Daily sync cron, weekly competitor refresh, fatigue detection |
 
 ### Phase C — Intelligence Layer UX Audit (2026-03-31 17:30)
