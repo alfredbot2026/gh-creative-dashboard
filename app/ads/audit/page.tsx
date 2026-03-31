@@ -416,6 +416,7 @@ export default function AuditPage() {
   const [allAds, setAllAds] = useState<AdCreative[]>([])
   const [metricsMap, setMetricsMap] = useState<Map<string, AdMetrics>>(new Map())
   const [accountMetrics, setAccountMetrics] = useState<AccountMetrics | null>(null)
+  const [freshness, setFreshness] = useState<{ latest_date: string | null; stale_hours: number | null; is_stale: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
@@ -442,6 +443,7 @@ export default function AuditPage() {
     setAllAds(adsData.creatives || [])
     setAccountMetrics(metricsData.account || null)
     setBusiness(metricsData.business || null)
+    setFreshness(metricsData.freshness || null)
 
     const map = new Map<string, AdMetrics>()
     for (const m of metricsData.ads || []) {
@@ -530,6 +532,17 @@ export default function AuditPage() {
       </div>
 
       {syncMsg && <div className={styles.syncMsg}>{syncMsg}</div>}
+
+      {/* Data freshness banner */}
+      {freshness?.is_stale && (
+        <div className={styles.staleBanner}>
+          ⚠️ Ad data last synced <strong>{freshness.latest_date}</strong> ({Math.floor((freshness.stale_hours || 0) / 24)} days ago).
+          Numbers may not reflect recent changes.
+          <button className={styles.staleSyncBtn} onClick={() => handleSync(false)} disabled={syncing}>
+            Sync Now
+          </button>
+        </div>
+      )}
 
       {/* Period selector */}
       <div className={styles.periodBar}>

@@ -229,11 +229,23 @@ export async function GET(request: NextRequest) {
   const businessCtx = await loadBusinessContext(supabase, userId)
   const thresholds = getThresholds(businessCtx)
 
+  // Data freshness — find the most recent daily row
+  const allDates = allRows.map(r => r.date_start).filter(Boolean).sort()
+  const latestDate = allDates[allDates.length - 1] || null
+  const staleHours = latestDate
+    ? Math.floor((Date.now() - new Date(latestDate).getTime()) / (1000 * 60 * 60))
+    : null
+
   return NextResponse.json({
     period: isLifetime ? 'lifetime' : period,
     date_range: { since: sinceDate, until: today },
     account: accountMetrics,
     ads: adMetrics,
     business: thresholds,
+    freshness: {
+      latest_date: latestDate,
+      stale_hours: staleHours,
+      is_stale: staleHours !== null && staleHours > 48,
+    },
   })
 }

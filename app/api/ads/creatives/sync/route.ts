@@ -383,22 +383,21 @@ export async function POST(request: Request) {
       }
 
       for (const creative of creatives) {
-        // Try meta_ad_id match first, then ad_name fallback
-        let perfRows = perfByMetaId.get(creative.meta_ad_id) || null
-        if (!perfRows && creative.ad_name) {
-          perfRows = perfByAdName.get(creative.ad_name) || null
-        }
+        // Match ONLY by meta_ad_id — ad_name fallback was causing phantom data
+        // (multiple ads named "New Engagement Ad" were inheriting each other's spend)
+        const perfRows = perfByMetaId.get(creative.meta_ad_id) || null
 
         if (!perfRows || perfRows.length === 0) continue
 
         {
           const totalSpend = perfRows.reduce((s: number, r: any) => s + (r.spend || 0), 0)
+          const totalRevenue = perfRows.reduce((s: number, r: any) => s + (r.conversion_value || 0), 0)
           const totalPurchases = perfRows.reduce((s: number, r: any) => s + (r.conversions || 0), 0)
           const totalImpressions = perfRows.reduce((s: number, r: any) => s + (r.impressions || 0), 0)
-          const roasValues = perfRows.filter((r: any) => r.roas && r.roas > 0).map((r: any) => r.roas!)
-          const ctrValues = perfRows.filter((r: any) => r.ctr && r.ctr > 0).map((r: any) => r.ctr!)
-          const avgRoas = roasValues.length > 0 ? roasValues.reduce((a: number, b: number) => a + b, 0) / roasValues.length : null
-          const avgCtr = ctrValues.length > 0 ? ctrValues.reduce((a: number, b: number) => a + b, 0) / ctrValues.length : null
+          const totalClicks = perfRows.reduce((s: number, r: any) => s + (r.clicks || 0), 0)
+          // ROAS = total_revenue / total_spend (not averaged daily ROAS)
+          const avgRoas = totalSpend > 0 ? totalRevenue / totalSpend : null
+          const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : null
           const avgCpa = totalPurchases > 0 ? totalSpend / totalPurchases : null
 
           const dates = perfRows.map((r: any) => r.date_start).filter(Boolean).sort()
