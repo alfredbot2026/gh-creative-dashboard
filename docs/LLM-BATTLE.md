@@ -2,8 +2,9 @@
 
 > **Date:** 2026-04-01  
 > **Rounds:** Aspiration hooks | Pain point hooks | 30s video script  
-> **Providers:** GPT-5.4 Mini, GPT-5.4, GPT-4o-mini, Claude Sonnet 4, DeepSeek V3, Kimi K2-Turbo  
-> **Script:** `node scripts/llm-battle.mjs`
+> **Providers:** GPT-5.4 Mini, GPT-5.4, GPT-4o-mini, Claude Sonnet 4, DeepSeek V3, Kimi K2-Turbo, Kimi K2.5  
+> **Script:** `node scripts/llm-battle.mjs`  
+> **Note:** Kimi K2.5 requires `thinking: {type: "disabled"}` and endpoint `api.moonshot.ai` (not `.cn`)
 
 ---
 
@@ -69,6 +70,14 @@
 
 **3. [curiosity_gap]:** Hulaan kung anong business ang natutunan ko in 3 nights nang walang background sa printer: home-based print shop na may ready templates pa!
 
+## Kimi K2.5 — 9632ms
+
+**1. [question]:** Mama, paano kung 'yung oras mo sa pag-aalaga ng kids, pwede ring maging oras para sa sarili mong pangarap? Hindi mo kailangang piliin — pwede mong gawin pareho.
+
+**2. [social_proof]:** 500+ moms na dati naghahanap lang ng extra income, ngayon may sariling printing business na sa bahay. Ikaw, kailan mo gustong simulan ang transformation mo?
+
+**3. [story_opening]:** May isang mom na nagsimula sa zero experience, walang printer, at takot mag-fail. Ngayon, siya na mismo nagtuturo sa ibang moms kung paano...
+
 ---
 
 # Round 2: Pain Point Hooks
@@ -132,6 +141,14 @@
 **2. [social_proof]:** Ilang beses ka nang nag-‘add to cart’ ng raket pero ₱0 pa rin ang balik—totoo ba talagang may patok sa 500+ moms na ‘to?
 
 **3. [curiosity_gap]:** Ano’ng gagawin mo sa printer na nakabalandra lang habang tumataba ang bills—may mali bang paraan gamitin ‘to para kumita?
+
+## Kimi K2.5 — 11059ms
+
+**1. [pain_call]:** Pagod ka na bang mag-compute ng gastos vs. kita? Yung tipid mo sa groceries, nauubos lang sa biglaang bayarin.
+
+**2. [social_proof]:** 500+ moms na dati naghahanap ng extra income, ngayon may sariling printing business na sa bahay. Ikaw, hanggang kailan maghihintay?
+
+**3. [curiosity_gap]:** Ano ang common denominator ng mga nanay na kumikita kahit nasa bahay lang? Hindi experience. Hindi malaking puhunan. May tinatagong strategy sila.
 
 ---
 
@@ -329,6 +346,42 @@ Kung curious ka rin, check mo yung link sa bio ko! Let's grow together, mama! �
 
 **Caption:** From bills to thrills in 30 mins a day! 🤯 Papers to Profits gave me the exact templates + supplier list kaya ngayon, kahit carpool line kita na. P1,497 lang, walang monthly—sulit pang-meryenda nila! Ready ka na ba, mommy? Link bio 👉 #MomSideHustle #PapersToProfits #PrintAtHome
 
+## Kimi K2.5 — 30661ms
+
+**Hook:** Momshie, gusto mo ba ng side income pero walang time?
+
+**[0-3s]** Momshie, gusto mo ba ng side income pero walang time?
+> 📷 Close-up selfie, slightly messy bun, kitchen background, surprised expression
+> 📝 Side income pero busy mom? 🤔
+
+**[3-10s]** Ako rin! Before, naghahanap ako ng extra pero ang hirap mag-commit sa 8-5 pa. Tapos napagastos lang sa trial and error.
+> 📷 Cut to same spot, holding coffee mug, shaking head, relatable frustrated face
+> 📝 Trial and error = gastos 💸
+
+**[10-20s]** Nung nag-Papers to Profits ako, everything changed. May step-by-step na, home-based pa. Ngayon, nagpprint ako habang tulog ang mga bata. Flexible, kaya ng schedule ko.
+> 📷 Quick cut to showing printed products (invites/stickers) on table, then back to talking head with proud smile
+> 📝 Print while kids sleep ✅
+
+**[20-27s]** For only ₱1,497, may business ka na. Hindi na ako lost, may community pa na sumusuporta.
+> 📷 Holding phone showing course/community, genuine happy expression, natural lighting
+> 📝 ₱1,497 = business mo na 🙌
+
+**[27-30s]** Kaya momshie, check mo na! Link sa bio.
+> 📷 Pointing down/bio direction, encouraging nod, warm smile
+> 📝 Link in bio 👆
+
+**CTA:** Check mo na momshie, link sa bio! Worth it promise.
+
+**Caption:** Momshie real talk: Gusto mo ng extra income pero sagad na ang oras mo? 🤱
+
+Ako rin diyan before! Nag-try ng iba-ibang sideline pero laging conflict sa schedule ng kids. Until I found Papers to Profits — home-based printing business na kaya sa bahay lang. 🏠
+
+For ₱1,497, may step-by-step course ka na, plus community support. Ngayon, nag-eearn ako habang tulog ang mga bata. 💤→💰
+
+Swipe up sa link para malaman mo paano! 👆
+
+#Mompreneur #SideHustle #WorkFromHomeMom #PapersToProfits #FilipinaMompreneur #HomeBasedBusiness
+
 ---
 
 # Rob's Scorecard
@@ -343,6 +396,7 @@ Kung curious ka rin, check mo yung link sa bio ko! Let's grow together, mama! �
 | Claude Sonnet 4 | /5 | /5 | /5 | /5 | /5 | /25 |
 | DeepSeek V3 | /5 | /5 | /5 | /5 | /5 | /25 |
 | Kimi K2-Turbo | /5 | /5 | /5 | /5 | /5 | /25 |
+| Kimi K2.5 | /5 | /5 | /5 | /5 | /5 | /25 |
 
 ## Video Script (Round 3)
 
@@ -354,6 +408,7 @@ Kung curious ka rin, check mo yung link sa bio ko! Let's grow together, mama! �
 | Claude Sonnet 4 | /5 | /5 | /5 | /5 | /5 | /25 |
 | DeepSeek V3 | /5 | /5 | /5 | /5 | /5 | /25 |
 | Kimi K2-Turbo | /5 | /5 | /5 | /5 | /5 | /25 |
+| Kimi K2.5 | /5 | /5 | /5 | /5 | /5 | /25 |
 
 ## Final Verdict
 
@@ -364,7 +419,19 @@ Kung curious ka rin, check mo yung link sa bio ko! Let's grow together, mama! �
 | GPT-4o-mini | /25 | /25 | /50 | |
 | Claude Sonnet 4 | /25 | /25 | /50 | |
 | DeepSeek V3 | /25 | /25 | /50 | |
-| Kimi K2-Turbo | /25 | /25 | /50 | |
+| Kimi K2-Turbo | /25 | /25 | /50 | ~$0.0002 |
+| Kimi K2.5 | /25 | /25 | /50 | ~$0.0015 |
+
+**Speed comparison:**
+| Provider | Hooks | Video Script |
+|----------|-------|-------------|
+| GPT-5.4 Mini | 2s | 4s |
+| Kimi K2-Turbo | 3s | 6s |
+| GPT-4o-mini | 4s | 7s |
+| GPT-5.4 | 6s | 14s |
+| Claude Sonnet | 7s | 18s |
+| DeepSeek | 7s | 18s |
+| Kimi K2.5 | 10s | 31s |
 
 **Winner:** _______________  
 **Best Value:** _______________  
