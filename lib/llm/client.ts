@@ -24,10 +24,10 @@ const PROVIDERS: LLMProvider[] = [
         model: 'gemini-3-flash-preview',
     },
     {
-        name: 'Moonshot',
+        name: 'Kimi',
         envKey: 'MOONSHOT_API_KEY',
-        endpoint: 'https://api.moonshot.cn/v1/chat/completions',
-        model: 'moonshot-v1-8k',
+        endpoint: 'https://api.moonshot.ai/v1/chat/completions',
+        model: 'kimi-k2-turbo-preview',
     },
     {
         name: 'ZAI',
@@ -47,7 +47,7 @@ const PROVIDERS: LLMProvider[] = [
 const CREATIVE_PROVIDERS: LLMProvider[] = [
     {
         name: 'Claude',
-        envKey: 'ANTHROPIC_API_KEY',
+        envKey: 'CLAUDE_API_KEY',
         endpoint: 'https://api.anthropic.com/v1/messages',
         model: 'claude-sonnet-4-6',
     },
