@@ -19,6 +19,7 @@ import {
   Save,
   Check,
   Loader2,
+  LayoutTemplate,
 } from 'lucide-react'
 import { saveYouTubeScript } from '@/app/actions/create'
 import layout from '@/app/create/layout.module.css'
@@ -353,6 +354,36 @@ export default function YouTubeScriptPage() {
                   ) : (
                     <><Save size={16} /> Save to Library</>
                   )}
+                </button>
+
+                {/* Save as Template */}
+                <button
+                  className={layout.actionBtn}
+                  onClick={async () => {
+                    if (!result) return
+                    const name = prompt('Template name:', result.title_options[selectedTitle] || 'My YouTube Template')
+                    if (!name) return
+                    try {
+                      await fetch('/api/templates', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          name,
+                          content_purpose: formData.content_purpose,
+                          content_lane: 'youtube',
+                          hook_entry_id: formData.hook_id,
+                          framework_entry_id: formData.framework_id,
+                          template_params: formData,
+                          sample_output: result,
+                        })
+                      })
+                      alert('Template saved! Reuse it anytime from the template picker.')
+                    } catch { alert('Failed to save template') }
+                  }}
+                  style={{ marginTop: 8, width: '100%' }}
+                >
+                  <LayoutTemplate size={16} />
+                  Save as Template
                 </button>
               </div>
 

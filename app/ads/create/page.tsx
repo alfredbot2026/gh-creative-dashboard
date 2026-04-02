@@ -769,7 +769,32 @@ function CreatePageInner() {
 
           <div className={styles.resultsHeader}>
             <h2>{hooks.length} hooks · {hooks.reduce((s, h) => s + h.executions.length, 0)} ads generated</h2>
-            <button className={styles.btnOutline} onClick={resetWizard}>← New Batch</button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className={styles.btnOutline}
+                onClick={async () => {
+                  const name = prompt('Template name:', `${fmt(brief.angle)} × ${fmt(brief.persona)} Template`)
+                  if (!name) return
+                  try {
+                    await fetch('/api/templates', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        name,
+                        content_purpose: mode === 'scale' ? 'sell' : 'prove',
+                        content_lane: 'ads',
+                        template_params: { angle: brief.angle, persona: brief.persona, mode, hookCount, selectedFormats },
+                        sample_output: { brief, hooks: hooks.map(h => ({ hook_text: h.hook_text, hook_type: h.hook_type })) },
+                      })
+                    })
+                    alert('Template saved! Reuse this brief configuration anytime.')
+                  } catch { alert('Failed to save template') }
+                }}
+              >
+                💾 Save as Template
+              </button>
+              <button className={styles.btnOutline} onClick={resetWizard}>← New Batch</button>
+            </div>
           </div>
 
           {hooks.map(hook => (

@@ -9,7 +9,7 @@ import StyleModeToggle from '@/components/create/StyleModeToggle'
 import type { StyleMode } from '@/components/create/StyleModeToggle'
 import type { ContentPurpose } from '@/lib/create/types'
 import type { ProductData } from '@/app/actions/products'
-import { Wand2, Copy, Image as ImageIcon, Hash } from 'lucide-react'
+import { Wand2, Copy, Image as ImageIcon, Hash, LayoutTemplate } from 'lucide-react'
 import layout from '@/app/create/layout.module.css'
 import styles from './page.module.css'
 
@@ -198,6 +198,33 @@ export default function SocialPostPage() {
             </button>
             <button className={layout.actionBtn} onClick={copyCaption} disabled={!result}>
               <Copy size={14} /> Copy All
+            </button>
+            <button
+              className={layout.actionBtn}
+              disabled={!result}
+              onClick={async () => {
+                if (!result) return
+                const name = prompt('Template name:', result.caption.slice(0, 30) + '...' || 'My Social Post Template')
+                if (!name) return
+                try {
+                  await fetch('/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name,
+                      content_purpose: formData.content_purpose,
+                      content_lane: 'short-form',
+                      hook_entry_id: formData.selected_hook_id,
+                      framework_entry_id: formData.selected_framework_id,
+                      template_params: formData,
+                      sample_output: result,
+                    })
+                  })
+                  alert('Template saved! Reuse it anytime from the template picker.')
+                } catch { alert('Failed to save template') }
+              }}
+            >
+              <LayoutTemplate size={14} /> Save as Template
             </button>
           </div>
         </div>
