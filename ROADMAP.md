@@ -571,11 +571,11 @@ Today's reality: Grace picks an angle × persona → waits 30-60s → LLM genera
 - ✅ YouTube creator format (script + SEO metadata)
 - ✅ Google Docs ready format (copy-paste HTML)
 
-### 5d. Onboarding wizard — PENDING
-
-### 5d. Onboarding wizard
-- First-run experience: set up brand profile, connect APIs, run first extraction
-- Guided knowledge base seeding
+### 5d. Onboarding wizard — COMPLETE ✅ (2026-04-02)
+- ✅ 6-step onboarding: Business → Brand Style → Products → Persona → Connections → Complete
+- ✅ First-run redirect to onboarding if business profile not configured
+- ✅ Meta & YouTube OAuth connection step
+- ✅ Guided brand profile setup with save/continue flow
 
 **Deliverables:** Templates, batch generation, export, onboarding.
 **Spec:** `specs/phase-5-polish.md`
