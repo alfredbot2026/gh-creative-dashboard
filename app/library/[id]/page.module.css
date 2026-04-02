@@ -154,3 +154,65 @@
   cursor: pointer; transition: all 0.15s; margin-left: auto;
 }
 .btnDanger:hover { background: #dc2626; color: white; }
+
+/* Export Menu */
+.exportMenu {
+  position: relative;
+}
+
+.exportDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 220px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  padding: 4px;
+}
+
+.exportOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.exportOption:hover {
+  background: color-mix(in srgb, var(--color-border) 30%, transparent);
+}
+
+.exportOption > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exportLabel {
+  font-weight: 500;
+}
+
+.exportDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
