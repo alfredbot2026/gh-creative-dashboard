@@ -564,11 +564,14 @@ Today's reality: Grace picks an angle × persona → waits 30-60s → LLM genera
 - ✅ Bulk approve / reject per item
 - ✅ Save approved items to calendar
 
-### 5c. Export + integration
-- Export scripts as PDF / Google Docs
-- Export carousel images as zip
-- Export YouTube script + thumbnail in creator-friendly format
-- Calendar sync (Google Calendar for shoot scheduling)
+### 5c. Export + integration — COMPLETE ✅ (2026-04-02)
+- ✅ Export API supporting PDF, plain text, YouTube format, Google Docs
+- ✅ Export dropdown in library detail view
+- ✅ PDF export with styled formatting (Playwright)
+- ✅ YouTube creator format (script + SEO metadata)
+- ✅ Google Docs ready format (copy-paste HTML)
+
+### 5d. Onboarding wizard — PENDING
 
 ### 5d. Onboarding wizard
 - First-run experience: set up brand profile, connect APIs, run first extraction
