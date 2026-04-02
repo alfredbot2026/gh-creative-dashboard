@@ -182,7 +182,84 @@ Return: {"hooks": [{"hook_text": "...", "hook_type": "...", "proof_points_used":
       }
     }
 
-    // 6. Update credit usage (if credits table exists)
+    // 6. Generate scripts if requested (full creative tree)
+    let scriptsGenerated = 0
+    if (includeScripts && saved > 0) {
+      const openaiKey = process.env.OPENAI_API_KEY
+      if (openaiKey) {
+        for (const hook of hooks.slice(0, saved)) {
+          try {
+            const scriptRes = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiKey}` },
+              body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                  {
+                    role: 'system',
+                    content: 'You write 30-second UGC video ad scripts in Taglish (60% Filipino, 40% English). Return valid JSON only.'
+                  },
+                  {
+                    role: 'user',
+                    content: `Create a 5-scene video script for this hook:
+
+HOOK: "${hook.hook_text}"
+PRODUCT: ${productName} (₱${productPrice})
+
+Structure (30 seconds total):
+- Scene 1 HOOK (5s): Grab attention
+- Scene 2 PROBLEM (7s): Agitate pain point  
+- Scene 3 SOLUTION (8s): Present product
+- Scene 4 PROOF (5s): Social proof
+- Scene 5 CTA (5s): Call to action
+
+Rules:
+- Natural Taglish (Tagalog-English mix)
+- On-screen text max 8 words per scene
+- No income guarantees, no false scarcity
+
+Return: {"format": "video_ugc", "total_duration_seconds": 30, "scenes": [{"scene_number": 1, "block_label": "HOOK", "duration_seconds": 5, "script_text": "...", "visual_direction": "...", "on_screen_text": "..."}, ...], "caption_draft": "...", "hashtags": ["#..."], "cta": "..."}`
+                  }
+                ],
+                temperature: 0.7,
+                max_tokens: 1500,
+              }),
+            })
+
+            if (scriptRes.ok) {
+              const scriptData = await scriptRes.json()
+              const rawScript = scriptData.choices?.[0]?.message?.content || ''
+              let script: any
+              try {
+                let cleaned = rawScript.trim()
+                const fence = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/)
+                if (fence) cleaned = fence[1].trim()
+                script = JSON.parse(cleaned)
+              } catch { continue }
+
+              await supabase.from('script_bank').insert({
+                user_id: userId,
+                angle,
+                persona,
+                hook_text: hook.hook_text,
+                format: 'video_ugc',
+                scenes: script.scenes || [],
+                caption_draft: script.caption_draft || '',
+                hashtags: script.hashtags || [],
+                cta: script.cta || '',
+                total_duration_seconds: 30,
+                generated_by: 'gpt-4o-mini',
+                generated_model: 'gpt-4o-mini',
+                status: 'fresh',
+              })
+              scriptsGenerated++
+            }
+          } catch { /* continue on error */ }
+        }
+      }
+    }
+
+    // 7. Update credit usage (if credits table exists)
     try {
       await supabase.rpc('increment_hooks_used', { p_user_id: userId, p_count: saved })
     } catch { /* credits table might not exist yet */ }
@@ -195,6 +272,8 @@ Return: {"hooks": [{"hook_text": "...", "hook_type": "...", "proof_points_used":
       saved,
       duplicates: hooks.length - saved,
       bank_total: (existing || []).length + saved,
+      scripts_generated: scriptsGenerated,
+      full_creative_tree: includeScripts,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Seeding failed'

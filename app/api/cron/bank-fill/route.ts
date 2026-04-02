@@ -136,7 +136,7 @@ export async function GET(request: Request) {
             angle: combo.angle,
             persona: combo.persona,
             hookCount: Math.min(hooksNeeded, 10),
-            includeScripts: false, // hooks only for now — scripts in future wave
+            includeScripts: true, // Generate full creative trees: hooks + scripts
           }),
         })
 
