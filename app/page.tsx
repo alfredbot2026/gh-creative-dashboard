@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import styles from './page.module.css'
 
@@ -27,6 +28,17 @@ const CONTENT_TYPE_ICONS: Record<string, { icon: string; label: string; href: st
 
 export default async function TodayPage() {
   const supabase = await createClient()
+
+  // Check if user has completed onboarding
+  const { data: profile } = await supabase
+    .from('business_profile')
+    .select('business_name')
+    .limit(1)
+    .maybeSingle()
+  
+  if (!profile?.business_name) {
+    redirect('/onboarding')
+  }
 
   // Grace explicitly, not Graceful
   const userName = 'Grace'

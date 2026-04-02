@@ -8,6 +8,7 @@ import StepBusiness from '@/components/onboarding/StepBusiness'
 import StepBrand from '@/components/onboarding/StepBrand'
 import StepProducts from '@/components/onboarding/StepProducts'
 import StepPersona from '@/components/onboarding/StepPersona'
+import StepConnections from '@/components/onboarding/StepConnections'
 import StepComplete from '@/components/onboarding/StepComplete'
 import styles from './page.module.css'
 
@@ -16,6 +17,7 @@ const STEPS = [
   { id: 'brand', label: 'Brand Style', icon: '🎨' },
   { id: 'products', label: 'Products', icon: '📦' },
   { id: 'persona', label: 'You', icon: '👤' },
+  { id: 'connections', label: 'Connect', icon: '🔗' },
   { id: 'complete', label: 'Done', icon: '🚀' },
 ]
 
@@ -281,7 +283,8 @@ export default function OnboardingPage() {
         {step === 1 && <StepBrand data={data} onChange={updateData} />}
         {step === 2 && <StepProducts data={data} onChange={updateData} />}
         {step === 3 && <StepPersona data={data} onChange={updateData} />}
-        {step === 4 && <StepComplete />}
+        {step === 4 && <StepConnections />}
+        {step === 5 && <StepComplete />}
       </div>
 
       {/* Navigation */}
@@ -290,17 +293,17 @@ export default function OnboardingPage() {
           <button className={styles.backBtn} onClick={handleBack}>← Back</button>
         )}
         <div className={styles.spacer} />
-        {step < 3 && (
+        {step < 4 && (
           <button className={styles.nextBtn} onClick={handleNext} disabled={saving}>
             {saving ? 'Saving...' : 'Save & Continue →'}
           </button>
         )}
-        {step === 3 && (
-          <button className={styles.nextBtn} onClick={handleNext} disabled={saving}>
-            {saving ? 'Saving...' : 'Finish Setup →'}
+        {step === 4 && (
+          <button className={styles.nextBtn} onClick={handleNext}>
+            Continue →
           </button>
         )}
-        {step === 4 && (
+        {step === 5 && (
           <button className={styles.nextBtn} onClick={handleFinish}>
             🚀 Start Creating
           </button>
