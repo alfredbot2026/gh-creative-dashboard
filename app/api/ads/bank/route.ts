@@ -76,6 +76,33 @@ async function serveHooks(supabase: any, userId: string, angle: string, persona:
 
   const winningTypes = new Set((winners || []).map((w: any) => w.hook_type))
 
+  // 3b. Cross-persona suggestions (hooks from adjacent personas for same angle)
+  const PERSONA_ADJACENCY: Record<string, string[]> = {
+    beginner: ['price_sensitive', 'new_mom_curious'],
+    price_sensitive: ['beginner', 'skeptic'],
+    new_mom_curious: ['beginner', 'aspirational', 'busy_professional'],
+    aspirational: ['new_mom_curious', 'returning_buyer'],
+    skeptic: ['price_sensitive', 'advanced'],
+    returning_buyer: ['aspirational', 'advanced'],
+    advanced: ['returning_buyer', 'skeptic'],
+    busy_professional: ['new_mom_curious', 'price_sensitive'],
+    gift_buyer: ['new_mom_curious', 'aspirational'],
+  }
+  const adjacentPersonas = PERSONA_ADJACENCY[persona] || []
+  let crossPersonaHooks: any[] = []
+  if (adjacentPersonas.length > 0) {
+    const { data: cross } = await supabase
+      .from('hook_bank')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('angle', angle)
+      .in('persona', adjacentPersonas)
+      .in('status', ['fresh', 'shown'])
+      .order('quality_score', { ascending: false, nullsFirst: false })
+      .limit(count)
+    crossPersonaHooks = (cross || []).map((h: any) => ({ ...h, _crossPersona: true }))
+  }
+
   // 4. Select with variety + winner boost
   const pool = [...(fresh || []), ...(shown || [])]
   const selected: any[] = []
@@ -132,8 +159,14 @@ async function serveHooks(supabase: any, userId: string, angle: string, persona:
     }
   }
 
+  // 7. Deduplicate cross-persona hooks (don't include ones already selected)
+  const selectedIds = new Set(selected.map(h => h.id))
+  const selectedTexts = new Set(selected.map(h => h.hook_text))
+  const crossFiltered = crossPersonaHooks.filter(h => !selectedIds.has(h.id) && !selectedTexts.has(h.hook_text)).slice(0, 3)
+
   return NextResponse.json({
     hooks: selected,
+    cross_persona_hooks: crossFiltered,
     bank_status: {
       fresh: freshCount,
       total: pool.length,

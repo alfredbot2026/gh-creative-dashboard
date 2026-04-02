@@ -192,7 +192,9 @@ function CreatePageInner() {
   const [expandingHooks, setExpandingHooks] = useState<Set<string>>(new Set())
 
   // Bank-first state
-  const [bankHooks, setBankHooks] = useState<Array<{ id: string; hook_text: string; hook_type: string; proof_points_used: string[]; quality_score: number | null; ad_roas: number | null; ad_status: string | null; status: string; times_selected: number }>>([])
+  type BankHook = { id: string; hook_text: string; hook_type: string; proof_points_used: string[]; quality_score: number | null; ad_roas: number | null; ad_status: string | null; status: string; times_selected: number; persona?: string; _crossPersona?: boolean }
+  const [bankHooks, setBankHooks] = useState<BankHook[]>([])
+  const [crossPersonaHooks, setCrossPersonaHooks] = useState<BankHook[]>([])
   const [bankStatus, setBankStatus] = useState<{ fresh: number; total: number; needs_refill: boolean } | null>(null)
   const [selectedBankIds, setSelectedBankIds] = useState<Set<string>>(new Set())
   const [bankLoading, setBankLoading] = useState(false)
@@ -262,6 +264,7 @@ function CreatePageInner() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Bank load failed')
       setBankHooks(data.hooks || [])
+      setCrossPersonaHooks(data.cross_persona_hooks || [])
       setBankStatus(data.bank_status || null)
       setSelectedBankIds(new Set())
       setStep('hooks')
@@ -653,6 +656,33 @@ function CreatePageInner() {
                         <span key={i} className={styles.proofTag}>{pp}</span>
                       ))}
                     </div>
+                    {selectedBankIds.has(hook.id) && <div className={styles.bankCardCheck}>✓</div>}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Cross-persona suggestions */}
+          {bankMode === 'bank' && crossPersonaHooks.length > 0 && hooks.length === 0 && (
+            <>
+              <div className={styles.bankHeader} style={{ marginTop: '0.75rem' }}>
+                <div><strong>Also works for this angle</strong> — from similar personas</div>
+              </div>
+              <div className={styles.bankGrid}>
+                {crossPersonaHooks.map(hook => (
+                  <div
+                    key={hook.id}
+                    className={`${styles.bankCard} ${selectedBankIds.has(hook.id) ? styles.bankCardSelected : ''}`}
+                    onClick={() => toggleBankHook(hook.id)}
+                    style={{ borderStyle: 'dashed' }}
+                  >
+                    <div className={styles.bankCardHeader}>
+                      <span className={styles.hookType}>{hook.hook_type.replace(/_/g, ' ')}</span>
+                      {hook.persona && <span className={styles.proofTag}>from {fmt(hook.persona)}</span>}
+                      {hook.ad_roas != null && <span className={styles.roasBadge}>{hook.ad_roas.toFixed(1)}x ROAS</span>}
+                    </div>
+                    <p className={styles.bankCardText}>&quot;{hook.hook_text}&quot;</p>
                     {selectedBankIds.has(hook.id) && <div className={styles.bankCardCheck}>✓</div>}
                   </div>
                 ))}
