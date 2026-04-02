@@ -191,6 +191,13 @@ function CreatePageInner() {
   const [hooks, setHooks] = useState<Hook[]>([])
   const [expandingHooks, setExpandingHooks] = useState<Set<string>>(new Set())
 
+  // Bank-first state
+  const [bankHooks, setBankHooks] = useState<Array<{ id: string; hook_text: string; hook_type: string; proof_points_used: string[]; quality_score: number | null; ad_roas: number | null; ad_status: string | null; status: string; times_selected: number }>>([])
+  const [bankStatus, setBankStatus] = useState<{ fresh: number; total: number; needs_refill: boolean } | null>(null)
+  const [selectedBankIds, setSelectedBankIds] = useState<Set<string>>(new Set())
+  const [bankLoading, setBankLoading] = useState(false)
+  const [bankMode, setBankMode] = useState<'bank' | 'generate'>('bank')
+
   const [generating, setGenerating] = useState(false)
   const [genStage, setGenStage] = useState('')
   const [error, setError] = useState('')
@@ -244,7 +251,97 @@ function CreatePageInner() {
     setGenStage('')
   }
 
-  // ─── Step 2→3: Generate hooks ───
+  // ─── Step 2→3: Load bank hooks (default) or generate fresh ───
+  const handleLoadBank = async () => {
+    if (!angle || !persona) return
+    setBankLoading(true)
+    setBankMode('bank')
+    setError('')
+    try {
+      const res = await fetch(`/api/ads/bank?angle=${encodeURIComponent(angle)}&persona=${encodeURIComponent(persona)}&count=12`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Bank load failed')
+      setBankHooks(data.hooks || [])
+      setBankStatus(data.bank_status || null)
+      setSelectedBankIds(new Set())
+      setStep('hooks')
+    } catch (err: unknown) {
+      // Bank empty or failed — fall back to generate mode
+      setBankHooks([])
+      setBankStatus({ fresh: 0, total: 0, needs_refill: true })
+      setStep('hooks')
+    }
+    setBankLoading(false)
+  }
+
+  const handleUseBankHooks = async () => {
+    if (!conceptId || selectedBankIds.size === 0) return
+    setGenerating(true)
+    setGenStage('Saving selected hooks...')
+    try {
+      // Create creative_hooks entries from selected bank hooks
+      const selected = bankHooks.filter(h => selectedBankIds.has(h.id))
+      const res = await fetch('/api/ads/creative-tree/hooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          concept_id: conceptId,
+          bank_hook_ids: selected.map(h => h.id),
+          bank_hooks: selected.map(h => ({
+            hook_text: h.hook_text,
+            hook_type: h.hook_type,
+            proof_points_used: h.proof_points_used,
+          })),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to save hooks')
+      setHooks((data.hooks || []).map((h: Hook) => ({ ...h, executions: [] })))
+      // Mark bank hooks as selected
+      fetch('/api/ads/bank', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'select', ids: [...selectedBankIds] }),
+      }).catch(() => {})
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed')
+    }
+    setGenerating(false)
+    setGenStage('')
+  }
+
+  const handleGenerateFresh = async () => {
+    if (!conceptId) return
+    setGenerating(true)
+    setBankMode('generate')
+    setGenStage('Generating fresh hooks (avoiding existing patterns)...')
+    setError('')
+    try {
+      const res = await fetch('/api/ads/creative-tree/hooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ concept_id: conceptId, hookCount, fresh: true }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Hook generation failed')
+      setHooks((data.hooks || []).map((h: Hook) => ({ ...h, executions: [] })))
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed')
+    }
+    setGenerating(false)
+    setGenStage('')
+  }
+
+  const toggleBankHook = (id: string) => {
+    setSelectedBankIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  // Legacy: direct LLM generation (kept as fallback)
   const handleGenerateHooks = async () => {
     if (!conceptId) return
     setGenerating(true)
@@ -516,28 +613,79 @@ function CreatePageInner() {
 
           <div className={styles.briefActions}>
             <button className={styles.btnOutline} onClick={() => setStep('pick')}>← Change Angle</button>
-            <button className={styles.generateBtn} onClick={handleGenerateHooks}>
-              Looks Good — Generate {hookCount} Hooks →
+            <button className={styles.generateBtn} onClick={handleLoadBank}>
+              Looks Good — Browse Hook Bank →
             </button>
           </div>
         </div>
       )}
 
       {/* ─── STEP 3: Choose hooks + pick formats ─── */}
-      {step === 'hooks' && hooks.length > 0 && !generating && (
+      {step === 'hooks' && !generating && (
         <div className={styles.hooksStep}>
-          <div className={styles.hooksList}>
-            {hooks.map((hook, i) => (
-              <div key={hook.id} className={styles.hookPickCard}>
-                <div className={styles.hookPickNum}>{i + 1}</div>
-                <div className={styles.hookPickContent}>
-                  <p className={styles.hookPickText}>&quot;{hook.hook_text}&quot;</p>
-                  <span className={styles.hookType}>{hook.hook_type.replace(/_/g, ' ')}</span>
+          {/* Bank mode: show pre-generated hooks as selectable grid */}
+          {bankMode === 'bank' && bankHooks.length > 0 && hooks.length === 0 && (
+            <>
+              <div className={styles.bankHeader}>
+                <div>
+                  <strong>Hook Bank</strong> — {bankStatus?.fresh ?? 0} fresh · {bankStatus?.total ?? 0} total for {fmt(angle)} × {fmt(persona)}
                 </div>
+                <button className={styles.btnOutline} onClick={handleGenerateFresh} style={{ fontSize: '0.85rem' }}>
+                  🔄 Generate Fresh
+                </button>
               </div>
-            ))}
-          </div>
+              <div className={styles.bankGrid}>
+                {bankHooks.map(hook => (
+                  <div
+                    key={hook.id}
+                    className={`${styles.bankCard} ${selectedBankIds.has(hook.id) ? styles.bankCardSelected : ''}`}
+                    onClick={() => toggleBankHook(hook.id)}
+                  >
+                    <div className={styles.bankCardHeader}>
+                      <span className={styles.hookType}>{hook.hook_type.replace(/_/g, ' ')}</span>
+                      {hook.ad_roas != null && <span className={styles.roasBadge}>{hook.ad_roas.toFixed(1)}x ROAS</span>}
+                      {hook.ad_status === 'winning' && <span className={styles.winnerBadge}>🏆</span>}
+                      {hook.ad_status === 'tired' && <span className={styles.tiredBadge}>😴</span>}
+                    </div>
+                    <p className={styles.bankCardText}>&quot;{hook.hook_text}&quot;</p>
+                    <div className={styles.bankCardMeta}>
+                      {hook.proof_points_used?.slice(0, 2).map((pp, i) => (
+                        <span key={i} className={styles.proofTag}>{pp}</span>
+                      ))}
+                    </div>
+                    {selectedBankIds.has(hook.id) && <div className={styles.bankCardCheck}>✓</div>}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
+          {/* Bank empty: show message + generate option */}
+          {bankMode === 'bank' && bankHooks.length === 0 && hooks.length === 0 && (
+            <div className={styles.bankEmpty}>
+              <p>No hooks in the bank for <strong>{fmt(angle)} × {fmt(persona)}</strong> yet.</p>
+              <button className={styles.generateBtn} onClick={handleGenerateFresh}>
+                ✨ Generate Fresh Hooks
+              </button>
+            </div>
+          )}
+
+          {/* Generated hooks (from "Generate Fresh" or legacy flow) */}
+          {hooks.length > 0 && (
+            <div className={styles.hooksList}>
+              {hooks.map((hook, i) => (
+                <div key={hook.id} className={styles.hookPickCard}>
+                  <div className={styles.hookPickNum}>{i + 1}</div>
+                  <div className={styles.hookPickContent}>
+                    <p className={styles.hookPickText}>&quot;{hook.hook_text}&quot;</p>
+                    <span className={styles.hookType}>{hook.hook_type.replace(/_/g, ' ')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Format config */}
           <div className={styles.formatConfig}>
             <div className={styles.label}>What formats to generate?</div>
             <div className={styles.formatRow}>
@@ -551,15 +699,29 @@ function CreatePageInner() {
             </div>
           </div>
 
+          {/* Actions */}
           <div className={styles.briefActions}>
-            <button className={styles.btnOutline} onClick={() => setStep('brief')}>← Back to Brief</button>
-            <button
-              className={styles.generateBtn}
-              onClick={handleExpandAll}
-              disabled={selectedFormats.length === 0}
-            >
-              ✨ Generate All ({hooks.length} hooks × {selectedFormats.length} formats = {hooks.length * selectedFormats.length} ads)
-            </button>
+            <button className={styles.btnOutline} onClick={() => { setStep('brief'); setBankHooks([]); setHooks([]); setSelectedBankIds(new Set()) }}>← Back to Brief</button>
+            {/* Bank mode: use selected hooks */}
+            {bankMode === 'bank' && selectedBankIds.size > 0 && hooks.length === 0 && (
+              <button
+                className={styles.generateBtn}
+                onClick={handleUseBankHooks}
+                disabled={selectedFormats.length === 0}
+              >
+                ✨ Use {selectedBankIds.size} Hooks → Generate {selectedBankIds.size * selectedFormats.length} Ads
+              </button>
+            )}
+            {/* Generated hooks: expand all */}
+            {hooks.length > 0 && (
+              <button
+                className={styles.generateBtn}
+                onClick={handleExpandAll}
+                disabled={selectedFormats.length === 0}
+              >
+                ✨ Generate All ({hooks.length} hooks × {selectedFormats.length} formats = {hooks.length * selectedFormats.length} ads)
+              </button>
+            )}
           </div>
         </div>
       )}

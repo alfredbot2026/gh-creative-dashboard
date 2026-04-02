@@ -182,3 +182,24 @@
   .briefActions { flex-direction: column; }
   .savedGrid { grid-template-columns: 1fr; }
 }
+
+/* ─── Bank Grid (Phase 4g) ─── */
+.bankHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--color-text-dim); }
+.bankGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.bankCard { padding: 0.75rem; background: var(--color-surface); border: 2px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.15s; position: relative; }
+.bankCard:hover { border-color: var(--color-primary); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.bankCardSelected { border-color: var(--color-primary); background: var(--color-primary-fixed); }
+.bankCardHeader { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
+.bankCardText { font-size: 0.85rem; line-height: 1.4; margin: 0 0 0.4rem; color: var(--color-text); }
+.bankCardMeta { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.bankCardCheck { position: absolute; top: 0.5rem; right: 0.5rem; width: 22px; height: 22px; background: var(--color-primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
+.roasBadge { font-size: 0.65rem; background: #e8f5e9; color: #2e7d32; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
+.winnerBadge { font-size: 0.8rem; }
+.tiredBadge { font-size: 0.8rem; }
+.proofTag { font-size: 0.6rem; background: var(--color-primary-fixed); color: var(--color-primary); padding: 0.1rem 0.35rem; border-radius: 4px; }
+.bankEmpty { text-align: center; padding: 2rem; color: var(--color-text-dim); }
+.bankEmpty p { margin-bottom: 1rem; }
+
+@media (max-width: 768px) {
+  .bankGrid { grid-template-columns: 1fr; }
+}
