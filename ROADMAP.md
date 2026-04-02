@@ -417,7 +417,7 @@
 
 ## Phase 4g — Bank-First Creative Flow
 **Goal:** Grace opens the app and browses pre-generated, complete ad concepts — not waiting for LLM to generate from scratch every time. A creative bank that fills itself overnight and learns from what she picks and what performs.
-**Status:** `IN_PROGRESS` 🔄
+**Status:** `COMPLETE` ✅ (2026-04-02)
 **Depends on:** Phase 4e-fix ✅ (unified KB pipeline), Phase 4d ✅ (ad performance data)
 **Spec:** `tasks/TASK-037-bank-first-hook-flow.md`
 
@@ -552,15 +552,17 @@ Today's reality: Grace picks an angle × persona → waits 30-60s → LLM genera
 **Status:** `NOT_STARTED`
 **Depends on:** Phases 1-4
 
-### 5a. Template system
-- Reusable templates for each content type (script templates, carousel templates, ad templates)
-- Grace can save a successful format as a template
-- "Generate like this one" — use a past piece as a style reference
+### 5a. Template system — COMPLETE ✅ (2026-04-02)
+- ✅ "Save as Template" button in all create flows (short-form, YouTube, social-post, ads)
+- ✅ Templates save form params + sample output for reuse
+- ✅ Template picker displays saved templates as quick-select chips
 
-### 5b. Batch generation
-- Generate a full week across all lanes in one action
-- Review dashboard: see all generated content at a glance
-- Bulk approve / edit / reject
+### 5b. Batch generation — COMPLETE ✅ (2026-04-02)
+- ✅ `/batch` page generates full week across all lanes in one action
+- ✅ Configurable content mix (reels, YouTube, social, ads)
+- ✅ Review dashboard: see all generated content at a glance
+- ✅ Bulk approve / reject per item
+- ✅ Save approved items to calendar
 
 ### 5c. Export + integration
 - Export scripts as PDF / Google Docs
