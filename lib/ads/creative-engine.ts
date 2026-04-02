@@ -13,6 +13,8 @@ import { createClient } from '@/lib/supabase/server'
 import { loadBusinessContext, getThresholds } from './business-context'
 import { generateShortFormScript } from '@/lib/create/shortform-generator'
 import { getAdGenerationContext, getBrandContext } from '@/lib/create/kb-retriever'
+import { checkQualityGate } from '@/lib/eval/quality-gate'
+import type { KnowledgeEntry } from '@/lib/knowledge/types'
 
 // ─── Types ───
 
@@ -60,9 +62,34 @@ const PERSONA_MAP: Record<string, string> = {
   busy_professional: 'Working full-time. Needs something she can do in 30 min/day. Time is the main constraint.',
 }
 
-// ─── Framework Map ───
+/**
+ * Query KB for scripting frameworks. Falls back to hardcoded map if KB empty.
+ */
+async function getFrameworks(): Promise<Record<string, string>> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('knowledge_entries')
+    .select('subcategory, title, content')
+    .eq('category', 'scripting_framework')
+    .contains('lanes', ['ads'])
+    .in('review_status', ['approved', 'candidate'])
+    .order('effectiveness_score', { ascending: false })
+    .limit(15)
 
-const FRAMEWORK_MAP: Record<string, string> = {
+  if (data && data.length > 0) {
+    const map: Record<string, string> = {}
+    for (const e of data) {
+      map[e.subcategory || e.title] = e.content
+    }
+    return map
+  }
+  // Fallback to hardcoded
+  return FRAMEWORK_MAP_FALLBACK
+}
+
+// ─── Framework Map (Fallback) ───
+
+const FRAMEWORK_MAP_FALLBACK: Record<string, string> = {
   PAS: 'Problem → Agitate → Solution. Start with the pain, make it vivid, present the product as the answer.',
   AIDA: 'Attention → Interest → Desire → Action. Hook, educate, create want, then CTA.',
   before_after: 'Show the before state (struggle), the after state (success), and the product as the bridge.',
@@ -81,8 +108,8 @@ export async function generateConceptBrief(
 ): Promise<ConceptBrief> {
   const supabase = await createClient()
 
-  // Load all context in parallel — including KB + brand voice
-  const [productRes, winningAdsRes, allAdsForAngleRes, compAdsRes, bizCtx, kbContext, brandContext] = await Promise.all([
+  // Load all context in parallel — including KB + brand voice + frameworks
+  const [productRes, winningAdsRes, allAdsForAngleRes, compAdsRes, bizCtx, kbContext, brandContext, frameworksMap] = await Promise.all([
     supabase.from('product_catalog').select('name, price, description, offer_details, target_audience, usps').eq('is_active', true).limit(1).single(),
     supabase.from('ad_creatives').select('hook_type, framework, body_text, video_transcription, avg_roas, headline').eq('user_id', userId).eq('angle', angle).eq('ad_status', 'winning').order('avg_roas', { ascending: false }).limit(mode === 'scale' ? 10 : 5),
     mode === 'scale'
@@ -92,6 +119,7 @@ export async function generateConceptBrief(
     loadBusinessContext(supabase, userId),
     getAdGenerationContext(15),
     getBrandContext(),
+    getFrameworks(),
   ])
 
   const product = productRes.data
@@ -113,7 +141,7 @@ export async function generateConceptBrief(
       frameworkCounts.set(ad.framework, (frameworkCounts.get(ad.framework) || 0) + weight)
     }
   }
-  const bestFramework = [...frameworkCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || 'PAS'
+  const bestFramework = [...frameworkCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || Object.keys(frameworksMap)[0] || 'PAS'
 
   // Winning patterns — more detail in scale mode
   const winPatterns = winningAds.slice(0, mode === 'scale' ? 5 : 3).map(ad => {
@@ -147,6 +175,21 @@ export async function generateConceptBrief(
     ? kbEntries.slice(0, 8).map(e => `[${e.category}] ${e.title}: ${(e.content || '').substring(0, 300)}`).join('\n')
     : ''
 
+  // Query KB for persona-tagged entries to enrich persona context
+  let personaKBContext = ''
+  try {
+    const { data: personaKB } = await supabase
+      .from('knowledge_entries')
+      .select('content, tags')
+      .eq('category', 'ad_creative')
+      .contains('tags', [`persona:${persona}`])
+      .in('review_status', ['approved', 'candidate'])
+      .limit(5)
+    if (personaKB && personaKB.length > 0) {
+      personaKBContext = '\n\nKB Persona Insights:\n' + personaKB.map(e => `• ${e.content}`).join('\n')
+    }
+  } catch { /* KB persona query is non-fatal */ }
+
   // Brand voice from DB (overrides hardcoded tone)
   const brand = brandContext as Record<string, unknown> | null
   const brandTone = brand
@@ -159,7 +202,7 @@ export async function generateConceptBrief(
     core_message: `${product?.name || 'Papers to Profits'} teaches ${PERSONA_MAP[persona]?.split('.')[0]?.toLowerCase() || 'beginners'} how to start a home-based printing business step-by-step`,
     product_name: product?.name || 'Papers to Profits',
     product_price: thresholds.productPrice,
-    persona_context: PERSONA_MAP[persona] || `Target: ${persona.replace(/_/g, ' ')}`,
+    persona_context: (PERSONA_MAP[persona] || `Target: ${persona.replace(/_/g, ' ')}`) + personaKBContext,
     tone: brandTone,
     framework: bestFramework,
     proof_points: [...new Set(proofPoints)] as string[],
@@ -177,6 +220,7 @@ export async function generateHookVariations(
   brief: ConceptBrief,
   count: number = 4,
   kbHooks?: string,
+  frameworksMap?: Record<string, string>,
 ): Promise<HookVariation[]> {
   const kbHookSection = kbHooks
     ? `\n\nPROVEN HOOK PATTERNS FROM KNOWLEDGE BASE (adapt, don't copy verbatim):\n${kbHooks}`
@@ -204,7 +248,7 @@ CONCEPT:
 - Persona: ${brief.persona.replace(/_/g, ' ')}
 - Core message: ${brief.core_message}
 - Product: ${brief.product_name} (₱${brief.product_price})
-- Framework: ${brief.framework} (${FRAMEWORK_MAP[brief.framework] || ''})
+- Framework: ${brief.framework} (${(frameworksMap || FRAMEWORK_MAP_FALLBACK)[brief.framework] || ''})
 - Available proof points: ${brief.proof_points.join(' | ')}
 ${brief.winning_patterns ? `\nWINNING PATTERNS (reference, don't copy):\n${brief.winning_patterns}` : ''}
 ${brief.competitor_context ? `\nCOMPETITOR CONTEXT: ${brief.competitor_context}` : ''}${kbHookSection}
@@ -345,7 +389,24 @@ ${formatInstructions}`,
       { temperature: 0.7 },
     )
 
-    results.push(...(data.executions || []).map(e => ({ ...e, llm_provider: execProvider, llm_model: execModel })))
+    // Quality gate on static/carousel formats (soft — log but don't block)
+    for (const exec of (data.executions || [])) {
+      const execWithMeta = { ...exec, llm_provider: execProvider, llm_model: execModel }
+      try {
+        const textToCheck = typeof exec.content === 'object'
+          ? Object.values(exec.content).filter(v => typeof v === 'string').join(' ')
+          : ''
+        if (textToCheck.length > 20) {
+          const qg = await checkQualityGate(textToCheck, 'ad-copy', 'facebook', 0.6)
+          ;(execWithMeta.content as Record<string, unknown>).quality_score = qg?.scores ?? null
+          ;(execWithMeta.content as Record<string, unknown>).passed_quality_gate = qg?.passed ?? null
+          if (qg && !qg.passed) {
+            console.warn(`[creative-engine] Quality gate SOFT FAIL for ${exec.format}:`, qg.feedback)
+          }
+        }
+      } catch { /* quality gate is non-fatal */ }
+      results.push(execWithMeta)
+    }
   }
 
   // Video formats: route through full KB-backed script pipeline
@@ -380,20 +441,52 @@ export async function generateCreativeTree(
   // Step 1: Generate concept brief (loads KB + brand internally)
   const brief = await generateConceptBrief(angle, persona, userId, mode)
 
-  // Step 2: Load KB hooks for hook generation
+  // Step 2: Load KB hooks — angle/persona-aware, full content
   let kbHookContext: string | undefined
   try {
-    const { entries: kbEntries } = await getAdGenerationContext(10)
-    const hookEntries = kbEntries.filter(e => e.category === 'hook_library')
-    if (hookEntries.length > 0) {
-      kbHookContext = hookEntries.slice(0, 5).map(e => `• ${e.title}: ${(e.content || '').substring(0, 200)}`).join('\n')
+    const supabase = await createClient()
+    
+    // First: hooks matching this specific angle or persona
+    const { data: matched } = await supabase
+      .from('knowledge_entries')
+      .select('subcategory, content, examples, effectiveness_score')
+      .eq('category', 'hook_library')
+      .contains('lanes', ['ads'])
+      .in('review_status', ['approved', 'candidate'])
+      .or(`tags.cs.{"angle:${angle}"},tags.cs.{"persona:${persona}"}`)
+      .order('effectiveness_score', { ascending: false })
+      .limit(10)
+
+    const hookPool = (matched && matched.length >= 3) ? matched : null
+
+    // Fallback: general hook_library if no angle/persona match
+    if (!hookPool) {
+      const { entries: kbEntries } = await getAdGenerationContext(15)
+      const generalHooks = kbEntries.filter(e => e.category === 'hook_library').slice(0, 10)
+      if (generalHooks.length > 0) {
+        kbHookContext = generalHooks.map(e => {
+          const examples = Array.isArray(e.examples) ? (e.examples as string[]).slice(0, 2).join('; ') : ''
+          return `• [${e.subcategory}] ${e.content}${examples ? ` | Examples: ${examples}` : ''}`
+        }).join('\n')
+      }
+    } else {
+      kbHookContext = hookPool.map(e => {
+        const examples = Array.isArray(e.examples) ? (e.examples as string[]).slice(0, 2).join('; ') : ''
+        return `• [${e.subcategory}] ${e.content}${examples ? ` | Examples: ${examples}` : ''}`
+      }).join('\n')
     }
   } catch { /* KB retrieval is non-fatal */ }
 
-  // Step 3: Generate hook variations
-  const hooks = await generateHookVariations(brief, hookCount, kbHookContext)
+  // Load frameworks map for hook generation
+  let frameworksMap: Record<string, string> = FRAMEWORK_MAP_FALLBACK
+  try {
+    frameworksMap = await getFrameworks()
+  } catch { /* Frameworks fallback is non-fatal */ }
 
-  // Step 3: Expand hooks into formats — parallel for non-video, sequential for video
+  // Step 3: Generate hook variations (pass frameworks map)
+  const hooks = await generateHookVariations(brief, hookCount, kbHookContext, frameworksMap)
+
+  // Step 4: Expand hooks into formats — parallel for non-video, sequential for video
   // Video uses KB pipeline (longer) so we don't want all to pile up at once
   const hasVideo = formats.some(f => f === 'video_ugc' || f === 'video_hq')
   
