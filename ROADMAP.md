@@ -392,21 +392,107 @@
 
 ## Phase 4e-fix — Ads System Consolidation + Intelligence Layer
 **Goal:** Fix data integrity, remove fragmentation, build the command center that was promised.
-**Status:** `IN_PROGRESS` 🔄
+**Status:** `COMPLETE` ✅ (all 5 sub-phases shipped, 8 commits, 2026-04-01)
 **Depends on:** Phase 4e (shipped with issues)
 **Spec:** `specs/ADS-ROADMAP-V2.md`
 **Audit:** `docs/ADS-AUDIT-2026-03-31.md`
 
 ### Sub-phases:
-- **A: Data Integrity** (~4 hrs) — Fix phantom data, sync fresh, unify data source
-- **B: Consolidation** (~3 hrs) — Kill legacy factory, remove redundant pages (5 → 3)
-- **C: Intelligence Layer** (~6 hrs) — /ads becomes command center with action cards + inline strategy map
-- **D: Generation Refinement** (~4 hrs) — Better Scale mode, concept history, generation speed
-- **E: Automation** (~2 hrs) — Daily sync cron, weekly competitor refresh, fatigue auto-detection
+- **A: Data Integrity** ✅ — Pagination fix, 936 rows synced
+- **B: Consolidation** ✅ — -517 lines, 5→3 pages
+- **C: Intelligence Layer** ✅ — ROAS fix, profit headline, actionable recs, rich competitors
+- **D: Generation Refinement** ✅ — KB integration, progressive gen, wizard flow, concept history, unified edit
+- **E: Automation** ✅ — Daily sync cron 6AM PHT, weekly competitor refresh, fatigue auto-detection
+
+### Also completed (2026-04-02):
+- **TASK-035:** Seeded 190 generated hooks into `knowledge_entries` (hook_library, ads+short-form lanes)
+- **TASK-036:** Unified ad engine with KB pipeline — replaced hardcoded maps, angle-aware hooks, quality gate on all formats
+- **E2E verified:** `/ads/create` → Comparison × Beginner → KB-backed hooks → 6 ads generated successfully
 
 **Target page architecture:** `/ads` (command center) + `/ads/create` (factory) + `/ads/competitors` (intel)
 
 **UI/UX Principles:** One source of truth, daily data as truth, think like buyer / speak like friend, every insight → action, stale data labeled, no legacy code paths.
+
+---
+
+## Phase 4g — Bank-First Creative Flow
+**Goal:** Grace opens the app and browses pre-generated, complete ad concepts — not waiting for LLM to generate from scratch every time. A creative bank that fills itself overnight and learns from what she picks and what performs.
+**Status:** `IN_PROGRESS` 🔄
+**Depends on:** Phase 4e-fix ✅ (unified KB pipeline), Phase 4d ✅ (ad performance data)
+**Spec:** `tasks/TASK-037-bank-first-hook-flow.md`
+
+### Why this phase exists
+
+The original vision (Rob, 2026-03-26): _"We're creating a media buyer company + creative company that creates the missing ads based on the media buyer brain."_
+
+What this means for Grace's experience: **she shouldn't be creating ads — she should be picking from a curated library of ready-made concepts that the system generated overnight.** The media buyer brain decides WHAT to create. The creative director produces it. Grace reviews and approves.
+
+Today's reality: Grace picks an angle × persona → waits 30-60s → LLM generates everything from scratch. The `hook_bank` and `script_bank` tables exist but are empty and not connected to the UI. The 190 hooks in `knowledge_entries` are only used as prompt reference material, not served directly.
+
+### What "bank-first" means
+
+1. **Pre-generated complete ads sit in a bank, ready to browse.** Not just hooks — full concepts: hook + static ad copy + carousel slides + video script.
+2. **The bank fills itself.** A nightly cron picks the top untested/fatigued angle×persona combos, generates complete creative trees, stores everything.
+3. **Grace browses a grid, picks favorites.** No waiting. Instant.
+4. **"Generate Fresh" is the escape hatch.** When bank options don't appeal, one click generates new ones — guaranteed different from everything in the bank (negative constraints).
+5. **Performance feeds back.** Deployed ads get ROAS data → bank entries get scored → KB effectiveness_score updates → future generations get smarter.
+
+### Three data stores, one flow
+
+| Store | Role | Scope |
+|-------|------|-------|
+| `knowledge_entries` | System-wide knowledge (hooks, frameworks, virality science) | Shared, not user-scoped |
+| `hook_bank` + `script_bank` | User-facing creative library (freshness tracked, performance linked) | Per-user |
+| `creative_hooks` + `creative_executions` | Hooks/ads attached to a specific concept/campaign | Per-concept |
+
+**Flow:** `knowledge_entries` seeds → `hook_bank`/`script_bank` (serve to UI) → user picks → `creative_hooks`/`creative_executions` (attached to concept) → deployed → ROAS flows back to `hook_bank` → propagates to `knowledge_entries.effectiveness_score`
+
+### Wave 1: Seed bank from KB + Wire to UI (~4 hrs)
+- Copy 190 KB hooks into `hook_bank` for Grace's user_id (one-time + ongoing sync)
+- Replace Step 3 in `/ads/create` with bank serve call (grid UI, multi-select)
+- Show hook type badges, proof points, performance data when available
+- Cross-persona suggestions ("This hook also works for price_sensitive")
+- "Use Selected" → creates `creative_hooks` entries → proceeds to Step 4
+- Fallback: if bank empty for this combo, auto-seed from KB first
+
+### Wave 2: "Generate Fresh" with negative constraints (~3 hrs)
+- Button appears after user sees bank options
+- Queries ALL existing `hook_bank` hooks for this angle×persona
+- Passes them as "DO NOT repeat or paraphrase" to LLM
+- Forces unused hook types and underused proof points
+- New hooks saved to bank (for future sessions) + shown inline
+- Auto-save to `knowledge_entries` if quality gate passes (grows the shared KB)
+
+### Wave 3: Full creative tree pre-generation cron (~6 hrs)
+- Nightly cron picks top 3-5 angle×persona combos to fill:
+  - Untested combos (never in bank)
+  - Fatigued combos (winning hooks are all "tired" status)
+  - Combos below minimum bank threshold (<10 fresh hooks)
+- For each combo: generate complete creative tree (brief + 5 hooks + static + carousel + video script)
+- Store hooks in `hook_bank`, scripts in `script_bank`, full concepts in `creative_concepts`
+- Track generation credits for SaaS metering
+- Grace wakes up to 15-25 fresh complete ad concepts every morning
+
+### Wave 4: Performance feedback loop (~3 hrs)
+- Ads sync cron (already runs daily) → after updating `ad_creatives`:
+  - Match back to `hook_bank` entries by `deployed_ad_id` or content similarity
+  - Update `hook_bank.ad_roas`, `hook_bank.ad_status` (winning/tired/dead)
+  - Propagate to `knowledge_entries.effectiveness_score`:
+    - Winning hook: +10 score
+    - Tired hook: -5 score
+    - Dead hook: -15 score
+  - Update `times_successful` / `times_used` counters
+- Bank serve logic already boosts hooks similar to winners (built in `/api/ads/bank` GET)
+- Surface in UI: hooks with performance data show ROAS badge, "🏆 Winner" / "😴 Tired" status
+
+### Rob's UX decisions (2026-04-02)
+- **Grid layout** (not swipe/Tinder-style) — see all hooks at once, multi-select
+- **Auto-seed** — first time Grace picks an angle×persona, auto-fill from KB
+- **Show performance** — when available, display ROAS/status on hook cards
+- **Cross-persona** — suggest hooks from adjacent personas
+- **Cron-based seeding** — nightly pre-generation, not just on-demand
+
+**Total: ~16 hrs across 4 waves**
 
 ---
 
