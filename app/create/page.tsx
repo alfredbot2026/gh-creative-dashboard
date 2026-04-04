@@ -81,6 +81,7 @@ interface Variant {
   content: any
   qualityScore: number
   imageUrl?: string
+  source?: 'bank' | 'generated'
 }
 
 
@@ -213,27 +214,58 @@ function CreateWizard() {
         }])
         goTo('carousel-text')
       } else {
-        // Normal script generation
-        const res = await fetch('/api/create/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            platform,
-            contentType: goal,
-            topic: topic.trim() || undefined,
-            variants: 3,
-            structure_slug: selectedStructure?.slug || undefined,
-          }),
-        })
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(err.error || 'Generation failed')
+        // Bank-first: try to serve from script_bank before LLM generation
+        const formatMap: Record<string, string> = {
+          'reels': 'video_ugc', 'tiktok': 'video_ugc', 'youtube': 'video_ugc',
+          'facebook-ad': 'static_image', 'facebook-post': 'video_ugc',
+          'carousel': 'carousel', 'static-image': 'static_image',
         }
+        const bankFormat = formatMap[platform] || 'video_ugc'
+        let bankVariants: Variant[] = []
+        try {
+          const bankRes = await fetch(`/api/ads/bank?type=scripts&angle=${encodeURIComponent(goal)}&persona=grace&format=${encodeURIComponent(bankFormat)}&count=3`)
+          if (bankRes.ok) {
+            const bankData = await bankRes.json()
+            const scripts = bankData.scripts || []
+            if (scripts.length >= 3) {
+              bankVariants = scripts.map((s: any, i: number) => ({
+                id: s.id || `bank-${i+1}`,
+                number: i + 1,
+                hook: s.hook_text || '',
+                content: { scenes: s.scenes || [], format: s.format },
+                qualityScore: Math.round((s.quality_score || 0.85) * 100),
+                source: 'bank' as const,
+              }))
+            }
+          }
+        } catch { /* bank unavailable, fall through to LLM */ }
 
-        const data = await res.json()
-        setResults(data.variants || [])
-        goTo('results')
+        if (bankVariants.length >= 3) {
+          setResults(bankVariants)
+          goTo('results')
+        } else {
+          // Fallback: LLM generation
+          const res = await fetch('/api/create/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              platform,
+              contentType: goal,
+              topic: topic.trim() || undefined,
+              variants: 3,
+              structure_slug: selectedStructure?.slug || undefined,
+            }),
+          })
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            throw new Error(err.error || 'Generation failed')
+          }
+
+          const data = await res.json()
+          setResults((data.variants || []).map((v: Variant) => ({ ...v, source: 'generated' as const })))
+          goTo('results')
+        }
       }
     } catch (err: any) {
       setError(err.message)
@@ -777,6 +809,12 @@ function CreateWizard() {
               <div key={variant.id} className={styles.variantCard} style={{ animationDelay: `${vi * 100}ms` }}>
                 <div className={styles.variantHeader}>
                   <span className={styles.variantNumber}>Option {variant.number}</span>
+                  {variant.source === 'bank' && (
+                    <span className={styles.sourceBadge} title="Served from pre-generated content bank">📦 From Bank</span>
+                  )}
+                  {variant.source === 'generated' && (
+                    <span className={styles.sourceBadge} title="Generated fresh by AI">✨ AI Generated</span>
+                  )}
                   {variant.qualityScore && (
                     <span className={styles.qualityBadge}>{variant.qualityScore}/10</span>
                   )}

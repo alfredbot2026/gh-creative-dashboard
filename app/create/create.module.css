@@ -487,6 +487,16 @@
   color: var(--color-text-muted);
 }
 
+.sourceBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-primary, #6366f1) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #6366f1) 30%, transparent);
+  color: var(--color-primary, #6366f1);
+}
+
 .qualityBadge {
   font-size: 0.75rem;
   font-weight: 600;
