@@ -1,81 +1,90 @@
 # GH Creative Dashboard — STATUS
 
-**Last Updated:** 2026-04-01 00:00 PHT
+**Last Updated:** 2026-04-04 19:00 PHT
 
-## Current Phase: Phase 4e-fix — Ads System Consolidation + Intelligence Layer
+---
 
-### What's Happening
-Full audit completed (2026-03-31). Phase 4e shipped all 5 waves but produced fragmented pages, inconsistent data, and two generation engines. Phase 4e-fix consolidates everything.
+## Current State: Content Bank Live + Bank-First Serving
+
+All major features complete. Content bank seeded and serving. App deployed on Vercel.
+
+### What Just Shipped (2026-04-04)
+
+| Item | Status | Detail |
+|------|--------|--------|
+| Seed data generation | ✅ Done | 129 batches, 1,161 variants (116 good JSON, 13 corrupted) |
+| Hook bank import | ✅ Done | 976 new hooks → 1,178 total in DB |
+| Script bank import | ✅ Done | 751 new scripts → 1,026 total in DB |
+| Topic bank seeding | ✅ Done | 146 seed topics tagged, 320 total |
+| Bank-first `/create` | ✅ Done | Checks script_bank before LLM |
+| Bank-first `/ads/create` | ✅ Already existed | Hook bank serving was built in Phase 4g |
+| Source labels | ✅ Done | "📦 From Bank" / "✨ AI Generated" on variants; "📦 bank" on topics |
+| Vercel deploy | ✅ Done | Auto-deploying from main, latest build ready |
+| E2E test | ✅ Passed | Full flow: /create → bank-first → instant results with labels |
 
 ### Key Documents (read these for cold-start)
+
 | Document | Path | What |
 |----------|------|------|
-| **Roadmap V2** | `specs/ADS-ROADMAP-V2.md` | 5-phase fix plan (A-E), ~21 hrs, Rob's decisions |
-| **Generation V3** | `specs/ADS-GENERATION-V3.md` | Media Buyer + Creative Director architecture, gap analysis |
-| **Full Audit** | `docs/ADS-AUDIT-2026-03-31.md` | Data integrity issues, page fragmentation, API audit |
-| **System Docs** | `docs/ADS-SYSTEM.md` | Complete technical reference (tables, APIs, lib modules) |
-| **Original Spec** | `specs/phase-4e-ad-intelligence-creative-factory.md` | Original vision + wireframes |
-| **Memory** | `memory/2026-03-31.md` | Rob's decisions, vision clarifications |
+| **README** | `README.md` | Full project overview, architecture, routes, setup |
+| **Content Bank** | `docs/CONTENT-BANK.md` | Bank-first system, seed pipeline, DB schema, diagnostics |
+| **Ads System** | `docs/ADS-SYSTEM.md` | Ad data flow, sync, intelligence layer |
+| **Roadmap** | `ROADMAP.md` | All phases with status |
+| **Content Engine V2** | `specs/CONTENT-ENGINE-V2-VISION.md` | Product vision |
+| **Ads Roadmap V2** | `specs/ADS-ROADMAP-V2.md` | 5-phase ads fix plan |
+| **LLM Battle** | `docs/LLM-BATTLE.md` | Model comparison for generation |
 
-### Phase 4e-fix Sub-phases
-| Phase | Hours | Status | What |
-|-------|-------|--------|------|
-| A: Data Integrity | ~4 | `DONE` | Pagination fix, sync now gets all 773 rows through today |
-| B: Consolidation | ~3 | `DONE` | Removed legacy /api/ads/sync, /api/ads/performance, /ads/strategy redirect. 3 pages: /ads, /ads/create, /ads/competitors |
-| C: Intelligence Layer | ~6 | `DONE` | All 3 waves shipped: ROAS fix, profit headline, actionable recs, tight strategy map, rich competitors, create flow |
-| D: Generation Refinement | ~6 | `DONE` | D2 KB integration, D3 progressive gen (3-step API), D1 wizard flow, D4 concept history, unified edit experience (BlockEditor for video, SlideBlockEditor for carousel) |
-| E: Automation | ~2 | `DONE` | Daily sync cron (6AM PHT), weekly competitor refresh (Mon 7AM), fatigue detection with status change tracking |
+### Content Bank Stats
 
-### Phase C — Intelligence Layer UX Audit (2026-03-31 17:30)
+| Table | Count | Seed | LLM | Fresh |
+|-------|-------|------|-----|-------|
+| `topic_bank` | 320 | 146 | 174 | ~297 unshown |
+| `hook_bank` | 1,178 | 976 | 202 | ~976 fresh |
+| `script_bank` | 1,026 | 751 | 275 | ~751 fresh |
 
-**Audited by:** Dr. Strange (Rob-requested, Grace/Rob lens)
-**Verdict:** Structure is solid (4-tab layout works), but data quality + actionability need fixing.
+### Known Issues
 
-#### Issues Found (priority order)
+| Issue | Severity | Detail |
+|-------|----------|--------|
+| 13 bad batch JSONs | Low | Batches 12, 16, 25, 45, 47, 51, 58, 60, 70, 72, 81, 91, 93 — corrupted from rate-limit crashes. Can regenerate. |
+| Quality score display | Cosmetic | Shows as `/10` instead of `/100` on some variants |
+| Angle mapping incomplete | Low | Script bank uses simplified angles (prove, sell, story, educate, inspire). Some nuance lost from original task files. |
+| `CRON_SECRET` needed on Vercel | Blocker for crons | Bank-fill and ads-sync crons need this env var set |
 
-| # | Issue | Severity | Effort | Fix |
-|---|-------|----------|--------|-----|
-| 1 | **ROAS wildly inflated** — Strategy map shows 224x, 35.9x. Calculation error or low-spend outlier skew. Kills trust. | P0 | 1hr | Fix ROAS calc in intelligence.ts — filter out low-spend outliers, use weighted avg |
-| 2 | **No profit headline** — Grace's #1 question ("did I make money?") is buried in Campaigns tab | P0 | 30min | Add spend/revenue/profit summary card to Overview tab |
-| 3 | **Recommendations too vague** — "Scale curiosity ads" doesn't tell Grace what to DO | P1 | 2hr | Show actual ad name, specific next step, link to generate variations |
-| 4 | **Strategy map too sparse** — 90 cells, most empty. Overwhelming + empty simultaneously | P1 | 1hr | Collapse to tested personas only, show tighter grid |
-| 5 | **No time context on recs** — "ROAS dropped 71%" over what period? | P1 | 30min | Add "last 7 days vs prior 7" to recommendation reason text |
-| 6 | **Competitors tab is hollow** — Shows 4 angles, no actual intelligence. Full /competitors page is better | P2 | 2hr | Pull actual competitor hooks/copy into tab, or embed full page |
-| 7 | **Frequency threshold too aggressive** — 2.5 flags red, most media buyers use 3.0+ | P2 | 15min | Raise threshold to 3.0 |
-| 8 | **Create flow disconnected** — /ads/create has its own angle coverage + weekly plan separate from Overview recs | P2 | 3hr | Merge recommendation → generate into one flow |
+### Phase History (All Complete)
 
-#### Plan: Fix in 3 waves
+| Phase | What | When |
+|-------|------|------|
+| 0: Knowledge Architecture | KB schema, extraction, brand identity | 2026-03 |
+| 0.5: Eval Harness | Quality gate, scoring rubric, regression tests | 2026-03 |
+| 1: Short-form Scripts | Reel/TikTok generation with KB retrieval | 2026-03 |
+| 2: Ad Content | Ad copy, static images, carousels | 2026-03 |
+| 3: YouTube Scripts | Long-form script generation | 2026-03 |
+| 3.5: Learning Pipeline | Performance → KB feedback loop | 2026-03 |
+| 4a: Content Engine V2 | Content structures (PASTOR, etc.) | 2026-03 |
+| 4b: Visual Studio | Image generation integration | 2026-03 |
+| 4c: Competitive Intelligence | Competitor tracking, sentiment | 2026-03 |
+| 4d: Ad Feedback Loop | Ad performance → generation feedback | 2026-03 |
+| 4e: Ad Intelligence | Campaign dashboard, strategy map | 2026-03 |
+| 4e-fix: Ads Consolidation | 5-phase fix (A-E): data, pages, intelligence, gen, automation | 2026-04-01 |
+| 4f: KB Pipeline Unification | Ad engine unified with KB stack | 2026-04-02 |
+| 4g: Hook & Script Bank | Bank-first system, Option C architecture | 2026-04-03 |
+| 4g-seed: Content Bank Seeding | 129 batches, 1,161 variants, import, bank-first serving, labels | 2026-04-04 |
 
-**Wave 1 (P0 — trust + value):** Fix ROAS calc, add profit headline, fix frequency threshold
-**Wave 2 (P1 — actionability):** Actionable recommendations, tighter strategy map, time context
-**Wave 3 (P2 — polish):** Competitors tab, create flow unification
+### Deployment
 
-### Critical Issues Found in Audit
-1. **Phantom performance data** — 4 engagement ads show ₱73,705 spend each with ZERO daily rows
-2. **Two generation engines** — legacy factory (/ads/weekly) + V2 creative tree (/ads/create)
-3. **Three data interpretations** — /ads (daily), /ads/strategy (denorm), /ads/weekly (legacy)
-4. **Daily data 5 days stale** — last ad_performance row: 2026-03-26
-5. **Ad engine missing KB stack** — organic /create uses full KB pipeline, ad engine uses hardcoded maps
+| Property | Value |
+|----------|-------|
+| URL | https://gh-creative-dashboard.vercel.app |
+| Repo | https://github.com/alfredbot2026/gh-creative-dashboard |
+| Deploy | Auto from `main` branch |
+| Build time | ~2 minutes |
+| Crons | 3 (ads-sync daily, competitor weekly, bank-fill daily) |
 
-### Rob's Key Decisions (2026-03-31)
-- Weekly planner → own page (/ads/weekly), rebuilt on V2
-- Competitors → tabs on /ads main page for insight sources
-- Strategy map → inline tab + expandable (Option C)
-- Generation → wizard pattern from /create, step-by-step
-- Two AI roles: Media Buyer Brain (what to create) + Creative Director (how to execute)
-- User (Grace) reviews/approves, doesn't configure
-- Token conscious: save everything, retrieve before regenerate
-- Ad engine MUST use same generation stack as /create (KB, brand voice, structures, quality gate)
+### What's Next (Candidates)
 
-### Previous Phases (All Complete)
-- Phase 0: Knowledge Architecture ✅
-- Phase 0.5: Eval Harness ✅
-- Phase 1: Short-form Script Generation ✅
-- Phase 2: Ad Content Engine ✅
-- Phase 3: YouTube Scripts ✅
-- Phase 3.5: Learning Pipeline ✅ (profile stale, needs refresh)
-- Phase 4a: Content Engine V2 (structures) ✅
-- Phase 4b: Visual Studio ✅
-- Phase 4c: Competitive Intelligence ✅
-- Phase 4d: Ad Performance Feedback Loop ✅
-- Phase 4e: Ad Intelligence + Creative Factory ✅ (shipped with issues → 4e-fix)
+- Fix 13 corrupted batch files (regenerate + re-import)
+- Set `CRON_SECRET` on Vercel for cron jobs
+- Performance profile refresh (currently stale)
+- Content calendar integration
+- Grace user testing session
