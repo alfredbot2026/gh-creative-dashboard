@@ -598,7 +598,10 @@ function CreateWizard() {
                     className={`${styles.topicCard} ${topic === s.title ? styles.topicCardActive : ''}`}
                     onClick={() => setTopic(s.title)}
                   >
-                    <span className={styles.topicCardCategory}>{s.category}</span>
+                    <span className={styles.topicCardCategory}>
+                      {s.category}
+                      {s.source === 'seed' && <span className={styles.topicSourceBadge}>📦 bank</span>}
+                    </span>
                     <span className={styles.topicCardTitle}>{s.title}</span>
                     <span className={styles.topicCardHook}>{s.hook_idea}</span>
                   </button>
