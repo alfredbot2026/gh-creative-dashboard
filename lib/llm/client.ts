@@ -19,15 +19,15 @@ interface LLMProvider {
 /* Ordered fallback chain — default (fast/cheap) */
 const PROVIDERS: LLMProvider[] = [
     {
-        name: 'Gemini',
-        envKey: 'GEMINI_API_KEY',
-        model: 'gemini-3-flash-preview',
-    },
-    {
         name: 'MiniMax',
         envKey: 'MINIMAX_API_KEY',
         endpoint: 'https://api.minimax.io/v1/chat/completions',
         model: 'MiniMax-M2.7',
+    },
+    {
+        name: 'Gemini',
+        envKey: 'GEMINI_API_KEY',
+        model: 'gemini-3-flash-preview',
     },
     {
         name: 'ZAI',
@@ -46,6 +46,12 @@ const PROVIDERS: LLMProvider[] = [
 /* Premium providers — for creative writing (script generation) */
 const CREATIVE_PROVIDERS: LLMProvider[] = [
     {
+        name: 'MiniMax',
+        envKey: 'MINIMAX_API_KEY',
+        endpoint: 'https://api.minimax.io/v1/chat/completions',
+        model: 'MiniMax-M2.7',
+    },
+    {
         name: 'Claude',
         envKey: 'CLAUDE_API_KEY',
         endpoint: 'https://api.anthropic.com/v1/messages',
@@ -56,7 +62,7 @@ const CREATIVE_PROVIDERS: LLMProvider[] = [
         envKey: 'GEMINI_API_KEY',
         model: 'gemini-3.1-pro-preview',
     },
-    // Falls back to default chain if neither is available
+    // Falls back to default chain if none are available
 ]
 
 /* -- Response type -- */
