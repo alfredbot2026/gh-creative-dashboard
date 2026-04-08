@@ -1,7 +1,7 @@
 /**
  * POST /api/ads/bank/seed — Seed the hook bank for an angle×persona
  * 
- * Generates hooks via Kimi K2-Turbo (best for hooks) and optionally
+ * Generates hooks via MiniMax M2.7 and optionally
  * scripts via Claude Sonnet 4.6 (best for scripts).
  * 
  * Deduplicates against existing bank entries.
@@ -87,10 +87,10 @@ export async function POST(request: NextRequest) {
       ? `\n\nDO NOT repeat or rephrase these existing hooks:\n${exclusionList.map((t: string) => `- "${t}"`).join('\n')}`
       : ''
 
-    // 4. Generate hooks via Kimi K2-Turbo (best hook quality)
-    const moonKey = process.env.MOONSHOT_API_KEY
-    if (!moonKey) {
-      return NextResponse.json({ error: 'MOONSHOT_API_KEY not configured' }, { status: 500 })
+    // 4. Generate hooks via MiniMax M2.7
+    const minimaxKey = process.env.MINIMAX_API_KEY
+    if (!minimaxKey) {
+      return NextResponse.json({ error: 'MINIMAX_API_KEY not configured' }, { status: 500 })
     }
 
     // Load product context
@@ -105,11 +105,11 @@ export async function POST(request: NextRequest) {
     const productPrice = product?.price || 1497
     const proofPoints = (product?.usps || []).join(' | ')
 
-    const hookRes = await fetch('https://api.moonshot.ai/v1/chat/completions', {
+    const hookRes = await fetch('https://api.minimax.io/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${moonKey}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${minimaxKey}` },
       body: JSON.stringify({
-        model: 'kimi-k2-turbo-preview',
+        model: 'MiniMax-M2.7',
         messages: [
           {
             role: 'system',
@@ -141,7 +141,7 @@ Return: {"hooks": [{"hook_text": "...", "hook_type": "...", "proof_points_used":
     })
 
     if (!hookRes.ok) {
-      throw new Error(`Kimi error: ${hookRes.status}`)
+      throw new Error(`MiniMax error: ${hookRes.status}`)
     }
 
     const hookData = await hookRes.json()
@@ -170,8 +170,8 @@ Return: {"hooks": [{"hook_text": "...", "hook_type": "...", "proof_points_used":
         hook_text: hook.hook_text,
         hook_type: hook.hook_type,
         proof_points_used: hook.proof_points_used || [],
-        generated_by: 'kimi-k2-turbo',
-        generated_model: 'kimi-k2-turbo-preview',
+        generated_by: 'minimax-m2.7',
+        generated_model: 'MiniMax-M2.7',
         exclusion_hash: hash,
         status: 'fresh',
       })

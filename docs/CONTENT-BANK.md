@@ -218,7 +218,7 @@ if (scripts.length >= 3) {
 |------|--------|
 | **Task files** | `/home/rob/.openclaw/workspace-coding/seed-tasks/batch-{1..129}.txt` |
 | **Output files** | `/home/rob/.openclaw/workspace-coding/seed-output/batch-{1..129}.json` |
-| **Model** | `moonshot/kimi-k2.5` (primary), `anthropic/claude-sonnet-4-6` (fallback) |
+| **Model** | `minimax/MiniMax-M2.7` (primary), `anthropic/claude-sonnet-4-6` (fallback) |
 | **Parallelism** | 4 concurrent subagent workers |
 | **Per batch** | 3 topics × 3 variants = 9 variants per batch |
 | **Total** | 129 batches × 9 = 1,161 variants |

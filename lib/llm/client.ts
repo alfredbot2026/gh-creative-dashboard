@@ -1,9 +1,9 @@
 /**
  * Unified LLM Client
- * Fallback chain: Gemini → Moonshot → ZAI → DeepSeek
+ * Fallback chain: Gemini → MiniMax → ZAI → DeepSeek
  * 
  * Gemini uses @google/genai SDK.
- * Moonshot, ZAI, DeepSeek use OpenAI-compatible REST endpoints.
+ * MiniMax, ZAI, DeepSeek use OpenAI-compatible REST endpoints.
  */
 
 import { GoogleGenAI } from '@google/genai'
@@ -24,10 +24,10 @@ const PROVIDERS: LLMProvider[] = [
         model: 'gemini-3-flash-preview',
     },
     {
-        name: 'Kimi',
-        envKey: 'MOONSHOT_API_KEY',
-        endpoint: 'https://api.moonshot.ai/v1/chat/completions',
-        model: 'kimi-k2-turbo-preview',
+        name: 'MiniMax',
+        envKey: 'MINIMAX_API_KEY',
+        endpoint: 'https://api.minimax.io/v1/chat/completions',
+        model: 'MiniMax-M2.7',
     },
     {
         name: 'ZAI',

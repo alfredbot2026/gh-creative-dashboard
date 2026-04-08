@@ -429,7 +429,7 @@ Weekly creative testing calendar. Shows recommended tests per day.
 
 **Default chain (for classification, ad copy, analysis):**
 1. Gemini (`gemini-3-flash-preview`) — `GEMINI_API_KEY`
-2. Moonshot (`moonshot-v1-8k`) — `MOONSHOT_API_KEY`
+2. MiniMax (`MiniMax-M2.7`) — `MINIMAX_API_KEY`
 3. ZAI/GLM (`glm-5`) — `ZAI_API_KEY`
 4. DeepSeek (`deepseek-chat`) — `DEEPSEEK_API_KEY`
 
