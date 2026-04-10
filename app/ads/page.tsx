@@ -104,6 +104,68 @@ function HealthTile({ label, value, tone = 'default' }: { label: string; value: 
   )
 }
 
+function PrimaryActionPanel({ data, onGenerate, generating }: { data: ActionsResponse; onGenerate: () => void; generating: boolean }) {
+  const topWinner = data.winners_context?.[0]
+  const topOpportunity = data.opportunities_context?.[0]
+  const topPlan = data.top_plans?.[0]
+
+  const headline = topWinner
+    ? `Scale ${fmt(topWinner.angle)} for ${fmt(topWinner.persona)}`
+    : topOpportunity
+      ? `Explore ${fmt(topOpportunity.angle)} for ${fmt(topOpportunity.persona)}`
+      : 'Generate your next batch of plans'
+
+  const supportingCopy = topWinner
+    ? `${topWinner.why_it_works} Keep the message logic, tighten the execution, and spin fresh variants before this advantage cools off.`
+    : topOpportunity
+      ? `${topOpportunity.why_here} ${topOpportunity.suggested_approach}`
+      : 'Use the latest account signals to create scale, refresh, and explore plans in one pass.'
+
+  const primaryHref = topWinner
+    ? `/ads/create?angle=${topWinner.angle}&persona=${topWinner.persona}&mode=scale`
+    : topOpportunity
+      ? `/ads/create?angle=${topOpportunity.angle}&persona=${topOpportunity.persona}&mode=explore`
+      : '/ads/plans'
+
+  const primaryLabel = topWinner
+    ? 'Create more like this'
+    : topOpportunity
+      ? 'Explore this gap'
+      : 'Review all plans'
+
+  return (
+    <section className={styles.heroPanel}>
+      <div className={styles.heroContent}>
+        <div className={styles.heroEyebrow}>Recommended next move</div>
+        <h2 className={styles.heroTitle}>{headline}</h2>
+        <p className={styles.heroText}>{supportingCopy}</p>
+        <div className={styles.heroActionRow}>
+          <Link href={primaryHref} className={styles.heroPrimaryCta}>{primaryLabel}</Link>
+          <button className={styles.heroSecondaryButton} onClick={onGenerate} disabled={generating}>
+            {generating ? 'Refreshing plans…' : 'Generate fresh plans'}
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.heroAside}>
+        <div className={styles.heroSignalList}>
+          <div className={styles.heroSignalCard}>
+            <span className={styles.heroSignalLabel}>Top signal</span>
+            <strong className={styles.heroSignalValue}>{topWinner ? `${topWinner.roas.toFixed(1)}x ROAS` : `${data.health.coverage_pct}% coverage`}</strong>
+            <p className={styles.heroSignalText}>{topWinner ? `Winning ${fmt(topWinner.format)} ad with ${topWinner.confidence} confidence.` : `${data.health.untested_angles} of ${data.health.total_angles} angles still need stronger testing.`}</p>
+          </div>
+
+          <div className={styles.heroSignalCard}>
+            <span className={styles.heroSignalLabel}>Best execution lane</span>
+            <strong className={styles.heroSignalValue}>{topPlan ? fmt(topPlan.plan_type) : topOpportunity ? 'Explore' : 'Scale / Refresh / Explore'}</strong>
+            <p className={styles.heroSignalText}>{topPlan ? topPlan.objective : 'Create the next brief from current winners, fatigue, and gaps.'}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function WinnersSection({ winners }: { winners: WinnerContext[] }) {
   return (
     <section className={styles.section}>
@@ -348,6 +410,9 @@ export default function AdsCommandCenter() {
 
       {loading ? (
         <>
+          <section className={styles.heroPanel}>
+            <div className={styles.heroPanelSkeleton} />
+          </section>
           <div className={styles.healthBar}>
             <div className={styles.healthTile} />
             <div className={styles.healthTile} />
@@ -362,6 +427,8 @@ export default function AdsCommandCenter() {
         <div className={styles.emptyState}>{error}</div>
       ) : data ? (
         <>
+          <PrimaryActionPanel data={data} onGenerate={() => void generatePlans()} generating={generatingPlans} />
+
           <section className={styles.healthBar}>
             <HealthTile label="Active Ads" value={data.health.active_ads} />
             <HealthTile label="Winning" value={data.health.winning} tone="good" />

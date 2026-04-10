@@ -10,7 +10,11 @@
 .metaRow,
 .assetHeader,
 .actionRow,
-.detailHeader {
+.detailHeader,
+.cardIdentity,
+.headerCtas,
+.summaryStats,
+.briefHeroGrid {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -22,11 +26,27 @@
   align-items: flex-start;
 }
 
+.headerCtas,
+.cardIdentity,
+.summaryStats {
+  align-items: center;
+}
+
 .title,
 .detailTitle {
   font-size: 1.65rem;
   font-weight: 800;
   color: var(--text, var(--color-text));
+}
+
+.pageEyebrow,
+.summaryLabel,
+.briefLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, var(--color-text-dim));
 }
 
 .subtitle,
@@ -35,12 +55,76 @@
 .assetText,
 .listText,
 .emptyState,
-.evidenceText {
+.evidenceText,
+.summaryText {
   color: var(--text-muted, var(--color-text-dim));
 }
 
 .subtitle {
   margin-top: 0.25rem;
+}
+
+.summaryHero,
+.briefHero {
+  margin-top: 1rem;
+  padding: 1.2rem;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--primary, var(--color-primary)) 18%, var(--border, var(--color-border)));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--primary, var(--color-primary)) 10%, transparent), transparent 55%),
+    var(--surface, var(--color-surface));
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--text, var(--color-text)) 7%, transparent);
+}
+
+.summaryHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+}
+
+.summaryTitle,
+.briefValue {
+  color: var(--text, var(--color-text));
+  font-weight: 800;
+}
+
+.summaryTitle {
+  margin-top: 0.4rem;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.summaryText {
+  margin-top: 0.5rem;
+  line-height: 1.55;
+}
+
+.summaryStats {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.summaryStat,
+.briefSidebarCard {
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--border, var(--color-border));
+  background: color-mix(in srgb, var(--surface-hover, var(--color-border)) 38%, transparent);
+}
+
+.summaryStat span {
+  display: block;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, var(--color-text-dim));
+}
+
+.summaryStat strong {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text, var(--color-text));
 }
 
 .primaryButton,
@@ -67,7 +151,7 @@
 
 .primaryButton {
   background: var(--primary, var(--color-primary));
-  color: var(--background, #fff);
+  color: var(--background, var(--color-background));
   border: 1px solid var(--primary, var(--color-primary));
 }
 
@@ -129,8 +213,19 @@
   padding: 1rem;
 }
 
+.cardFeatured {
+  border-color: color-mix(in srgb, var(--primary, var(--color-primary)) 22%, var(--border, var(--color-border)));
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--primary, var(--color-primary)) 12%, transparent);
+}
+
 .cardTop {
   align-items: center;
+}
+
+.cardKicker {
+  color: var(--primary, var(--color-primary));
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .badgeRow,
@@ -229,7 +324,7 @@
 
 .cardTitle {
   margin-top: 0.85rem;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 .cardText,
@@ -237,6 +332,31 @@
   margin-top: 0.8rem;
   color: var(--text, var(--color-text));
   line-height: 1.55;
+}
+
+.briefGrid,
+.evidenceGrid,
+.assetsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.briefGrid {
+  margin-top: 1rem;
+}
+
+.briefBlock {
+  padding: 0.95rem;
+  border-radius: 16px;
+  border: 1px solid var(--border, var(--color-border));
+  background: color-mix(in srgb, var(--surface-hover, var(--color-border)) 30%, transparent);
+}
+
+.briefValue {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1rem;
 }
 
 .cardFooter {
@@ -257,17 +377,21 @@
   gap: 1rem;
 }
 
-.evidenceGrid,
-.assetsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
 .whyGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.briefHeroGrid {
+  margin-top: 1rem;
+  align-items: flex-start;
+}
+
+.briefSidebar {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 280px;
 }
 
 .statusFlow {
@@ -329,11 +453,19 @@
 }
 
 @media (max-width: 980px) {
+  .summaryHero,
   .grid,
+  .briefGrid,
   .evidenceGrid,
   .assetsGrid,
   .whyGrid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .summaryHero,
+  .briefHeroGrid {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -348,15 +480,25 @@
   .cardFooter,
   .actionRow,
   .metaRow,
-  .assetHeader {
+  .assetHeader,
+  .headerCtas,
+  .cardTop,
+  .cardIdentity {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .summaryStats {
     flex-direction: column;
     align-items: stretch;
   }
 
   .grid,
+  .briefGrid,
   .evidenceGrid,
   .assetsGrid,
-  .whyGrid {
+  .whyGrid,
+  .summaryHero {
     grid-template-columns: 1fr;
   }
 }

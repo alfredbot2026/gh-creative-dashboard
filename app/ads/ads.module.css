@@ -1,14 +1,107 @@
 .page { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
-.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
 .title { font-size: 1.6rem; font-weight: 800; color: var(--text, var(--color-text)); }
 .subtitle { margin-top: 0.2rem; font-size: 0.9rem; color: var(--text-muted, var(--color-text-dim)); }
 .headerActions { display: flex; gap: 0.75rem; }
 .createBtn {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 0.7rem 1rem; border-radius: 10px; text-decoration: none;
-  background: var(--primary, var(--color-primary)); color: #fff; font-weight: 700;
+  background: var(--primary, var(--color-primary)); color: var(--background, var(--color-background)); font-weight: 700;
 }
 .createBtn:hover { opacity: 0.92; }
+
+.heroPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.95fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--primary, var(--color-primary)) 18%, var(--border, var(--color-border)));
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--primary, var(--color-primary)) 12%, transparent), transparent 55%),
+    var(--surface, var(--color-surface));
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--text, var(--color-text)) 8%, transparent);
+}
+.heroContent,
+.heroAside,
+.heroSignalList {
+  display: flex;
+  flex-direction: column;
+}
+.heroContent {
+  justify-content: center;
+  gap: 0.75rem;
+}
+.heroAside {
+  justify-content: stretch;
+}
+.heroEyebrow,
+.heroSignalLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, var(--color-text-dim));
+}
+.heroTitle {
+  font-size: 2rem;
+  line-height: 1.08;
+  font-weight: 900;
+  color: var(--text, var(--color-text));
+}
+.heroText,
+.heroSignalText {
+  color: var(--text-muted, var(--color-text-dim));
+  line-height: 1.55;
+}
+.heroActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+.heroPrimaryCta,
+.heroSecondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.heroPrimaryCta {
+  background: var(--primary, var(--color-primary));
+  color: var(--background, var(--color-background));
+  border: 1px solid var(--primary, var(--color-primary));
+}
+.heroSecondaryButton {
+  background: color-mix(in srgb, var(--surface-hover, var(--color-border)) 55%, transparent);
+  color: var(--text, var(--color-text));
+  border: 1px solid var(--border, var(--color-border));
+}
+.heroSignalList { gap: 0.75rem; height: 100%; }
+.heroSignalCard {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--border, var(--color-border));
+  background: color-mix(in srgb, var(--surface-hover, var(--color-border)) 30%, transparent);
+}
+.heroSignalValue {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--text, var(--color-text));
+  font-size: 1rem;
+  font-weight: 800;
+}
+.heroPanelSkeleton {
+  min-height: 220px;
+  border-radius: 20px;
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--surface-hover, var(--color-border)) 35%, transparent), color-mix(in srgb, var(--surface-hover, var(--color-border)) 65%, transparent), color-mix(in srgb, var(--surface-hover, var(--color-border)) 35%, transparent));
+}
 
 .healthBar {
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem;
@@ -18,13 +111,13 @@
   background: var(--surface, var(--color-surface));
   border: 1px solid var(--border, var(--color-border));
   border-radius: 16px; padding: 1rem 1.1rem; min-height: 110px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--text, var(--color-text)) 6%, transparent);
 }
 .healthValue { font-size: 1.8rem; font-weight: 800; color: var(--text, var(--color-text)); }
 .healthLabel { margin-top: 0.4rem; font-size: 0.78rem; color: var(--text-muted, var(--color-text-dim)); text-transform: uppercase; letter-spacing: 0.04em; }
-.healthGood { color: var(--accent-emerald, #10b981); }
-.healthWarn { color: #f59e0b; }
-.healthBad { color: #ef4444; }
+.healthGood { color: var(--accent-emerald, var(--primary, var(--color-primary))); }
+.healthWarn { color: var(--accent-violet, var(--primary, var(--color-primary))); }
+.healthBad { color: var(--accent-purple, var(--primary, var(--color-primary))); }
 
 .section { margin-bottom: 1.75rem; }
 .sectionHeaderRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem; }
@@ -39,7 +132,10 @@
   border: 1px solid var(--border, var(--color-border));
   border-radius: 18px;
   padding: 1rem;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--text, var(--color-text)) 6%, transparent);
+}
+.winnerCard {
+  border-color: color-mix(in srgb, var(--primary, var(--color-primary)) 18%, var(--border, var(--color-border)));
 }
 .cardEyebrow { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, var(--color-text-dim)); }
 .cardTitle { margin-top: 0.35rem; font-size: 1rem; font-weight: 800; color: var(--text, var(--color-text)); }
@@ -55,7 +151,7 @@
 .metricRow { display: flex; gap: 1.25rem; margin-top: 1rem; }
 .metricRow strong { display: block; margin-top: 0.15rem; font-size: 1rem; color: var(--text, var(--color-text)); }
 .metricLabel { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted, var(--color-text-dim)); }
-.whyLine { margin-top: 0.9rem; font-size: 0.82rem; font-style: italic; line-height: 1.5; color: var(--text-muted, var(--color-text-dim)); }
+.whyLine { margin-top: 0.9rem; font-size: 0.82rem; line-height: 1.5; color: var(--text-muted, var(--color-text-dim)); }
 .metaRow { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.8rem; font-size: 0.75rem; color: var(--text-muted, var(--color-text-dim)); }
 
 .primaryCta,
@@ -66,9 +162,11 @@
   padding: 0.65rem 0.9rem; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.82rem;
 }
 .primaryCta,
-.primaryCtaButton { background: var(--primary, var(--color-primary)); color: #fff; border: 1px solid var(--primary, var(--color-primary)); }
+.primaryCtaButton { background: var(--primary, var(--color-primary)); color: var(--background, var(--color-background)); border: 1px solid var(--primary, var(--color-primary)); }
 .primaryCta:hover,
-.primaryCtaButton:hover { opacity: 0.94; }
+.primaryCtaButton:hover,
+.heroPrimaryCta:hover,
+.heroSecondaryButton:hover { opacity: 0.94; }
 .secondaryCta,
 .collapseToggle {
   color: var(--primary, var(--color-primary));
@@ -82,9 +180,9 @@
 .opportunityGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .inlineActions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .stackColumn { display: flex; flex-direction: column; gap: 0.85rem; }
-.warningCard { border-left: 5px solid #f59e0b; }
-.dangerCard { border-left: 5px solid #ef4444; }
-.opportunityCard { border-left: 5px solid #14b8a6; }
+.warningCard { border-left: 5px solid var(--accent-violet, var(--primary, var(--color-primary))); }
+.dangerCard { border-left: 5px solid var(--accent-purple, var(--primary, var(--color-primary))); }
+.opportunityCard { border-left: 5px solid var(--accent-emerald, var(--primary, var(--color-primary))); }
 .cardTopRow { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
 .cardText { margin-top: 0.7rem; font-size: 0.86rem; line-height: 1.5; color: var(--text, var(--color-text)); }
 .cardTextMuted { margin-top: 0.45rem; font-size: 0.78rem; line-height: 1.5; color: var(--text-muted, var(--color-text-dim)); }
@@ -94,12 +192,12 @@
   display: inline-flex; align-items: center; justify-content: center; border-radius: 999px;
   padding: 0.2rem 0.55rem; font-size: 0.72rem; font-weight: 700;
 }
-.trendBadge { background: color-mix(in srgb, #f59e0b 14%, transparent); color: #b45309; }
-.deadMetric { background: color-mix(in srgb, #ef4444 14%, transparent); color: #b91c1c; }
+.trendBadge { background: color-mix(in srgb, var(--accent-violet, var(--primary, var(--color-primary))) 14%, transparent); color: var(--accent-violet, var(--primary, var(--color-primary))); }
+.deadMetric { background: color-mix(in srgb, var(--accent-purple, var(--primary, var(--color-primary))) 14%, transparent); color: var(--accent-purple, var(--primary, var(--color-primary))); }
 .priorityBadge { text-transform: capitalize; }
-.priorityHigh { background: color-mix(in srgb, #ef4444 14%, transparent); color: #b91c1c; }
-.priorityMedium { background: color-mix(in srgb, #f59e0b 14%, transparent); color: #b45309; }
-.priorityLow { background: color-mix(in srgb, #10b981 14%, transparent); color: #047857; }
+.priorityHigh { background: color-mix(in srgb, var(--accent-purple, var(--primary, var(--color-primary))) 14%, transparent); color: var(--accent-purple, var(--primary, var(--color-primary))); }
+.priorityMedium { background: color-mix(in srgb, var(--accent-violet, var(--primary, var(--color-primary))) 14%, transparent); color: var(--accent-violet, var(--primary, var(--color-primary))); }
+.priorityLow { background: color-mix(in srgb, var(--accent-emerald, var(--primary, var(--color-primary))) 14%, transparent); color: var(--accent-emerald, var(--primary, var(--color-primary))); }
 
 .emptyState {
   background: var(--surface, var(--color-surface)); border: 1px dashed var(--border, var(--color-border));
@@ -112,13 +210,17 @@
 
 .skeletonSection { margin-bottom: 1.5rem; }
 .skeletonHeader, .skeletonCard, .healthTile {
-  background-image: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--surface-hover, var(--color-border)) 35%, transparent), color-mix(in srgb, var(--surface-hover, var(--color-border)) 65%, transparent), color-mix(in srgb, var(--surface-hover, var(--color-border)) 35%, transparent));
 }
 .skeletonHeader { height: 24px; width: 220px; border-radius: 8px; margin-bottom: 0.85rem; }
 .skeletonGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .skeletonCard { height: 220px; border-radius: 18px; border: 1px solid var(--border, var(--color-border)); }
 
 @media (max-width: 980px) {
+  .heroPanel {
+    grid-template-columns: 1fr;
+  }
+
   .healthBar,
   .attentionGrid,
   .opportunityGrid,
@@ -127,11 +229,13 @@
 
 @media (max-width: 720px) {
   .page { padding: 1rem; }
-  .header { flex-direction: column; align-items: stretch; }
+  .header,
+  .heroActionRow { flex-direction: column; align-items: stretch; }
   .inlineActions { flex-direction: column; }
   .healthBar,
   .attentionGrid,
   .opportunityGrid,
   .skeletonGrid { grid-template-columns: 1fr; }
   .winnerStrip { grid-auto-columns: minmax(260px, 88vw); }
+  .heroTitle { font-size: 1.6rem; }
 }

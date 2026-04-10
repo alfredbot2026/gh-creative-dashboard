@@ -114,13 +114,34 @@ export default function AdsPlansPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
+          <div className={styles.pageEyebrow}>Plans queue</div>
           <h1 className={styles.title}>Your Plans</h1>
-          <p className={styles.subtitle}>Browse, compare, and act on multi-plan recommendations.</p>
+          <p className={styles.subtitle}>Review the strongest next moves, then open the brief that deserves production time now.</p>
         </div>
-        <button className={styles.primaryButton} onClick={() => void generatePlans()} disabled={submitting}>
-          {submitting ? 'Generating…' : 'Generate New Plans +'}
-        </button>
+        <div className={styles.headerCtas}>
+          <Link href="/ads" className={styles.linkButton}>Back to Command Center</Link>
+          <button className={styles.primaryButton} onClick={() => void generatePlans()} disabled={submitting}>
+            {submitting ? 'Generating…' : 'Generate New Plans'}
+          </button>
+        </div>
       </header>
+
+      <section className={styles.summaryHero}>
+        <div>
+          <div className={styles.summaryLabel}>Focus now</div>
+          <h2 className={styles.summaryTitle}>
+            {plans[0]?.objective || 'Generate a fresh plan batch to surface the next best move.'}
+          </h2>
+          <p className={styles.summaryText}>
+            {plans[0]?.why_now || 'Plans are ranked so Grace can scan status, confidence, and next action without digging into every card first.'}
+          </p>
+        </div>
+        <div className={styles.summaryStats}>
+          <div className={styles.summaryStat}><span>Open</span><strong>{plans.filter(plan => plan.status === 'pending' || plan.status === 'accepted').length}</strong></div>
+          <div className={styles.summaryStat}><span>Completed</span><strong>{plans.filter(plan => plan.status === 'completed').length}</strong></div>
+          <div className={styles.summaryStat}><span>Highest priority</span><strong>{plans[0] ? `P${plans[0].priority}` : '—'}</strong></div>
+        </div>
+      </section>
 
       <div className={styles.toolbar}>
         <div className={styles.tabs}>
@@ -144,20 +165,36 @@ export default function AdsPlansPage() {
       ) : (
         <div className={styles.grid}>
           {plans.map(plan => (
-            <article key={plan.id} className={styles.card}>
+            <article key={plan.id} className={`${styles.card} ${plans[0]?.id === plan.id ? styles.cardFeatured : ''}`}>
               <div className={styles.cardTop}>
-                <span className={`${styles.badge} ${typeClass(plan.plan_type)}`}>{title(plan.plan_type)}</span>
-                <span className={styles.priority}>Priority {plan.priority}</span>
+                <div className={styles.cardIdentity}>
+                  <span className={`${styles.badge} ${typeClass(plan.plan_type)}`}>{title(plan.plan_type)}</span>
+                  <span className={styles.priority}>Priority {plan.priority}</span>
+                </div>
+                <span className={styles.cardKicker}>{plan.status === 'completed' ? 'Ready to hand off' : plan.status === 'accepted' ? 'In production prep' : 'Needs review'}</span>
               </div>
 
               <h2 className={styles.cardTitle}>{plan.objective}</h2>
               <p className={styles.cardText}>{plan.why_now || 'No rationale recorded yet.'}</p>
 
+              <div className={styles.briefGrid}>
+                <div className={styles.briefBlock}>
+                  <span className={styles.briefLabel}>Why now</span>
+                  <strong className={styles.briefValue}>{plan.has_objective ? 'Clear objective' : 'Needs refinement'}</strong>
+                  <p className={styles.metaText}>{confidenceLabel(plan.learning_confidence, plan.evidence_summary)}</p>
+                </div>
+                <div className={styles.briefBlock}>
+                  <span className={styles.briefLabel}>Next action</span>
+                  <strong className={styles.briefValue}>{plan.status === 'completed' ? 'Open brief' : plan.status === 'accepted' ? 'Build ads' : 'Review plan'}</strong>
+                  <p className={styles.metaText}>{plan.asset_count} assets · {plan.generated_concept_count} concept{plan.generated_concept_count === 1 ? '' : 's'}</p>
+                </div>
+              </div>
+
               <div className={styles.badgeRow}>
                 <span className={styles.badge}>Angle: {title(plan.target_angle)}</span>
                 <span className={styles.badge}>Persona: {title(plan.target_persona)}</span>
                 <span className={styles.statusBadge}>{title(plan.status)}</span>
-                <span className={`${styles.statusBadge} ${confidenceClass(plan.learning_confidence)}`}>{confidenceLabel(plan.learning_confidence, plan.evidence_summary)}</span>
+                <span className={`${styles.statusBadge} ${confidenceClass(plan.learning_confidence)}`}>{title(plan.learning_confidence)}</span>
               </div>
 
               <div className={styles.formatRow}>
@@ -169,10 +206,8 @@ export default function AdsPlansPage() {
               <div className={styles.cardFooter}>
                 <div className={styles.metaText}>
                   Created {new Date(plan.created_at).toLocaleDateString('en-PH')}
-                  <br />
-                  {plan.asset_count} assets · {plan.generated_concept_count} concept{plan.generated_concept_count === 1 ? '' : 's'}
                 </div>
-                <Link href={`/ads/plans/${plan.id}`} className={styles.linkButton}>Open Plan →</Link>
+                <Link href={`/ads/plans/${plan.id}`} className={styles.primaryButton}>Open Plan</Link>
               </div>
             </article>
           ))}

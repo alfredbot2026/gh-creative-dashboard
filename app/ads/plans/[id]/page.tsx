@@ -476,10 +476,14 @@ export default function PlanDetailPage() {
     <div className={styles.page}>
       <div className={styles.detailHeader}>
         <div>
+          <div className={styles.pageEyebrow}>Execution brief</div>
           <h1 className={styles.detailTitle}>Open Plan</h1>
-          <p className={styles.subtitle}>Review the rationale, evidence, and production sections before execution.</p>
+          <p className={styles.subtitle}>Review the rationale, align on the production brief, then hand it off into Creative Factory.</p>
         </div>
-        <Link href="/ads/plans" className={styles.linkButton}>Back to Plans</Link>
+        <div className={styles.headerCtas}>
+          <Link href="/ads" className={styles.linkButton}>Command Center</Link>
+          <Link href="/ads/plans" className={styles.linkButton}>Back to Plans</Link>
+        </div>
       </div>
 
       {error ? <div className={styles.emptyState}>{error}</div> : null}
@@ -488,7 +492,7 @@ export default function PlanDetailPage() {
 
       {plan ? (
         <div className={styles.detailStack}>
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${styles.briefHero}`}>
             <div className={styles.metaRow}>
               <div className={styles.badgeRow}>
                 <span className={`${styles.badge} ${plan.plan_type === 'scale' ? styles.typeScale : plan.plan_type === 'refresh' ? styles.typeRefresh : plan.plan_type === 'explore' ? styles.typeExplore : styles.typeMixed}`}>{title(plan.plan_type)}</span>
@@ -497,14 +501,34 @@ export default function PlanDetailPage() {
               </div>
               <div className={styles.metaText}>Created {new Date(plan.created_at).toLocaleDateString('en-PH')}</div>
             </div>
-            <h2 className={styles.cardTitle}>{plan.objective}</h2>
-            <p className={styles.detailBody}>{plan.hypothesis || 'No hypothesis recorded yet.'}</p>
-            <p className={styles.detailBody}>{plan.why_now || 'No why-now note recorded yet.'}</p>
-            <div className={styles.chipRow}>
-              <span className={styles.badge}>Angle: {title(plan.target_angle)}</span>
-              <span className={styles.badge}>Persona: {title(plan.target_persona)}</span>
-              {plan.target_formats.map(format => <span key={format} className={styles.formatBadge}>{title(format)}</span>)}
+
+            <div className={styles.briefHeroGrid}>
+              <div>
+                <div className={styles.summaryLabel}>Plan objective</div>
+                <h2 className={styles.cardTitle}>{plan.objective}</h2>
+                <p className={styles.detailBody}>{plan.hypothesis || 'No hypothesis recorded yet.'}</p>
+                <p className={styles.detailBody}>{plan.why_now || 'No why-now note recorded yet.'}</p>
+                <div className={styles.chipRow}>
+                  <span className={styles.badge}>Angle: {title(plan.target_angle)}</span>
+                  <span className={styles.badge}>Persona: {title(plan.target_persona)}</span>
+                  {plan.target_formats.map(format => <span key={format} className={styles.formatBadge}>{title(format)}</span>)}
+                </div>
+              </div>
+
+              <aside className={styles.briefSidebar}>
+                <div className={styles.briefSidebarCard}>
+                  <span className={styles.briefLabel}>Recommended next action</span>
+                  <strong className={styles.briefValue}>{plan.status === 'completed' ? 'Open in Creative Factory' : plan.status === 'accepted' ? 'Generate production brief' : 'Accept this plan'}</strong>
+                  <p className={styles.metaText}>{plan.status === 'completed' ? 'Production content is ready for execution.' : 'Move this plan forward once the brief direction is approved.'}</p>
+                </div>
+                <div className={styles.briefSidebarCard}>
+                  <span className={styles.briefLabel}>Evidence summary</span>
+                  <strong className={styles.briefValue}>{plan.evidence_summary.winners.length} winners · {plan.evidence_summary.fatigue.length} fatigue · {plan.evidence_summary.gaps.length} gaps</strong>
+                  <p className={styles.metaText}>Confidence: {title(plan.evidence_summary.learning_confidence)}</p>
+                </div>
+              </aside>
             </div>
+
             <div className={styles.statusFlow}>
               <span className={`${styles.flowStep} ${plan.status !== 'pending' ? styles.flowStepActive : ''}`}>Accept Plan</span>
               <span className={`${styles.flowStep} ${plan.status === 'generating' || plan.status === 'completed' ? styles.flowStepActive : ''}`}>Build Ads</span>
@@ -585,7 +609,7 @@ export default function PlanDetailPage() {
               {canBuild ? <button className={styles.primaryButton} disabled={updating} onClick={() => executePlan()}>Build Ads from This Plan</button> : null}
               {plan.status === 'generating' ? <span className={styles.statusBadge}>Building your ads…</span> : null}
               {plan.status === 'completed' && hasProductionAssets ? <span className={styles.statusBadge}>Production brief ready</span> : null}
-              {plan.status === 'completed' ? <Link href={`/ads/create?plan_id=${plan.id}`} className={styles.linkButton}>Open in Creative Factory</Link> : null}
+              {plan.status === 'completed' ? <Link href={`/ads/create?plan_id=${plan.id}`} className={styles.primaryButton}>Open in Creative Factory</Link> : null}
               <button className={styles.secondaryButton} disabled={updating || !canGenerate} onClick={() => void generatePlan('video')}>{hasVideoAssets ? 'Regenerate Video Plan' : 'Generate Video Plan'}</button>
               <button className={styles.secondaryButton} disabled={updating || !canGenerate} onClick={() => void generatePlan('static')}>{hasStaticAssets ? 'Regenerate Static Plan' : 'Generate Static Plan'}</button>
               <button className={styles.secondaryButton} disabled={updating || !canGenerate} onClick={() => void generatePlan('hybrid')}>{hasProductionAssets ? 'Regenerate Both' : 'Generate Both'}</button>
@@ -630,7 +654,7 @@ export default function PlanDetailPage() {
               <div className={styles.sectionHeader}>
                 <div>
                   <h2 className={styles.sectionTitle}>Raw Asset Groups</h2>
-                  <p className={styles.helperText}>Low-level grouped payloads for debugging and QA.</p>
+                  <p className={styles.helperText}>Supporting payloads kept below the main brief for QA and troubleshooting.</p>
                 </div>
               </div>
               <div className={styles.assetsGrid}>
