@@ -200,6 +200,26 @@
   color: var(--primary, var(--color-primary));
 }
 
+.confHigh {
+  background: color-mix(in srgb, var(--accent-emerald, var(--primary, var(--color-primary))) 18%, transparent);
+  color: var(--accent-emerald, var(--primary, var(--color-primary)));
+}
+
+.confMedium {
+  background: color-mix(in srgb, var(--accent-violet, var(--primary, var(--color-primary))) 18%, transparent);
+  color: var(--accent-violet, var(--primary, var(--color-primary)));
+}
+
+.confLow {
+  background: color-mix(in srgb, var(--primary, var(--color-primary)) 12%, transparent);
+  color: var(--primary, var(--color-primary));
+}
+
+.confExperimental {
+  background: color-mix(in srgb, var(--text, var(--color-text)) 8%, transparent);
+  color: var(--text-muted, var(--color-text-dim));
+}
+
 .cardTitle,
 .sectionTitle,
 .assetTitle {
@@ -244,6 +264,34 @@
   gap: 1rem;
 }
 
+.whyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.statusFlow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.flowStep {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border, var(--color-border));
+  color: var(--text-muted, var(--color-text-dim));
+}
+
+.flowStepActive {
+  color: var(--primary, var(--color-primary));
+  border-color: color-mix(in srgb, var(--primary, var(--color-primary)) 40%, var(--border, var(--color-border)));
+  background: color-mix(in srgb, var(--primary, var(--color-primary)) 10%, transparent);
+}
+
 .evidenceCard,
 .assetCard {
   padding: 1rem;
@@ -283,7 +331,8 @@
 @media (max-width: 980px) {
   .grid,
   .evidenceGrid,
-  .assetsGrid {
+  .assetsGrid,
+  .whyGrid {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -306,7 +355,8 @@
 
   .grid,
   .evidenceGrid,
-  .assetsGrid {
+  .assetsGrid,
+  .whyGrid {
     grid-template-columns: 1fr;
   }
 }

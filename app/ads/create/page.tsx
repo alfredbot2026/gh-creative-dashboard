@@ -44,6 +44,33 @@ interface SavedConcept {
   updated_at: string; hooks: Hook[]
 }
 
+interface PlanExecutionAsset {
+  id: string
+  asset_type: string
+  plan_section: string | null
+  payload: Record<string, unknown> | null
+}
+
+interface PlanExecutionDetail {
+  id: string
+  plan_type: string
+  objective: string
+  target_angle: string | null
+  target_persona: string | null
+  target_formats: string[]
+  status: string
+  generated_concept_ids?: string[]
+  evidence_summary: {
+    winners: Array<Record<string, unknown>>
+    losers: Array<Record<string, unknown>>
+    fatigue: Array<Record<string, unknown>>
+    gaps: Array<Record<string, unknown>>
+    learning_confidence?: string
+    winning_hooks?: string[]
+  }
+  assets: PlanExecutionAsset[]
+}
+
 type WizardStep = 'pick' | 'brief' | 'hooks' | 'results'
 type CreateMode = 'explore' | 'scale' | 'refresh'
 
@@ -177,6 +204,7 @@ function CreatePageInner() {
   const angleParam = searchParams.get('angle') || ''
   const personaParam = searchParams.get('persona') || ''
   const modeParam = searchParams.get('mode') || ''
+  const planIdParam = searchParams.get('plan_id') || ''
 
   // Wizard state
   const [step, setStep] = useState<WizardStep>('pick')
@@ -210,6 +238,9 @@ function CreatePageInner() {
   const [coverage, setCoverage] = useState<AngleCoverage[]>([])
   const [loadingCoverage, setLoadingCoverage] = useState(true)
   const [savedConcepts, setSavedConcepts] = useState<SavedConcept[]>([])
+  const [planDetail, setPlanDetail] = useState<PlanExecutionDetail | null>(null)
+  const [loadingPlan, setLoadingPlan] = useState(false)
+  const [executingPlan, setExecutingPlan] = useState(false)
 
   useEffect(() => {
     fetch('/api/ads/weekly-plan').then(r => r.json()).then(data => setWeeklyPlan(data)).catch(() => {})
@@ -223,13 +254,109 @@ function CreatePageInner() {
     }).catch(() => {})
   }, [])
 
+  useEffect(() => {
+    if (!planIdParam) return
+    setLoadingPlan(true)
+    fetch(`/api/ads/plans/${planIdParam}`, { cache: 'no-store' })
+      .then(r => r.json())
+      .then((data: PlanExecutionDetail) => {
+        setPlanDetail(data)
+        if (data.target_angle) setAngle(data.target_angle)
+        if (data.target_persona) setPersona(data.target_persona)
+        setMode(data.plan_type === 'explore' ? 'explore' : 'scale')
+        setBrief({
+          angle: data.target_angle || '',
+          persona: data.target_persona || '',
+          core_message: data.objective,
+          product_name: 'Plan Execution',
+          product_price: 0,
+          persona_context: data.target_persona || '',
+          tone: 'Use the approved production brief and existing winning patterns.',
+          framework: data.plan_type,
+          proof_points: [],
+          competitor_context: '',
+          compliance_notes: 'Reuse approved plan guidance.',
+          winning_patterns: Array.isArray(data.evidence_summary?.winning_hooks)
+            ? data.evidence_summary.winning_hooks.join(' | ')
+            : '',
+        })
+        if (Array.isArray(data.target_formats) && data.target_formats.length > 0) {
+          const hasStaticAssets = (data.assets || []).some(asset => asset.asset_type.startsWith('static_'))
+          const filteredFormats = hasStaticAssets
+            ? data.target_formats.filter(format => !format.includes('video'))
+            : data.target_formats
+          const hasStatic = filteredFormats.some(format => format === 'static_image' || format === 'carousel' || format === 'ig_carousel')
+          setSelectedFormats(hasStatic ? filteredFormats : ['static_image', 'carousel'])
+        }
+        setStep('brief')
+      })
+      .catch(() => setError('Failed to load plan execution context'))
+      .finally(() => setLoadingPlan(false))
+  }, [planIdParam])
+
   // Auto-advance to brief step if angle/persona pre-filled from URL
   useEffect(() => {
-    if (angleParam && personaParam && step === 'pick') {
+    if (!planIdParam && angleParam && personaParam && step === 'pick') {
       handleGenerateBrief()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const refreshSavedConcepts = async () => {
+    try {
+      const res = await fetch('/api/ads/creative-tree', { cache: 'no-store' })
+      const data = await res.json()
+      setSavedConcepts((data.concepts || []).slice(0, 5))
+      return data.concepts || []
+    } catch {
+      return []
+    }
+  }
+
+  const handleExecutePlan = async () => {
+    if (!planDetail) return
+    setExecutingPlan(true)
+    setGenerating(true)
+    setGenStage('Building ads from the approved plan...')
+    setError('')
+
+    try {
+      const response = await fetch(`/api/ads/plans/${planDetail.id}/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hook_count: hookCount, formats: selectedFormats }),
+      })
+      const json = await response.json()
+      if (!response.ok) throw new Error(json.error || 'Plan execution failed')
+
+      const concepts = await refreshSavedConcepts()
+      const builtConcept = concepts.find((item: SavedConcept) => item.id === json.concept_id)
+      if (builtConcept) {
+        resumeConcept(builtConcept)
+      }
+
+      const planResponse = await fetch(`/api/ads/plans/${planDetail.id}`, { cache: 'no-store' })
+      const latestPlan = await planResponse.json()
+      if (planResponse.ok) setPlanDetail(latestPlan)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Plan execution failed')
+    }
+
+    setExecutingPlan(false)
+    setGenerating(false)
+    setGenStage('')
+  }
+
+  const planEvidenceItems = planDetail
+    ? [
+        `${planDetail.evidence_summary.winners.length} winner signal(s)`,
+        `${planDetail.evidence_summary.fatigue.length} fatigue signal(s)`,
+        `${planDetail.evidence_summary.gaps.length} gap(s)`,
+        planDetail.evidence_summary.learning_confidence ? `${fmt(planDetail.evidence_summary.learning_confidence)} confidence` : '',
+      ].filter(Boolean)
+    : []
+
+  const planAssetSummary = planDetail?.assets?.slice(0, 6) || []
 
   // ─── Step 1→2: Generate brief ───
   const handleGenerateBrief = async () => {
@@ -488,7 +615,24 @@ function CreatePageInner() {
         </div>
       </header>
 
+      {planDetail && (
+        <section className={styles.briefCard} style={{ marginBottom: '1rem' }}>
+          <h3 className={styles.briefTitle}>Executing: {fmt(planDetail.plan_type)} — {planDetail.objective}</h3>
+          <div className={styles.briefMeta}>
+            <span className={styles.briefTag}>Status: {fmt(planDetail.status)}</span>
+            {planEvidenceItems.map(item => <span key={item} className={styles.briefTag}>{item}</span>)}
+          </div>
+          {!!planDetail.evidence_summary.winning_hooks?.length && (
+            <div className={styles.briefDetail}>
+              <strong>Winning hooks:</strong> {planDetail.evidence_summary.winning_hooks.slice(0, 3).join(' · ')}
+            </div>
+          )}
+        </section>
+      )}
+
       <StepIndicator step={step} />
+
+      {loadingPlan && <div className={styles.loading}><div className={styles.spinner} /><p>Loading plan…</p></div>}
 
       {/* ─── STEP 1: Pick angle + persona ─── */}
       {step === 'pick' && !generating && (
@@ -589,6 +733,37 @@ function CreatePageInner() {
       {/* ─── STEP 2: Review brief ─── */}
       {step === 'brief' && brief && !generating && (
         <div className={styles.briefStep}>
+          {planDetail && planAssetSummary.length > 0 ? (
+            <div className={styles.execGrid} style={{ marginBottom: '1rem' }}>
+              <div className={styles.briefCard}>
+                <h3 className={styles.briefTitle}>Production Brief</h3>
+                <div className={styles.hooksList}>
+                  {planAssetSummary.map(asset => (
+                    <div key={asset.id} className={styles.hookPickCard}>
+                      <div className={styles.hookPickContent}>
+                        <p className={styles.hookPickText}>{fmt(asset.asset_type)}</p>
+                        <span className={styles.hookType}>{asset.plan_section ? fmt(asset.plan_section) : 'General'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.briefCard}>
+                <h3 className={styles.briefTitle}>Build Ads from This Plan</h3>
+                <p className={styles.briefMessage}>Use the approved plan settings without re-entering angle, persona, or formats.</p>
+                <div className={styles.briefMeta}>
+                  <span className={styles.briefTag}>{selectedFormats.length} selected format(s)</span>
+                  <span className={styles.briefTag}>{hookCount} hook variation(s)</span>
+                </div>
+                <div className={styles.briefActions}>
+                  <button className={styles.generateBtn} onClick={handleExecutePlan} disabled={executingPlan}>
+                    {planDetail.target_formats.some(format => format.includes('video')) ? 'Build Ads from This Plan →' : 'Build Static Ads from This Plan →'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div className={styles.briefCard}>
             <h3 className={styles.briefTitle}>
               {fmt(brief.angle)} × {fmt(brief.persona)}
@@ -622,6 +797,11 @@ function CreatePageInner() {
 
           <div className={styles.briefActions}>
             <button className={styles.btnOutline} onClick={() => setStep('pick')}>← Change Angle</button>
+            {planDetail && planDetail.status === 'accepted' ? (
+              <button className={styles.generateBtn} onClick={handleExecutePlan} disabled={executingPlan}>
+                {planDetail.target_formats.some(format => format.includes('video')) ? 'Build Video Ads from Plan →' : 'Build Ads from Plan →'}
+              </button>
+            ) : null}
             <button className={styles.generateBtn} onClick={handleLoadBank}>
               Looks Good — Browse Hook Bank →
             </button>

@@ -25,6 +25,7 @@ import {
 } from '@/lib/ads/classifier'
 import { loadBusinessContext } from '@/lib/ads/business-context'
 import { getMetaVideoUrl, analyzeAdVideo } from '@/lib/ads/video-analyzer'
+import { buildExperimentCells, type ExperimentCreativeRow, type CreativeLearningRow } from '@/lib/ads/experiment-map'
 
 export const maxDuration = 120
 
@@ -108,6 +109,57 @@ function detectFormat(creative: MetaAdWithCreative['creative']): string {
   if (creative.video_id) return 'video'
   if (creative.image_url) return 'static_image'
   return 'static_image'
+}
+
+async function updateExperimentCellsFromAds(
+  supabase: any,
+  userId: string,
+  touchedPairs: Array<{ angle: string | null; persona: string | null }>,
+) {
+  const relevantPairs = touchedPairs.filter(pair => pair.angle && pair.persona)
+  if (relevantPairs.length === 0) return 0
+
+  const [{ data: creatives, error: creativesError }, { data: learnings, error: learningsError }, { data: competitorAds }] = await Promise.all([
+    supabase
+      .from('ad_creatives')
+      .select('id, user_id, meta_ad_id, angle, persona, ad_status, is_active, total_spend, avg_roas, avg_cpa, avg_ctr, creative_format, body_text, headline, cta_text, link_description, hook_type, emotional_tone, frame_descriptions, ad_name, first_active_date, last_active_date, classified_at')
+      .eq('user_id', userId),
+    supabase
+      .from('creative_learnings')
+      .select('ad_creative_id, hook_family, format, inferred_mechanism')
+      .eq('user_id', userId),
+    supabase
+      .from('competitor_ads')
+      .select('angle')
+      .eq('user_id', userId)
+      .eq('is_active', true),
+  ])
+
+  if (creativesError) throw new Error(creativesError.message)
+  if (learningsError) throw new Error(learningsError.message)
+
+  const competitorAngles = (competitorAds || []).map((row: { angle?: string | null }) => row.angle).filter(Boolean) as string[]
+  const rebuilt = buildExperimentCells({
+    userId,
+    creatives: (creatives || []) as ExperimentCreativeRow[],
+    competitorAngles,
+    existingLearnings: (learnings || []) as CreativeLearningRow[],
+  })
+
+  const keySet = new Set(relevantPairs.map(pair => `${pair.angle}::${pair.persona}`))
+  const pairCells = rebuilt.filter(cell => keySet.has(`${cell.angle}::${cell.persona}`))
+  if (pairCells.length === 0) return 0
+
+  for (const pair of relevantPairs) {
+    await supabase.from('experiment_cells').delete().eq('user_id', userId).eq('angle', pair.angle).eq('persona', pair.persona)
+  }
+
+  const { error: upsertError } = await supabase
+    .from('experiment_cells')
+    .upsert(pairCells, { onConflict: 'user_id,angle,persona,format,hook_family' })
+
+  if (upsertError) throw new Error(upsertError.message)
+  return pairCells.length
 }
 
 export async function POST(request: Request) {
@@ -355,7 +407,7 @@ export async function POST(request: Request) {
     let perfUpdated = 0
     const { data: creatives } = await supabase
       .from('ad_creatives')
-      .select('id, meta_ad_id, ad_name, campaign_objective, ad_status, angle')
+      .select('id, meta_ad_id, ad_name, campaign_objective, ad_status, angle, persona')
       .eq('user_id', userId)
 
     // Pre-fetch ALL ad_performance rows for this user (avoid N+1 queries)
@@ -367,6 +419,7 @@ export async function POST(request: Request) {
 
     // Track status changes for fatigue detection
     const statusChanges: Array<{ ad_name: string; meta_ad_id: string; old_status: string; new_status: string; angle?: string }> = []
+    const touchedPairs: Array<{ angle: string | null; persona: string | null }> = []
 
     if (creatives && allPerfRows && allPerfRows.length > 0) {
       // Build lookup maps for performance data
@@ -484,9 +537,14 @@ export async function POST(request: Request) {
             .eq('id', creative.id)
 
           perfUpdated++
+          touchedPairs.push({ angle: creative.angle || null, persona: (creative as { persona?: string | null }).persona || null })
         }
       }
     }
+
+    const experimentCellsUpdated = touchedPairs.length > 0
+      ? await updateExperimentCellsFromAds(supabase, userId, touchedPairs)
+      : 0
 
     // Log significant status transitions
     const fatigueAlerts = statusChanges.filter(c =>
@@ -504,6 +562,7 @@ export async function POST(request: Request) {
       videos_analyzed: videosAnalyzed,
       creatives_classified: classified,
       performance_updated: perfUpdated,
+      experiment_cells_updated: experimentCellsUpdated,
       status_changes: statusChanges.length > 0 ? statusChanges : undefined,
       fatigue_alerts: fatigueAlerts.length > 0 ? fatigueAlerts : undefined,
       errors: errors > 0 ? errors : undefined,

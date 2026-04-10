@@ -41,6 +41,15 @@ interface CandidateEvidence {
   losers: Array<Record<string, unknown>>
   fatigue: Array<Record<string, unknown>>
   gaps: Array<Record<string, unknown>>
+  winning_hooks?: string[]
+  winning_body_themes?: string[]
+  effective_cta_patterns?: string[]
+  effective_visual_patterns?: string[]
+  learning_confidence?: 'high' | 'medium' | 'low' | 'experimental'
+  has_winning_patterns?: boolean
+  has_fatigue_signals?: boolean
+  has_competitor_signal?: boolean
+  learning_summary?: string
 }
 
 export interface PlanCandidate {
@@ -93,6 +102,8 @@ interface CreativeLearning {
   extraction_confidence?: number | null
 }
 
+export type LearningConfidence = 'high' | 'medium' | 'low' | 'experimental'
+
 interface AdCreativeLight {
   id: string
   angle: string | null
@@ -122,6 +133,48 @@ function safeObject(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
 }
 
+function uniqueStrings(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)))
+}
+
+function highConfidenceLearnings(learnings: CreativeLearning[]) {
+  return learnings.filter(item => Number(item.extraction_confidence || item.confidence_score || 0) >= 0.75)
+}
+
+function buildLearningPatternEvidence(learnings: CreativeLearning[]) {
+  const strong = highConfidenceLearnings(learnings)
+  return {
+    winning_hooks: uniqueStrings(strong.map(item => item.hook_primary)).slice(0, 5),
+    winning_body_themes: uniqueStrings(strong.map(item => item.body_summary)).slice(0, 4),
+    effective_cta_patterns: uniqueStrings(strong.map(item => item.cta_pattern)).slice(0, 4),
+    effective_visual_patterns: uniqueStrings(strong.map(item => item.visual_pattern)).slice(0, 4),
+  }
+}
+
+export function getLearningConfidence(evidence: Record<string, unknown> | CandidateEvidence | null | undefined): LearningConfidence {
+  const safe = safeObject(evidence)
+  const winners = parseEvidenceArray(safe.winners)
+  const winningHooks = parseEvidenceArray(safe.winning_hooks)
+  const winnerCount = winners.length
+  const winningPatternCount = winningHooks.length
+
+  if (winnerCount >= 3 && winningPatternCount >= 2) return 'high'
+  if (winnerCount >= 1 || winningPatternCount >= 1) return 'medium'
+  if (parseEvidenceArray(safe.gaps).length > 0 || parseEvidenceArray(safe.fatigue).length > 0 || parseEvidenceArray(safe.losers).length > 0) return 'low'
+  return 'experimental'
+}
+
+function decorateEvidenceSummary(evidence: CandidateEvidence) {
+  const learningConfidence = getLearningConfidence(evidence)
+  return {
+    ...evidence,
+    learning_confidence: learningConfidence,
+    has_winning_patterns: (evidence.winning_hooks?.length || 0) > 0,
+    has_fatigue_signals: evidence.fatigue.length > 0,
+    has_competitor_signal: evidence.gaps.some(item => Number((item as Record<string, unknown>).competitor_signal || 0) > 0),
+  }
+}
+
 function buildScaleCandidate(cell: ExperimentCell, relatedCreatives: AdCreativeLight[], relatedLearnings: CreativeLearning[], forcedFormats: string[]) {
   const winners = relatedCreatives
     .filter(item => item.ad_status === 'winning')
@@ -148,6 +201,8 @@ function buildScaleCandidate(cell: ExperimentCell, relatedCreatives: AdCreativeL
     ? forcedFormats
     : dedupeFormats([cell.format, ...relatedCreatives.map(item => item.creative_format)])
 
+  const learningPatterns = buildLearningPatternEvidence(relatedLearnings)
+
   return {
     plan_type: 'scale' as const,
     priority: 1,
@@ -157,12 +212,16 @@ function buildScaleCandidate(cell: ExperimentCell, relatedCreatives: AdCreativeL
     objective: `Scale the ${toTitle(cell.angle)} message for ${toTitle(cell.persona)} with fresh winning variants.`,
     hypothesis: `We believe the existing ${toTitle(cell.angle)} winner can support more spend if we preserve the core message and vary the hook, format, and presentation.`,
     why_now: `This cell is already winning${winners.length > 0 ? ` — led by ${winners[0].ad_name || 'a top performer'}` : ''}. Extend it before fatigue shows up.`,
-    evidence_summary: {
+    evidence_summary: decorateEvidenceSummary({
       winners,
       losers: [],
       fatigue: [],
       gaps: learningSummary,
-    },
+      ...learningPatterns,
+      learning_summary: learningPatterns.winning_hooks.length > 0
+        ? `Based on ${learningPatterns.winning_hooks.length} strong winning hook pattern(s).`
+        : 'Based mostly on cell-level winner data.',
+    }),
     source_experiment_cell_id: cell.id,
   }
 }
@@ -200,6 +259,8 @@ function buildRefreshCandidate(cell: ExperimentCell, relatedCreatives: AdCreativ
     ? forcedFormats
     : dedupeFormats([cell.format, ...relatedCreatives.map(item => item.creative_format)])
 
+  const learningPatterns = buildLearningPatternEvidence(relatedLearnings)
+
   return {
     plan_type: 'refresh' as const,
     priority: 2,
@@ -209,12 +270,16 @@ function buildRefreshCandidate(cell: ExperimentCell, relatedCreatives: AdCreativ
     objective: `Refresh the ${toTitle(cell.angle)} creative for ${toTitle(cell.persona)} before performance slips further.`,
     hypothesis: `We believe the message still resonates, but the current executions are fatiguing. New hooks and format shifts should recover efficiency.`,
     why_now: `Fatigue is showing up in this cell${fatigue.length > 0 ? ` across ${fatigue.length} ad(s)` : ''}. Replace tired executions while preserving the winning logic.`,
-    evidence_summary: {
+    evidence_summary: decorateEvidenceSummary({
       winners,
       losers: [],
       fatigue,
       gaps: refreshHooks,
-    },
+      ...learningPatterns,
+      learning_summary: learningPatterns.winning_hooks.length > 0
+        ? `Refresh using ${learningPatterns.winning_hooks.length} proven hook pattern(s) while avoiding fatigue.`
+        : 'Refresh recommendation is driven by fatigue more than strong creative-level learnings.',
+    }),
     source_experiment_cell_id: cell.id,
   }
 }
@@ -251,6 +316,8 @@ function buildExploreCandidate(cell: ExperimentCell, relatedCreatives: AdCreativ
     ? forcedFormats
     : dedupeFormats([cell.format])
 
+  const learningPatterns = buildLearningPatternEvidence(relatedLearnings)
+
   return {
     plan_type: 'explore' as const,
     priority: 3,
@@ -260,12 +327,16 @@ function buildExploreCandidate(cell: ExperimentCell, relatedCreatives: AdCreativ
     objective: `Explore the unproven ${toTitle(cell.angle)} angle for ${toTitle(cell.persona)} in a structured test batch.`,
     hypothesis: `We believe this gap may unlock a new winner if we test the right message-to-format combination with a clean hypothesis.`,
     why_now: `This angle/persona combination is under-tested or still inconclusive, so it is a good candidate for a focused exploration sprint.`,
-    evidence_summary: {
+    evidence_summary: decorateEvidenceSummary({
       winners: [],
       losers,
       fatigue: [],
       gaps: [...gaps, ...mechanisms],
-    },
+      ...learningPatterns,
+      learning_summary: learningPatterns.winning_hooks.length > 0
+        ? 'Exploration is informed by adjacent winning patterns, but this cell remains under-tested.'
+        : 'Experimental recommendation with limited direct learning evidence.',
+    }),
     source_experiment_cell_id: cell.id,
   }
 }
@@ -371,12 +442,13 @@ export async function buildPlanCandidates(
       objective: `Run one balanced sprint: scale a winner, refresh fatigue, and probe one adjacent gap.`,
       hypothesis: `A mixed batch lets us protect current winners while expanding into one new test frontier without losing weekly momentum.`,
       why_now: `You have enough signal to do more than one thing this cycle. A mixed plan keeps delivery balanced between scale and exploration.`,
-      evidence_summary: {
+      evidence_summary: decorateEvidenceSummary({
         winners: scaleCells.slice(0, 1).map(cell => ({ angle: cell.angle, persona: cell.persona, winner_count: cell.winner_count })),
         losers: [],
         fatigue: refreshCells.slice(0, 1).map(cell => ({ angle: cell.angle, persona: cell.persona, fatigued_count: cell.fatigued_count })),
         gaps: exploreCells.slice(0, 1).map(cell => ({ angle: cell.angle, persona: cell.persona, test_count: cell.test_count })),
-      },
+        learning_summary: 'Mixed recommendation balancing scale signal, fatigue protection, and one adjacent exploration lane.',
+      }),
       source_experiment_cell_id: leadScale?.id || leadSecondary?.id || null,
     })
   }
@@ -440,10 +512,12 @@ export async function listPlans(supabase: SupabaseClient, userId: string, filter
       target_formats: plan.target_formats || [],
       status: plan.status,
       evidence_summary: safeObject(plan.evidence_summary),
+      learning_confidence: getLearningConfidence(safeObject(plan.evidence_summary)),
       created_at: plan.created_at,
       completed_at: plan.completed_at,
       asset_count: Number(plan.plan_assets?.[0]?.count || 0),
       has_objective: plan.objective.trim().length > 0,
+      generated_concept_count: plan.generated_concept_ids?.length || 0,
     }))
     .sort((a, b) => {
       const rankDiff = (statusRank[a.status] ?? 99) - (statusRank[b.status] ?? 99)
@@ -490,6 +564,15 @@ export async function getPlanDetail(supabase: SupabaseClient, userId: string, id
       losers: parseEvidenceArray(safeObject(brief.evidence_summary).losers),
       fatigue: parseEvidenceArray(safeObject(brief.evidence_summary).fatigue),
       gaps: parseEvidenceArray(safeObject(brief.evidence_summary).gaps),
+      winning_hooks: parseEvidenceArray(safeObject(brief.evidence_summary).winning_hooks),
+      winning_body_themes: parseEvidenceArray(safeObject(brief.evidence_summary).winning_body_themes),
+      effective_cta_patterns: parseEvidenceArray(safeObject(brief.evidence_summary).effective_cta_patterns),
+      effective_visual_patterns: parseEvidenceArray(safeObject(brief.evidence_summary).effective_visual_patterns),
+      learning_confidence: getLearningConfidence(safeObject(brief.evidence_summary)),
+      has_winning_patterns: Boolean(safeObject(brief.evidence_summary).has_winning_patterns),
+      has_fatigue_signals: Boolean(safeObject(brief.evidence_summary).has_fatigue_signals),
+      has_competitor_signal: Boolean(safeObject(brief.evidence_summary).has_competitor_signal),
+      learning_summary: typeof safeObject(brief.evidence_summary).learning_summary === 'string' ? safeObject(brief.evidence_summary).learning_summary : null,
     },
     assets: assetRows,
     asset_groups: groupedAssets,

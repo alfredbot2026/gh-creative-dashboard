@@ -17,10 +17,12 @@ type PlanCard = {
   target_formats: string[]
   status: PlanStatus
   evidence_summary: Record<string, unknown>
+  learning_confidence: 'high' | 'medium' | 'low' | 'experimental'
   created_at: string
   completed_at: string | null
   asset_count: number
   has_objective: boolean
+  generated_concept_count: number
 }
 
 const tabs: Array<{ label: string, value: 'all' | PlanStatus }> = [
@@ -41,6 +43,22 @@ function typeClass(type: string) {
   if (type === 'refresh') return styles.typeRefresh
   if (type === 'explore') return styles.typeExplore
   return styles.typeMixed
+}
+
+function confidenceLabel(confidence: PlanCard['learning_confidence'], evidence: Record<string, unknown>) {
+  const winners = Array.isArray(evidence.winners) ? evidence.winners.length : 0
+  const fatigue = Array.isArray(evidence.fatigue) ? evidence.fatigue.length : 0
+  if (confidence === 'high') return `High confidence — based on ${winners} winning ads`
+  if (confidence === 'medium') return `Medium confidence — ${winners} winner${winners === 1 ? '' : 's'}, ${fatigue} fatigue signal${fatigue === 1 ? '' : 's'}`
+  if (confidence === 'low') return 'Low confidence — mostly cell-level evidence'
+  return 'Experimental — untested hypothesis'
+}
+
+function confidenceClass(confidence: PlanCard['learning_confidence']) {
+  if (confidence === 'high') return styles.confHigh
+  if (confidence === 'medium') return styles.confMedium
+  if (confidence === 'low') return styles.confLow
+  return styles.confExperimental
 }
 
 export default function AdsPlansPage() {
@@ -139,6 +157,7 @@ export default function AdsPlansPage() {
                 <span className={styles.badge}>Angle: {title(plan.target_angle)}</span>
                 <span className={styles.badge}>Persona: {title(plan.target_persona)}</span>
                 <span className={styles.statusBadge}>{title(plan.status)}</span>
+                <span className={`${styles.statusBadge} ${confidenceClass(plan.learning_confidence)}`}>{confidenceLabel(plan.learning_confidence, plan.evidence_summary)}</span>
               </div>
 
               <div className={styles.formatRow}>
@@ -151,7 +170,7 @@ export default function AdsPlansPage() {
                 <div className={styles.metaText}>
                   Created {new Date(plan.created_at).toLocaleDateString('en-PH')}
                   <br />
-                  {plan.asset_count} assets
+                  {plan.asset_count} assets · {plan.generated_concept_count} concept{plan.generated_concept_count === 1 ? '' : 's'}
                 </div>
                 <Link href={`/ads/plans/${plan.id}`} className={styles.linkButton}>Open Plan →</Link>
               </div>

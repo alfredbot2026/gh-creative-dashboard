@@ -24,6 +24,7 @@ type PlanDetail = {
   target_persona: string | null
   target_formats: string[]
   status: string
+  generated_concept_ids?: string[]
   created_at: string
   completed_at: string | null
   evidence_summary: {
@@ -31,6 +32,15 @@ type PlanDetail = {
     losers: Array<Record<string, unknown>>
     fatigue: Array<Record<string, unknown>>
     gaps: Array<Record<string, unknown>>
+    winning_hooks?: string[]
+    winning_body_themes?: string[]
+    effective_cta_patterns?: string[]
+    effective_visual_patterns?: string[]
+    learning_confidence?: string
+    has_winning_patterns?: boolean
+    has_fatigue_signals?: boolean
+    has_competitor_signal?: boolean
+    learning_summary?: string | null
   }
   assets: PlanAsset[]
   asset_groups: Record<string, PlanAsset[]>
@@ -379,6 +389,7 @@ export default function PlanDetailPage() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [activeTab, setActiveTab] = useState<'video' | 'static'>('video')
+  const [showWhy, setShowWhy] = useState(true)
 
   async function loadPlan() {
     setLoading(true)
@@ -453,6 +464,10 @@ export default function PlanDetailPage() {
 
   const groupedAssets = useMemo(() => Object.entries(plan?.asset_groups || {}), [plan])
 
+  function executePlan() {
+    router.push(`/ads/create?plan_id=${params.id}`)
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.detailHeader}>
@@ -486,6 +501,57 @@ export default function PlanDetailPage() {
               <span className={styles.badge}>Persona: {title(plan.target_persona)}</span>
               {plan.target_formats.map(format => <span key={format} className={styles.formatBadge}>{title(format)}</span>)}
             </div>
+            <div className={styles.statusFlow}>
+              <span className={`${styles.flowStep} ${plan.status !== 'pending' ? styles.flowStepActive : ''}`}>Accept Plan</span>
+              <span className={`${styles.flowStep} ${plan.status === 'generating' || plan.status === 'completed' ? styles.flowStepActive : ''}`}>Build Ads</span>
+              <span className={`${styles.flowStep} ${plan.status === 'completed' ? styles.flowStepActive : ''}`}>View Results</span>
+            </div>
+          </section>
+
+          <section className={styles.panel}>
+            <div className={styles.sectionHeader}>
+              <div>
+                <h2 className={styles.sectionTitle}>Why This Plan</h2>
+                <p className={styles.helperText}>The evidence and patterns behind the recommendation.</p>
+              </div>
+              <button className={styles.statusButton} type="button" onClick={() => setShowWhy(!showWhy)}>
+                {showWhy ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {showWhy ? (
+              <div className={styles.whyGrid}>
+                <article className={styles.evidenceCard}>
+                  <h3 className={styles.assetTitle}>What we found</h3>
+                  <p className={styles.evidenceText}>{plan.evidence_summary.learning_summary || 'This plan was generated from current performance, fatigue, and gap signals.'}</p>
+                  <ul className={styles.list}>
+                    <li className={styles.listText}>{plan.evidence_summary.winners.length} winning ad(s) in evidence</li>
+                    <li className={styles.listText}>{plan.evidence_summary.fatigue.length} fatigue signal(s)</li>
+                    <li className={styles.listText}>{plan.evidence_summary.gaps.length} strategic gap(s)</li>
+                    <li className={styles.listText}>Confidence: {title(plan.evidence_summary.learning_confidence)}</li>
+                  </ul>
+                </article>
+
+                <article className={styles.evidenceCard}>
+                  <h3 className={styles.assetTitle}>Winning patterns</h3>
+                  {(plan.evidence_summary.winning_hooks || []).length === 0 ? (
+                    <p className={styles.evidenceText}>No high-confidence winning hook texts captured yet.</p>
+                  ) : (
+                    <ul className={styles.list}>
+                      {(plan.evidence_summary.winning_hooks || []).map((item, index) => <li key={index} className={styles.listText}>{item}</li>)}
+                    </ul>
+                  )}
+                </article>
+
+                <article className={styles.evidenceCard}>
+                  <h3 className={styles.assetTitle}>Body, CTA, and visual patterns</h3>
+                  <ul className={styles.list}>
+                    {(plan.evidence_summary.winning_body_themes || []).slice(0, 3).map((item, index) => <li key={`body-${index}`} className={styles.listText}>Body: {item}</li>)}
+                    {(plan.evidence_summary.effective_cta_patterns || []).slice(0, 3).map((item, index) => <li key={`cta-${index}`} className={styles.listText}>CTA: {item}</li>)}
+                    {(plan.evidence_summary.effective_visual_patterns || []).slice(0, 3).map((item, index) => <li key={`visual-${index}`} className={styles.listText}>Visual: {item}</li>)}
+                  </ul>
+                </article>
+              </div>
+            ) : null}
           </section>
 
           <section className={styles.panel}>
@@ -512,6 +578,9 @@ export default function PlanDetailPage() {
           <section className={styles.panel}>
             <div className={styles.actionRow}>
               <button className={styles.primaryButton} disabled={updating} onClick={() => void updateStatus('accepted', 'Plan accepted.')}>Accept Plan</button>
+              {plan.status === 'accepted' ? <button className={styles.primaryButton} disabled={updating} onClick={() => executePlan()}>Build Ads from This Plan</button> : null}
+              {plan.status === 'generating' ? <span className={styles.statusBadge}>Building your ads...</span> : null}
+              {plan.status === 'completed' && (plan.generated_concept_ids?.length || 0) > 0 ? <Link href="/ads/create" className={styles.linkButton}>View Concepts</Link> : null}
               <button className={styles.secondaryButton} disabled={updating} onClick={() => void generatePlan('video')}>Generate Video Plan</button>
               <button className={styles.secondaryButton} disabled={updating} onClick={() => void generatePlan('static')}>Generate Static Plan</button>
               <button className={styles.secondaryButton} disabled={updating} onClick={() => void generatePlan('hybrid')}>Generate Both</button>
