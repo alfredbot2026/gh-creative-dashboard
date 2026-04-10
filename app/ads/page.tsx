@@ -86,6 +86,12 @@ interface ActionsResponse {
 
 const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 const formatPeso = (n: number) => '₱' + Math.round(n).toLocaleString()
+const normalizeSentence = (value: string) => {
+  const trimmed = value.trim().replace(/\s+/g, ' ')
+  if (!trimmed) return ''
+  const first = trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+  return /[.!?]$/.test(first) ? first : `${first}.`
+}
 
 function Badge({ children }: { children: ReactNode }) {
   return <span className={styles.badge}>{children}</span>
@@ -116,9 +122,9 @@ function PrimaryActionPanel({ data, onGenerate, generating }: { data: ActionsRes
       : 'Generate your next batch of plans'
 
   const supportingCopy = topWinner
-    ? `${topWinner.why_it_works} Keep the message logic, tighten the execution, and spin fresh variants before this advantage cools off.`
+    ? `${normalizeSentence(topWinner.why_it_works)} Keep the message logic, tighten the execution, and spin fresh variants before this advantage cools off.`
     : topOpportunity
-      ? `${topOpportunity.why_here} ${topOpportunity.suggested_approach}`
+      ? `${normalizeSentence(topOpportunity.why_here)} ${normalizeSentence(topOpportunity.suggested_approach)}`
       : 'Use the latest account signals to create scale, refresh, and explore plans in one pass.'
 
   const primaryHref = topWinner
@@ -293,7 +299,7 @@ function OpportunitiesSection({ opportunities }: { opportunities: OpportunityCon
                 <Badge>{item.why_here}</Badge>
                 <Badge>{item.competitor_signal} competitor signals</Badge>
               </div>
-              <p className={styles.cardText}>{item.suggested_approach}</p>
+              <p className={styles.cardText}>{normalizeSentence(item.suggested_approach)}</p>
               <p className={styles.cardTextMuted}>Estimated variants: {item.estimated_variants}</p>
               <Link href={`/ads/create?angle=${item.angle}&persona=${item.persona}&mode=explore`} className={styles.primaryCta}>
                 Explore this →
