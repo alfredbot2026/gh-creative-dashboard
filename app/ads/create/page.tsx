@@ -45,6 +45,7 @@ interface SavedConcept {
 }
 
 type WizardStep = 'pick' | 'brief' | 'hooks' | 'results'
+type CreateMode = 'explore' | 'scale' | 'refresh'
 
 const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
@@ -181,7 +182,8 @@ function CreatePageInner() {
   const [step, setStep] = useState<WizardStep>('pick')
   const [angle, setAngle] = useState(angleParam)
   const [persona, setPersona] = useState(personaParam)
-  const [mode, setMode] = useState<'explore' | 'scale'>(modeParam === 'scale' ? 'scale' : 'explore')
+  const initialMode: CreateMode = modeParam === 'scale' ? 'scale' : modeParam === 'refresh' ? 'refresh' : 'explore'
+  const [mode, setMode] = useState<CreateMode>(initialMode)
   const [selectedFormats, setSelectedFormats] = useState(['static_image', 'carousel'])
   const [hookCount, setHookCount] = useState(3)
 
@@ -433,7 +435,7 @@ function CreatePageInner() {
   const useRecommendation = (rec: Recommendation) => {
     setAngle(rec.angle)
     setPersona(rec.persona)
-    setMode(rec.mode === 'scale' ? 'scale' : 'explore')
+    setMode(rec.mode === 'scale' ? 'scale' : rec.mode === 'refresh' ? 'refresh' : 'explore')
     setSelectedFormats(rec.suggested_formats.filter(f => f !== 'video_ugc' && f !== 'video_hq'))
     setHookCount(Math.min(rec.hook_count, 3))
   }
@@ -449,7 +451,7 @@ function CreatePageInner() {
     setConceptId(concept.id)
     setAngle(concept.angle)
     setPersona(concept.persona)
-    setMode(concept.mode === 'scale' ? 'scale' : 'explore')
+    setMode(concept.mode === 'scale' ? 'scale' : concept.mode === 'refresh' ? 'refresh' : 'explore')
     if (concept.hooks.length > 0) {
       setHooks(concept.hooks)
       const hasExecs = concept.hooks.some(h => h.executions.length > 0)
@@ -539,12 +541,16 @@ function CreatePageInner() {
           <div className={styles.configPanel} data-section="config">
             <div className={styles.modeRow}>
               <div className={`${styles.modeCard} ${mode === 'explore' ? styles.modeActive : ''}`} onClick={() => setMode('explore')}>
-                <div className={styles.modeLabel}>🔍 Explore</div>
+                <div className={styles.modeLabel}>Explore</div>
                 <div className={styles.modeDesc}>Test an untested angle. Bold, varied hooks.</div>
               </div>
               <div className={`${styles.modeCard} ${mode === 'scale' ? styles.modeActive : ''}`} onClick={() => setMode('scale')}>
-                <div className={styles.modeLabel}>📈 Scale</div>
+                <div className={styles.modeLabel}>Scale</div>
                 <div className={styles.modeDesc}>Fresh creative for a winning angle. Prevent fatigue.</div>
+              </div>
+              <div className={`${styles.modeCard} ${mode === 'refresh' ? styles.modeActive : ''}`} onClick={() => setMode('refresh')}>
+                <div className={styles.modeLabel}>Refresh</div>
+                <div className={styles.modeDesc}>Keep the core message but swap the hook, framing, or format.</div>
               </div>
             </div>
 
@@ -586,7 +592,7 @@ function CreatePageInner() {
           <div className={styles.briefCard}>
             <h3 className={styles.briefTitle}>
               {fmt(brief.angle)} × {fmt(brief.persona)}
-              <span className={styles.modeTag}>{mode === 'scale' ? '📈 Scale' : '🔍 Explore'}</span>
+              <span className={styles.modeTag}>{mode === 'scale' ? 'Scale' : mode === 'refresh' ? 'Refresh' : 'Explore'}</span>
             </h3>
             <p className={styles.briefMessage}>{brief.core_message}</p>
             <div className={styles.briefMeta}>
@@ -762,7 +768,7 @@ function CreatePageInner() {
           <div className={styles.briefCard}>
             <h3 className={styles.briefTitle}>
               {fmt(brief.angle)} × {fmt(brief.persona)}
-              <span className={styles.modeTag}>{mode === 'scale' ? '📈 Scale' : '🔍 Explore'}</span>
+              <span className={styles.modeTag}>{mode === 'scale' ? 'Scale' : mode === 'refresh' ? 'Refresh' : 'Explore'}</span>
             </h3>
             <p className={styles.briefMessage}>{brief.core_message}</p>
           </div>
