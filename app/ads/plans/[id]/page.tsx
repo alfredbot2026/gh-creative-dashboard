@@ -414,6 +414,10 @@ export default function PlanDetailPage() {
   const staticAssets = useMemo(() => (plan?.assets || []).filter(asset => asset.asset_type.startsWith('static_') || (asset.plan_section || '').startsWith('static_') || asset.plan_section === 'static_confidence'), [plan])
   const hasVideoAssets = videoAssets.length > 0
   const hasStaticAssets = staticAssets.length > 0
+  const hasProductionAssets = hasVideoAssets || hasStaticAssets
+  const canAccept = plan?.status === 'pending'
+  const canBuild = plan?.status === 'accepted'
+  const canGenerate = plan?.status !== 'generating'
 
   useEffect(() => {
     if (hasStaticAssets && !hasVideoAssets) setActiveTab('static')
@@ -577,15 +581,23 @@ export default function PlanDetailPage() {
 
           <section className={styles.panel}>
             <div className={styles.actionRow}>
-              <button className={styles.primaryButton} disabled={updating} onClick={() => void updateStatus('accepted', 'Plan accepted.')}>Accept Plan</button>
-              {plan.status === 'accepted' ? <button className={styles.primaryButton} disabled={updating} onClick={() => executePlan()}>Build Ads from This Plan</button> : null}
-              {plan.status === 'generating' ? <span className={styles.statusBadge}>Building your ads...</span> : null}
-              {plan.status === 'completed' && (plan.generated_concept_ids?.length || 0) > 0 ? <Link href="/ads/create" className={styles.linkButton}>View Concepts</Link> : null}
-              <button className={styles.secondaryButton} disabled={updating} onClick={() => void generatePlan('video')}>Generate Video Plan</button>
-              <button className={styles.secondaryButton} disabled={updating} onClick={() => void generatePlan('static')}>Generate Static Plan</button>
-              <button className={styles.secondaryButton} disabled={updating} onClick={() => void generatePlan('hybrid')}>Generate Both</button>
-              <button className={styles.linkButton} disabled={updating} onClick={() => void updateStatus('dismissed', 'Plan dismissed.')}>Dismiss</button>
+              {canAccept ? <button className={styles.primaryButton} disabled={updating} onClick={() => void updateStatus('accepted', 'Plan accepted.')}>Accept Plan</button> : null}
+              {canBuild ? <button className={styles.primaryButton} disabled={updating} onClick={() => executePlan()}>Build Ads from This Plan</button> : null}
+              {plan.status === 'generating' ? <span className={styles.statusBadge}>Building your ads…</span> : null}
+              {plan.status === 'completed' && hasProductionAssets ? <span className={styles.statusBadge}>Production brief ready</span> : null}
+              {plan.status === 'completed' ? <Link href={`/ads/create?plan_id=${plan.id}`} className={styles.linkButton}>Open in Creative Factory</Link> : null}
+              <button className={styles.secondaryButton} disabled={updating || !canGenerate} onClick={() => void generatePlan('video')}>{hasVideoAssets ? 'Regenerate Video Plan' : 'Generate Video Plan'}</button>
+              <button className={styles.secondaryButton} disabled={updating || !canGenerate} onClick={() => void generatePlan('static')}>{hasStaticAssets ? 'Regenerate Static Plan' : 'Generate Static Plan'}</button>
+              <button className={styles.secondaryButton} disabled={updating || !canGenerate} onClick={() => void generatePlan('hybrid')}>{hasProductionAssets ? 'Regenerate Both' : 'Generate Both'}</button>
+              {plan.status !== 'completed' ? <button className={styles.linkButton} disabled={updating} onClick={() => void updateStatus('dismissed', 'Plan dismissed.')}>Dismiss</button> : null}
             </div>
+            <p className={styles.notice}>
+              {plan.status === 'completed'
+                ? 'This plan is ready to hand off into Creative Factory. Regenerate only if you want a fresh production brief.'
+                : plan.status === 'generating'
+                  ? 'Generation is in progress. Stay on this page or refresh in a moment to see the finished brief.'
+                  : 'Accept the plan, generate the production brief, then open it in Creative Factory to build ads.'}
+            </p>
           </section>
 
           <section className={styles.panel}>

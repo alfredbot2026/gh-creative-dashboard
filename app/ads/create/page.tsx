@@ -790,8 +790,8 @@ function CreatePageInner() {
           ) : null}
 
           <div className={styles.briefCard}>
-            <h3 className={styles.briefTitle}>
-              {fmt(brief.angle)} × {fmt(brief.persona)}
+            <h3 className={`${styles.briefTitle} ${styles.briefTitleRow}`}>
+              <span>{fmt(brief.angle)} × {fmt(brief.persona)}</span>
               <span className={styles.modeTag}>{mode === 'scale' ? 'Scale' : mode === 'refresh' ? 'Refresh' : 'Explore'}</span>
             </h3>
             <p className={styles.briefMessage}>{brief.core_message}</p>
@@ -971,8 +971,8 @@ function CreatePageInner() {
       {step === 'results' && brief && hooks.length > 0 && (
         <>
           <div className={styles.briefCard}>
-            <h3 className={styles.briefTitle}>
-              {fmt(brief.angle)} × {fmt(brief.persona)}
+            <h3 className={`${styles.briefTitle} ${styles.briefTitleRow}`}>
+              <span>{fmt(brief.angle)} × {fmt(brief.persona)}</span>
               <span className={styles.modeTag}>{mode === 'scale' ? 'Scale' : mode === 'refresh' ? 'Refresh' : 'Explore'}</span>
             </h3>
             <p className={styles.briefMessage}>{brief.core_message}</p>
