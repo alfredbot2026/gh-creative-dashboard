@@ -24,6 +24,16 @@ interface Action {
   urgency: 'high' | 'medium' | 'low'
 }
 
+interface TopPlan {
+  id: string
+  plan_type: string
+  objective: string
+  target_angle: string | null
+  target_persona: string | null
+  status: string
+  asset_count: number
+}
+
 interface CreativeRow {
   id: string
   meta_ad_id: string
@@ -101,7 +111,7 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const [creativesRes, perfRes, compRes, bizCtx] = await Promise.all([
+  const [creativesRes, perfRes, compRes, bizCtx, plansRes] = await Promise.all([
     supabase
       .from('ad_creatives')
       .select('id, meta_ad_id, angle, persona, ad_status, is_active, total_spend, avg_roas, avg_cpa, avg_ctr, first_active_date, last_active_date, ad_name, campaign_name, campaign_objective, optimization_goal, creative_format, body_text, headline, hook_type, emotional_tone, cta_text, classification_confidence')
@@ -116,6 +126,14 @@ export async function GET() {
       .eq('user_id', user.id)
       .eq('is_active', true),
     loadBusinessContext(supabase, user.id),
+    supabase
+      .from('plan_briefs')
+      .select('id, plan_type, objective, target_angle, target_persona, status, plan_assets(count)')
+      .eq('user_id', user.id)
+      .in('status', ['pending', 'accepted'])
+      .order('priority', { ascending: true })
+      .order('created_at', { ascending: false })
+      .limit(3),
   ])
 
   const creatives = (creativesRes.data || []) as CreativeRow[]
@@ -123,6 +141,15 @@ export async function GET() {
   const compAds = compRes.data || []
   const thresholds = getThresholds(bizCtx)
   const actions: Action[] = []
+  const topPlans: TopPlan[] = ((plansRes.data || []) as Array<{ id: string; plan_type: string; objective: string; target_angle: string | null; target_persona: string | null; status: string; plan_assets?: Array<{ count: number }> }>).map(plan => ({
+    id: plan.id,
+    plan_type: plan.plan_type,
+    objective: plan.objective,
+    target_angle: plan.target_angle,
+    target_persona: plan.target_persona,
+    status: plan.status,
+    asset_count: Number(plan.plan_assets?.[0]?.count || 0),
+  }))
 
   type DailyRow = { date: string; spend: number; revenue: number; roas: number; conversations: number }
   const adDailyMap = new Map<string, DailyRow[]>()
@@ -496,5 +523,6 @@ export async function GET() {
     fading_context: fadingCandidates,
     dead_context: deadContext,
     opportunities_context: opportunitiesPool,
+    top_plans: topPlans,
   })
 }

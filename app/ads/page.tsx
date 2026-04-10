@@ -65,12 +65,23 @@ interface OpportunityContext {
   priority: Priority
 }
 
+interface TopPlan {
+  id: string
+  plan_type: string
+  objective: string
+  target_angle: string | null
+  target_persona: string | null
+  status: string
+  asset_count: number
+}
+
 interface ActionsResponse {
   health: Health
   winners_context: WinnerContext[]
   fading_context: FadingContext[]
   dead_context: DeadContext[]
   opportunities_context: OpportunityContext[]
+  top_plans: TopPlan[]
 }
 
 const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -233,6 +244,45 @@ function OpportunitiesSection({ opportunities }: { opportunities: OpportunityCon
   )
 }
 
+function PlansSection({ plans, onGenerate, generating }: { plans: TopPlan[]; onGenerate: () => void; generating: boolean }) {
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeaderRow}>
+        <div>
+          <h2 className={styles.sectionTitle}>Plans</h2>
+          <p className={styles.sectionSubtitle}>Top plan cards ready for review and execution.</p>
+        </div>
+        <div className={styles.inlineActions}>
+          <Link href="/ads/plans" className={styles.secondaryCta}>View All Plans →</Link>
+          <button className={styles.primaryCtaButton} onClick={onGenerate} disabled={generating}>{generating ? 'Generating…' : 'Generate New Plans'}</button>
+        </div>
+      </div>
+
+      {plans.length === 0 ? (
+        <div className={styles.emptyState}>No plans yet. Generate your first batch.</div>
+      ) : (
+        <div className={styles.opportunityGrid}>
+          {plans.map(plan => (
+            <article key={plan.id} className={styles.infoCard}>
+              <div className={styles.cardTopRow}>
+                <h3 className={styles.cardTitleSmall}>{plan.objective}</h3>
+                <span className={styles.priorityBadge}>{fmt(plan.plan_type)}</span>
+              </div>
+              <div className={styles.badgeRow}>
+                <Badge>{fmt(plan.status)}</Badge>
+                <Badge>{fmt(plan.target_angle || 'all_angles')}</Badge>
+                <Badge>{fmt(plan.target_persona || 'all_personas')}</Badge>
+              </div>
+              <p className={styles.cardTextMuted}>{plan.asset_count} assets linked</p>
+              <Link href={`/ads/plans/${plan.id}`} className={styles.primaryCta}>Open Plan →</Link>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
 function SectionSkeleton() {
   return (
     <div className={styles.skeletonSection}>
@@ -251,17 +301,38 @@ export default function AdsCommandCenter() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showCampaignTree, setShowCampaignTree] = useState(false)
+  const [generatingPlans, setGeneratingPlans] = useState(false)
+
+  async function loadData() {
+    const res = await fetch('/api/ads/actions')
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.error || 'Failed to load /ads data')
+    setData(json)
+  }
 
   useEffect(() => {
-    fetch('/api/ads/actions')
-      .then(async res => {
-        const json = await res.json()
-        if (!res.ok) throw new Error(json.error || 'Failed to load /ads data')
-        setData(json)
-      })
+    loadData()
       .catch(err => setError(err instanceof Error ? err.message : 'Failed to load /ads data'))
       .finally(() => setLoading(false))
   }, [])
+
+  async function generatePlans() {
+    setGeneratingPlans(true)
+    try {
+      const res = await fetch('/api/ads/plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'auto', count: 3 }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to generate plans')
+      await loadData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate plans')
+    } finally {
+      setGeneratingPlans(false)
+    }
+  }
 
   return (
     <div className={styles.page}>
@@ -301,6 +372,7 @@ export default function AdsCommandCenter() {
           <WinnersSection winners={data.winners_context || []} />
           <AttentionSection fading={data.fading_context || []} dead={data.dead_context || []} />
           <OpportunitiesSection opportunities={data.opportunities_context || []} />
+          <PlansSection plans={data.top_plans || []} onGenerate={() => void generatePlans()} generating={generatingPlans} />
 
           <section className={styles.section}>
             <button className={styles.collapseToggle} onClick={() => setShowCampaignTree(v => !v)}>

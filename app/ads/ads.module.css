@@ -60,12 +60,15 @@
 
 .primaryCta,
 .secondaryCta,
-.collapseToggle {
+.collapseToggle,
+.primaryCtaButton {
   display: inline-flex; align-items: center; justify-content: center; margin-top: 1rem;
   padding: 0.65rem 0.9rem; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.82rem;
 }
-.primaryCta { background: var(--primary, var(--color-primary)); color: #fff; }
-.primaryCta:hover { opacity: 0.94; }
+.primaryCta,
+.primaryCtaButton { background: var(--primary, var(--color-primary)); color: #fff; border: 1px solid var(--primary, var(--color-primary)); }
+.primaryCta:hover,
+.primaryCtaButton:hover { opacity: 0.94; }
 .secondaryCta,
 .collapseToggle {
   color: var(--primary, var(--color-primary));
@@ -77,6 +80,7 @@
 
 .attentionGrid,
 .opportunityGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.inlineActions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .stackColumn { display: flex; flex-direction: column; gap: 0.85rem; }
 .warningCard { border-left: 5px solid #f59e0b; }
 .dangerCard { border-left: 5px solid #ef4444; }
@@ -124,6 +128,7 @@
 @media (max-width: 720px) {
   .page { padding: 1rem; }
   .header { flex-direction: column; align-items: stretch; }
+  .inlineActions { flex-direction: column; }
   .healthBar,
   .attentionGrid,
   .opportunityGrid,
