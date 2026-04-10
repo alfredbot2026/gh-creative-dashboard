@@ -1,0 +1,120 @@
+.page { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+.header { margin-bottom: 1rem; }
+.title { font-size: 1.6rem; font-weight: 800; color: var(--text, var(--color-text)); }
+.subtitle { color: var(--text-muted, var(--color-text-dim)); margin-top: 0.25rem; }
+
+.summaryBar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.summaryBar > div {
+  background: var(--surface, var(--color-surface));
+  border: 1px solid var(--border, var(--color-border));
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.filters select {
+  background: var(--surface, var(--color-surface));
+  color: var(--text, var(--color-text));
+  border: 1px solid var(--border, var(--color-border));
+  border-radius: 8px;
+  padding: 0.6rem;
+}
+
+.matrix {
+  display: grid;
+  grid-template-columns: 220px repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.corner { height: 40px; }
+.colHead, .rowHead {
+  font-size: 0.8rem;
+  color: var(--text-muted, var(--color-text-dim));
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+.rowHead { min-height: 90px; }
+
+.cell {
+  min-height: 90px;
+  border: 1px solid var(--border, var(--color-border));
+  border-radius: 12px;
+  background: var(--surface, var(--color-surface));
+  color: var(--text, var(--color-text));
+  padding: 0.6rem;
+  text-align: left;
+  position: relative;
+}
+.cellCount { display: block; font-size: 0.75rem; color: var(--text-muted, var(--color-text-dim)); }
+.cellRoas { display: block; margin-top: 0.2rem; font-weight: 800; }
+.selected { outline: 2px solid var(--primary, var(--color-primary)); }
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ef4444;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
+
+.winner { background: color-mix(in srgb, var(--accent-emerald, #10b981) 12%, var(--surface, var(--color-surface))); border-color: color-mix(in srgb, var(--accent-emerald, #10b981) 30%, var(--border, var(--color-border))); }
+.fatigued, .over_tested { background: color-mix(in srgb, #f59e0b 12%, var(--surface, var(--color-surface))); border-color: color-mix(in srgb, #f59e0b 35%, var(--border, var(--color-border))); }
+.inconclusive, .testing { background: color-mix(in srgb, #fde047 14%, var(--surface, var(--color-surface))); border-color: color-mix(in srgb, #fde047 35%, var(--border, var(--color-border))); }
+.untested { background: color-mix(in srgb, var(--surface-hover, var(--color-border)) 45%, transparent); }
+.loser { background: color-mix(in srgb, #ef4444 10%, var(--surface, var(--color-surface))); border-color: color-mix(in srgb, #ef4444 28%, var(--border, var(--color-border))); }
+.muted { opacity: 0.4; }
+
+.drawer {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border, var(--color-border));
+  border-radius: 14px;
+  background: var(--surface, var(--color-surface));
+}
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+.tabs h3 { margin-bottom: 0.3rem; font-size: 0.9rem; }
+.tabs ul { margin: 0; padding-left: 1rem; color: var(--text-muted, var(--color-text-dim)); font-size: 0.82rem; }
+.actions { margin-top: 0.75rem; }
+.actions button {
+  border: 1px solid var(--primary, var(--color-primary));
+  color: var(--primary, var(--color-primary));
+  border-radius: 9px;
+  padding: 0.6rem 0.9rem;
+  background: transparent;
+  font-weight: 700;
+}
+
+.empty {
+  background: var(--surface, var(--color-surface));
+  border: 1px dashed var(--border, var(--color-border));
+  padding: 1rem;
+  border-radius: 12px;
+  color: var(--text-muted, var(--color-text-dim));
+}
+
+@media (max-width: 980px) {
+  .summaryBar, .filters { grid-template-columns: 1fr 1fr; }
+  .matrix { grid-template-columns: 150px repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .page { padding: 1rem; }
+  .summaryBar, .filters, .tabs { grid-template-columns: 1fr; }
+  .matrix { grid-template-columns: 1fr; }
+  .corner { display: none; }
+  .rowHead { min-height: auto; margin-top: 0.7rem; }
+}
