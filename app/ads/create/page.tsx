@@ -60,21 +60,32 @@ interface PlanExecutionDetail {
   target_formats: string[]
   status: string
   generated_concept_ids?: string[]
-  evidence_summary: {
-    winners: Array<Record<string, unknown>>
-    losers: Array<Record<string, unknown>>
-    fatigue: Array<Record<string, unknown>>
-    gaps: Array<Record<string, unknown>>
+  evidence_summary?: {
+    winners?: Array<Record<string, unknown>>
+    losers?: Array<Record<string, unknown>>
+    fatigue?: Array<Record<string, unknown>>
+    gaps?: Array<Record<string, unknown>>
     learning_confidence?: string
     winning_hooks?: string[]
   }
-  assets: PlanExecutionAsset[]
+  assets?: PlanExecutionAsset[]
 }
 
 type WizardStep = 'pick' | 'brief' | 'hooks' | 'results'
 type CreateMode = 'explore' | 'scale' | 'refresh'
 
 const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+
+function normalizePlanEvidence(evidence: PlanExecutionDetail['evidence_summary']) {
+  return {
+    winners: Array.isArray(evidence?.winners) ? evidence.winners : [],
+    losers: Array.isArray(evidence?.losers) ? evidence.losers : [],
+    fatigue: Array.isArray(evidence?.fatigue) ? evidence.fatigue : [],
+    gaps: Array.isArray(evidence?.gaps) ? evidence.gaps : [],
+    winning_hooks: Array.isArray(evidence?.winning_hooks) ? evidence.winning_hooks : [],
+    learning_confidence: typeof evidence?.learning_confidence === 'string' ? evidence.learning_confidence : '',
+  }
+}
 
 const ANGLES = ['pain_point', 'aspiration', 'education', 'urgency', 'curiosity', 'transformation', 'comparison', 'social_proof', 'authority', 'fear']
 const PERSONAS = ['new_mom_curious', 'beginner', 'price_sensitive', 'aspirational', 'skeptic', 'returning_buyer', 'advanced', 'busy_professional']
@@ -258,9 +269,20 @@ function CreatePageInner() {
     if (!planIdParam) return
     setLoadingPlan(true)
     fetch(`/api/ads/plans/${planIdParam}`, { cache: 'no-store' })
-      .then(r => r.json())
+      .then(async r => {
+        const data = await r.json().catch(() => ({})) as PlanExecutionDetail & { error?: string }
+        if (!r.ok || !data?.id) {
+          throw new Error(data?.error || 'Failed to load plan execution context')
+        }
+        return data as PlanExecutionDetail
+      })
       .then((data: PlanExecutionDetail) => {
-        setPlanDetail(data)
+        const normalizedEvidence = normalizePlanEvidence(data.evidence_summary)
+        setPlanDetail({
+          ...data,
+          evidence_summary: normalizedEvidence,
+          assets: Array.isArray(data.assets) ? data.assets : [],
+        })
         if (data.target_angle) setAngle(data.target_angle)
         if (data.target_persona) setPersona(data.target_persona)
         setMode(data.plan_type === 'explore' ? 'explore' : 'scale')
@@ -276,9 +298,7 @@ function CreatePageInner() {
           proof_points: [],
           competitor_context: '',
           compliance_notes: 'Reuse approved plan guidance.',
-          winning_patterns: Array.isArray(data.evidence_summary?.winning_hooks)
-            ? data.evidence_summary.winning_hooks.join(' | ')
-            : '',
+          winning_patterns: normalizedEvidence.winning_hooks.join(' | '),
         })
         if (Array.isArray(data.target_formats) && data.target_formats.length > 0) {
           const hasStaticAssets = (data.assets || []).some(asset => asset.asset_type.startsWith('static_'))
@@ -290,7 +310,10 @@ function CreatePageInner() {
         }
         setStep('brief')
       })
-      .catch(() => setError('Failed to load plan execution context'))
+      .catch((err: unknown) => {
+        setPlanDetail(null)
+        setError(err instanceof Error ? err.message : 'Failed to load plan execution context')
+      })
       .finally(() => setLoadingPlan(false))
   }, [planIdParam])
 
@@ -347,12 +370,14 @@ function CreatePageInner() {
     setGenStage('')
   }
 
+  const planEvidence = normalizePlanEvidence(planDetail?.evidence_summary)
+
   const planEvidenceItems = planDetail
     ? [
-        `${planDetail.evidence_summary.winners.length} winner signal(s)`,
-        `${planDetail.evidence_summary.fatigue.length} fatigue signal(s)`,
-        `${planDetail.evidence_summary.gaps.length} gap(s)`,
-        planDetail.evidence_summary.learning_confidence ? `${fmt(planDetail.evidence_summary.learning_confidence)} confidence` : '',
+        `${planEvidence.winners.length} winner signal(s)`,
+        `${planEvidence.fatigue.length} fatigue signal(s)`,
+        `${planEvidence.gaps.length} gap(s)`,
+        planEvidence.learning_confidence ? `${fmt(planEvidence.learning_confidence)} confidence` : '',
       ].filter(Boolean)
     : []
 
@@ -622,9 +647,9 @@ function CreatePageInner() {
             <span className={styles.briefTag}>Status: {fmt(planDetail.status)}</span>
             {planEvidenceItems.map(item => <span key={item} className={styles.briefTag}>{item}</span>)}
           </div>
-          {!!planDetail.evidence_summary.winning_hooks?.length && (
+          {!!planEvidence.winning_hooks.length && (
             <div className={styles.briefDetail}>
-              <strong>Winning hooks:</strong> {planDetail.evidence_summary.winning_hooks.slice(0, 3).join(' · ')}
+              <strong>Winning hooks:</strong> {planEvidence.winning_hooks.slice(0, 3).join(' · ')}
             </div>
           )}
         </section>

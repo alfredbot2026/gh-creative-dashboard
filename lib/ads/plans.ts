@@ -96,9 +96,7 @@ interface CreativeLearning {
   body_summary: string | null
   cta_pattern: string | null
   visual_pattern: string | null
-  inferred_mechanisms?: unknown
   inferred_mechanism?: unknown
-  confidence_score?: number | null
   extraction_confidence?: number | null
 }
 
@@ -138,7 +136,7 @@ function uniqueStrings(values: Array<string | null | undefined>) {
 }
 
 function highConfidenceLearnings(learnings: CreativeLearning[]) {
-  return learnings.filter(item => Number(item.extraction_confidence || item.confidence_score || 0) >= 0.75)
+  return learnings.filter(item => Number(item.extraction_confidence || 0) >= 0.75)
 }
 
 function buildLearningPatternEvidence(learnings: CreativeLearning[]) {
@@ -193,8 +191,8 @@ function buildScaleCandidate(cell: ExperimentCell, relatedCreatives: AdCreativeL
     format: item.format,
     hook_family: item.hook_family,
     cta_pattern: item.cta_pattern,
-    mechanism: item.inferred_mechanisms,
-    confidence_score: item.confidence_score,
+    mechanism: item.inferred_mechanism,
+    confidence_score: item.extraction_confidence,
   }))
 
   const targetFormats = forcedFormats.length > 0
@@ -308,7 +306,7 @@ function buildExploreCandidate(cell: ExperimentCell, relatedCreatives: AdCreativ
 
   const mechanisms: Record<string, unknown>[] = relatedLearnings.slice(0, 2).map(item => ({
     format: item.format,
-    mechanism: item.inferred_mechanisms ?? item.inferred_mechanism ?? null,
+    mechanism: item.inferred_mechanism ?? null,
     cta_pattern: item.cta_pattern,
   }))
 
@@ -349,7 +347,7 @@ async function loadSupportData(supabase: SupabaseClient, userId: string) {
       .eq('user_id', userId),
     supabase
       .from('creative_learnings')
-      .select('ad_creative_id, format, hook_primary, hook_family, body_summary, cta_pattern, visual_pattern, inferred_mechanisms, inferred_mechanism, confidence_score, extraction_confidence')
+      .select('ad_creative_id, format, hook_primary, hook_family, body_summary, cta_pattern, visual_pattern, inferred_mechanism, extraction_confidence')
       .eq('user_id', userId),
     supabase
       .from('ad_creatives')
